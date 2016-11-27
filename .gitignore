@@ -58,3 +58,5 @@ tests/buffer/example
 tests/buffer/example.debug
 tests/buffer/setlength
 tests/buffer/setlength.debug
+
+/bin/mulle-homebrew
