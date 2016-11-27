@@ -1,0 +1,1 @@
+${MULLE_REPOSITORIES}/mulle-allocator;;${MULLE_ALLOCATOR_BRANCH:-release}
