@@ -1,0 +1,9 @@
+simple_fill_test: 100000
+simple_fill_test: 101000
+simple_fill_test: 101005
+simple_fill_test: 0
+simple_fill_test: 0
+simple_static_test: 12
+simple_static_test: hello world
+simple_static_test: 12
+simple_fill_test: 0
