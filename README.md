@@ -19,11 +19,11 @@ Fork      |  Build Status | Release Version
 ```
 #include <mulle_buffer/mulle_buffer.h>
 
-static void  test( void)
+void  test( void)
 {
-   unsigned int   i;
-   size_t         len;
-
+   unsigned int          i;
+   struct mulle_buffer   *buffer;
+   
    buffer = mulle_buffer_create( NULL);
 
    for( i = 0; i < 10; i++)
@@ -32,7 +32,7 @@ static void  test( void)
    mulle_buffer_memset( buffer, 'z', 10);
    mulle_buffer_add_string( buffer, "hello");
    
-   printf( "simple_fill_test: %s\n", mulle_buffer_get_bytes( &buffer)));
+   printf( "%s\n", mulle_buffer_get_bytes( buffer));
 
    mulle_buffer_destroy( buffer);
 }
