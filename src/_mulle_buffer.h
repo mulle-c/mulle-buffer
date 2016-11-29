@@ -197,7 +197,6 @@ static inline void   _mulle_buffer_reset( struct _mulle_buffer *buffer,
 #pragma mark -
 #pragma mark change buffer type
 
-
 void   _mulle_buffer_make_inflexable( struct _mulle_buffer *buffer,
                                       void *_storage,
                                       size_t length,

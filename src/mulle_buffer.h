@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((0 << 20) | (1 << 8) | 0)
+#define MULLE_BUFFER_VERSION  ((0 << 20) | (1 << 8) | 1)
 
 #include <mulle_allocator/mulle_allocator.h>
 
@@ -156,7 +156,6 @@ static inline void    mulle_buffer_init_inflexable_with_static_bytes( struct mul
 
 #pragma mark -
 #pragma mark sizing
-
 
 static inline int    mulle_buffer_grow( struct mulle_buffer *buffer,
                                         size_t min_amount)
@@ -294,12 +293,14 @@ static inline int   mulle_buffer_is_big_enough( struct mulle_buffer *buffer, siz
 }
 
 
+// same as mulle_buffer_get_length( buffer) == 0
 static inline int   mulle_buffer_is_empty( struct mulle_buffer *buffer)
 {
    return( _mulle_buffer_is_empty( (struct _mulle_buffer *) buffer));
 }
 
 
+// a void buffer's backing storage can't hold any content
 static inline int   mulle_buffer_is_void( struct mulle_buffer *buffer)
 {
    return( _mulle_buffer_is_void( (struct _mulle_buffer *) buffer));
@@ -310,6 +311,18 @@ static inline int   mulle_buffer_has_overflown( struct mulle_buffer *buffer)
 {
    return( _mulle_buffer_has_overflown( (struct _mulle_buffer *) buffer));
 }
+
+
+//
+// check if bytes of length, are actually buffer contents
+//
+static inline int   mulle_buffer_intersects_bytes( struct mulle_buffer *buffer,
+                                                   void *bytes,
+                                                   size_t length)
+{
+   return( _mulle_buffer_intersects_bytes( (struct _mulle_buffer *) buffer, bytes, length));
+}
+
 
 #pragma mark -
 #pragma mark additions
@@ -357,14 +370,6 @@ static inline void    mulle_buffer_add_uint32( struct mulle_buffer *buffer,
 
 #pragma mark -
 #pragma mark add memory ranges
-
-static inline int   mulle_buffer_intersects_bytes( struct mulle_buffer *buffer,
-                                                   void *bytes,
-                                                   size_t length)
-{
-   return( _mulle_buffer_intersects_bytes( (struct _mulle_buffer *) buffer, bytes, length));
-}
-
 
 static inline void   mulle_buffer_add_bytes( struct mulle_buffer *buffer,
                                              void *bytes,

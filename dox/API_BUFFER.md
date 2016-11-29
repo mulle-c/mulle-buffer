@@ -1,12 +1,21 @@
 # `mulle_buffer`
 
-`mulle_buffer` is a multi-purpose  **`unsigned char`** container. It can be
+`mulle_buffer` is a multi-purpose **`unsigned char`** array. It can be
 useful as a stream, as a string buffer and to parse simple things. It's
 interface is quite complex.
 
 It has a companion container called `mulle_flushablebuffer`. This a non
 growing array, that will flush its contents to a callback when it is full.
 This is useful for acting like a "write" stream.
+
+## Buffer Modes and States
+
+* inflexable   : a buffer that does not grow
+* static_bytes : storage is on the stack or in .bss / .data segement
+* flushable    : buffer contents can be "flushed" out to a consumer, freeing
+it up to hold more contents. This goes hand in hand with being inflexable
+* overflown    : the inflexable buffer had to truncate content
+
 
 ## Example: `mulle_buffer` as a dynamic array creator
 
