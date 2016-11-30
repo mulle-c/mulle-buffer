@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((0 << 20) | (1 << 8) | 3)
+#define MULLE_BUFFER_VERSION  ((0 << 20) | (2 << 8) | 1)
 
 #include <mulle_allocator/mulle_allocator.h>
 
@@ -233,9 +233,9 @@ static inline size_t   mulle_buffer_get_length( struct mulle_buffer *buffer)
 }
 
 
-static inline size_t   mulle_buffer_get_static_bytes_length( struct mulle_buffer *buffer)
+static inline size_t   mulle_buffer_get_staticlength( struct mulle_buffer *buffer)
 {
-   return( _mulle_buffer_get_static_bytes_length( (struct _mulle_buffer *) buffer));
+   return( _mulle_buffer_get_staticlength( (struct _mulle_buffer *) buffer));
 }
 
 
@@ -347,7 +347,7 @@ static inline void    mulle_buffer_remove_last_byte( struct mulle_buffer *buffer
 }
 
 
-static inline void    mulle_buffer_add_char( struct mulle_buffer *buffer,
+static inline void    mulle_buffer_add_character( struct mulle_buffer *buffer,
                                              int c)
 {
    _mulle_buffer_add_char( (struct _mulle_buffer *) buffer, c, buffer->_allocator);
@@ -453,9 +453,9 @@ static inline int   mulle_buffer_next_byte( struct mulle_buffer *buffer)
 }
 
 
-static inline int   mulle_buffer_next_char( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_next_character( struct mulle_buffer *buffer)
 {
-   return( _mulle_buffer_next_char( (struct _mulle_buffer *) buffer));
+   return( _mulle_buffer_next_character( (struct _mulle_buffer *) buffer));
 }
 
 

@@ -10,14 +10,17 @@ This is useful for acting like a "write" stream.
 
 ## Buffer Modes and States
 
-* inflexable   : a buffer that does not grow
-* static_bytes : storage is on the stack or in .bss / .data segement
-* flushable    : buffer contents can be "flushed" out to a consumer, freeing
-it up to hold more contents. This goes hand in hand with being inflexable
-* overflown    : the inflexable buffer had to truncate content
+Designation     | Description
+----------------|-----------------------------
+`inflexable`    | a buffer that does not grow
+`static_bytes`  | storage is on the stack or in .bss / .data segement
+`flushable`     | buffer contents can be "flushed" out to a consumer, freeing it up to hold more contents. This goes hand in hand with being inflexable
+`overflown`     | the inflexable buffer had to truncate content
 
 
-## Example: `mulle_buffer` as a dynamic array creator
+## Examples
+
+### `mulle_buffer` as a dynamic array creator
 
 
 ```
@@ -34,7 +37,7 @@ printf( "%s\n", s);
 mulle_free( s);
 ```
 
-## Example: `mulle_buffer` as an overflow protection
+### `mulle_buffer` as overflow protection
 
 
 Initialize a stack array. `mulle_buffer` ensures that no data is written out
@@ -54,7 +57,7 @@ of bounds:
 }
 ```
 
-## Example: `mulle_buffer` as a string stream reader
+### `mulle_buffer` as a string stream reader
 
 Read characters with an offset from a string:
 
@@ -86,12 +89,13 @@ struct mulle_buffer
 * `init`
 * `done`
 
-* set_allocator
+* `set_allocator`
+
 
 ## Functions
 
 Since programs will probably use a lot of `mulle_buffer_add` calls it would be inefficient to test for success or failure for ever call.
-Instead calls should proceed optimistically until the buffer is queried, if it is still in a valid state `mulle_buffer_has_overflown`.
+Instead calls should proceed optimistically until the buffer is queried. Then they check if it is still in a valid state with `mulle_buffer_has_overflown`. (For non-growing buffers or read buffers)
 
 
 ### `mulle_buffer_init_with_allocated_bytes`
@@ -193,10 +197,8 @@ size_t   mulle_buffer_set_length( struct mulle_buffer *buffer,
                                   size_t length)
 ```
 
-
-{
-   return( _mulle_buffer_set_length( (struct _mulle_buffer *) buffer, length, buffer->_allocator));
-}
+Truncate or widen a buffer to `length` size. If the buffer is expanded, the new bytes
+will be set to zero.
 
 
 ### `mulle_buffer_extract_bytes`
@@ -207,7 +209,7 @@ void   *mulle_buffer_extract_bytes( struct mulle_buffer *buffer)
 
 Retrieve the internal storage. The buffer is empty afterwards. Here is
 an example how to concatenate strings and retrieve them in a `malloc` (stdlib)
-allocated memory region:
+allocated memory region):
 
 ```
 struct mulle_buffer   buf;
@@ -223,6 +225,11 @@ mulle_buffer_done( &buf);
 printf( "%s\n", s);
 free( s);
 ```
+
+In general it is preferable to use `NULL` instead of `&mulle_stdlib_allocator` and
+then `mulle_free` instead of `free`. In the example it is assumed, that `malloc` 
+must be used.
+
 
 ### `mulle_buffer_remove_all`
 
@@ -254,13 +261,13 @@ Get the number of characters contained in the buffer. Will be initially zero
 for inflexable buffers.
 
 
-### `mulle_buffer_get_static_bytes_length`
+### `mulle_buffer_get_staticlength`
 
 ```
-size_t   mulle_buffer_get_static_bytes_length( struct mulle_buffer *buffer)
+size_t   mulle_buffer_get_staticlength( struct mulle_buffer *buffer)
 ```
 
-Get the length of the static bytes used as backing storage. Will be zero for
+Get the length in bytes of the static backing storage. Will be zero for
 buffers not intialized with static bytes.
 
 
@@ -295,7 +302,7 @@ growable writer buffer. When writing it is recommended to use
 `mulle_buffer_memset`.
 
 
-### `mulle_buffer_advance`
+### `mulle_buffer_is_inflexable`
 
 ```
 int   mulle_buffer_is_inflexable( struct mulle_buffer *buffer)
@@ -313,7 +320,7 @@ int   mulle_buffer_is_flushable( struct mulle_buffer *buffer)
 Returns 1 if `buffer` is flushable.
 
 
-### `mulle_buffer_is_flushable`
+### `mulle_buffer_has_overflown`
 
 ```
 int   mulle_buffer_has_overflown( struct mulle_buffer *buffer)
@@ -334,13 +341,14 @@ Increase capacity of `buffer` so that `length` bytes can be added next time
 without needing to realloc. Returns 0 on success.
 
 
-### `mulle_buffer_guarantee`
+### `mulle_buffer_remove_last_byte`
 
 ```
 void    mulle_buffer_remove_last_byte( struct mulle_buffer *buffer)
 ```
 
 Remove the last byte from the buffer.
+
 
 ### `mulle_buffer_add_byte`
 
@@ -352,11 +360,11 @@ void    mulle_buffer_add_byte( struct mulle_buffer *buffer,
 Add 'c' to the buffer. This therefore adds 1 byte to the buffer.
 
 
-### `mulle_buffer_add_char`
+### `mulle_buffer_add_character`
 
 ```
-void    mulle_buffer_add_char( struct mulle_buffer *buffer,
-                               int c)
+void    mulle_buffer_add_character( struct mulle_buffer *buffer,
+                                    int c)
 ```
 
 Add character 'c' to the buffer. This therefore adds 1 byte to the buffer.
@@ -422,7 +430,7 @@ Add up to `length` characters from the \0 terminated C-string `s`to `buffer`.
 Returns the actually copied number of characters.
 
 
-### `mulle_buffer_add_string_with_maxlength`
+### `mulle_buffer_memset`
 
 ```
 void   mulle_buffer_memset( struct mulle_buffer *buffer,
@@ -475,10 +483,10 @@ Read the next byte from `buffer`. -1 indicates failure.
 
 
 
-### `mulle_buffer_next_char`
+### `mulle_buffer_next_character`
 
 ```
-int   mulle_buffer_next_char( struct mulle_buffer *buffer)
+int   mulle_buffer_next_character( struct mulle_buffer *buffer)
 ```
 
 Read the next char from `buffer`. INT_MAX indicates failure.
