@@ -10,12 +10,12 @@ This is useful for acting like a "write" stream.
 
 ## Buffer Modes and States
 
-Designation     | Description
+Term            | Description
 ----------------|-----------------------------
 `inflexable`    | a buffer that does not grow
-`static_bytes`  | storage is on the stack or in .bss / .data segement
-`flushable`     | buffer contents can be "flushed" out to a consumer, freeing it up to hold more contents. This goes hand in hand with being inflexable
-`overflown`     | the inflexable buffer had to truncate content
+`static`        | storage is on the stack or in .bss / .data segement
+`flushable`     | buffer contents can be "flushed" out to a consumer, freeing it up to hold more contents. This goes hand in hand with being inflexable.
+`overflown`     | the inflexable buffer had to truncate content, or a buffer read couldn't be done. 
 
 
 ## Examples
