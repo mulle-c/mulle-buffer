@@ -563,6 +563,11 @@ static inline void    _mulle_buffer_add_buffer( struct _mulle_buffer *buffer,
 }
 
 
+int  _mulle_buffer_flush( struct _mulle_buffer *buffer);
+
+int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer);
+
+
 #pragma mark -
 #pragma mark reading
 

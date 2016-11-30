@@ -186,3 +186,32 @@ void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
       mulle_buffer_add_byte( buffer, '\n');
    }
 }
+
+
+int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
+{
+   int   rval;
+   
+   rval = _mulle_flushablebuffer_flush( (struct _mulle_flushablebuffer *) buffer);
+   if( rval)
+      return( rval);
+   
+   _mulle_buffer_done( (struct _mulle_buffer *) buffer,
+                      buffer->_allocator);
+   return( 0);
+}
+
+
+int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
+{
+   int   rval;
+   
+   rval = _mulle_flushablebuffer_flush( (struct _mulle_flushablebuffer *) buffer);
+   if( rval)
+      return( rval);
+   
+   _mulle_buffer_destroy( (struct _mulle_buffer *) buffer,
+                      buffer->_allocator);
+   return( 0);
+}
+
