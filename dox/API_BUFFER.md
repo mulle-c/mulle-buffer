@@ -496,9 +496,18 @@ Read the next char from `buffer`. INT_MAX indicates failure.
 
 # `mulle_flushablebuffer`
 
-## `mulle_flushablebuffer` as a flushing string stream writer
+Here is an example of `mulle_flushablebuffer` as a flushing string stream writer:
 
 ```
+   struct mulle_flushablebuffer   _buf;
+   struct mulle_buffer            *buf;
+   char                           storage[ 8];
+
+   mulle_flushablebuffer_init( &_buf, storage, sizeof( storage), fwrite, stdout);
+
+   buf = &_buf;
+   mulle_buffer_add_string( buf, "VfL Bochum 1848\n");
+   mulle_flushablebuffer_done( &_buf);
 ```
 
 
@@ -522,11 +531,44 @@ function with the following signature:
 typedef size_t   _mulle_flushablebuffer_flusher( void *userinfo, size_t len, size_t, void *buffer);
 ```
 
-which is actually the same signature as `fwrite`.
+which is actually the quite the same signature as `fwrite`.
 
-The mulle_flushablebuffer does not manage its own backing buffer, you have to
+The `mulle_flushablebuffer` does not manage its own backing buffer, you have to
 pass in your own `storage` of `length` bytes, which should exit as long as
 `buffer` is used.
+
+
+
+### `mulle_flushablebuffer_flush`
+
+
+```
+int   mulle_flushablebuffer_flush( struct mulle_flushablebuffer *buffer)
+```
+
+This flushes out the accumulated data so far. Will return 0 on success.
+
+
+### `mulle_flushablebuffer_done`
+
+
+```
+int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
+```
+
+This flushes the buffer before calling `mulle_buffer_done`. Will return 0 
+on success. If this is unsuccessful, the buffer remains alive!
+
+
+### `mulle_flushablebuffer_destroy`
+
+```
+int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
+```
+
+This flushes the buffer before calling `mulle_buffer_destroy`. Will return 0 
+on success. If this is unsuccessful, the buffer remains alive!
+
 
 
 

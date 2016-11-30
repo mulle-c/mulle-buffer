@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((0 << 20) | (2 << 8) | 3)
+#define MULLE_BUFFER_VERSION  ((0 << 20) | (2 << 8) | 5)
 
 #include <mulle_allocator/mulle_allocator.h>
 
@@ -498,5 +498,14 @@ static inline void    mulle_flushablebuffer_init( struct mulle_flushablebuffer *
 {
    _mulle_flushablebuffer_init( (struct _mulle_flushablebuffer *) buffer, storage, length, flusher, userinfo);
 }
+
+
+static inline int   mulle_flushablebuffer_flush( struct mulle_flushablebuffer *buffer)
+{
+   return( _mulle_flushablebuffer_flush( (struct _mulle_flushablebuffer *) buffer));
+}
+
+int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer);
+int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 
 #endif /* mulle_buffer_h */

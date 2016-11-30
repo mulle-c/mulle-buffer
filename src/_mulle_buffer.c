@@ -137,6 +137,42 @@ static inline void  _mulle_buffer_set_overflown( struct _mulle_buffer *buffer)
 }
 
 
+int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer)
+{
+   size_t   len;
+   
+   len     = ibuffer->_curr - ibuffer->_storage;
+   if( 1 != (*ibuffer->_flusher)( ibuffer->_storage, len, 1, ibuffer->_userinfo))
+   {
+      _mulle_buffer_set_overflown( (struct _mulle_buffer *) ibuffer);
+      
+      ibuffer->_curr = ibuffer->_sentinel + 1;  // set "overflowed"
+      return( -2);
+   }
+   
+   ibuffer->_flushed += len;
+   ibuffer->_curr     = ibuffer->_storage;
+   
+   return( 0);
+}
+
+
+int   _mulle_buffer_flush( struct _mulle_buffer *buffer)
+{
+   struct _mulle_flushablebuffer  *ibuffer;
+   
+   if( ! _mulle_buffer_is_flushable( buffer))
+   {
+      _mulle_buffer_set_overflown( buffer);
+      return( -1);
+   }
+   
+   ibuffer = (struct _mulle_flushablebuffer *) buffer;
+   return( _mulle_flushablebuffer_flush( ibuffer));
+}
+
+
+
 int   _mulle_buffer_grow( struct _mulle_buffer *buffer, size_t min_amount, struct mulle_allocator *allocator)
 {
    void     *malloc_block;
@@ -146,29 +182,12 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer, size_t min_amount, struc
    size_t   len;
    
    if( _mulle_buffer_is_inflexable( buffer))
-   {  
-      struct _mulle_flushablebuffer  *ibuffer;
-      
-      if( ! _mulle_buffer_is_flushable( buffer))
-      {
-         _mulle_buffer_set_overflown( buffer);
-         return( -1);
-      }
-         
-      ibuffer = (struct _mulle_flushablebuffer *) buffer;
-      len     = ibuffer->_curr - ibuffer->_storage;
-      if( 1 != (*ibuffer->_flusher)( ibuffer->_storage, len, 1, ibuffer->_userinfo))
-      {
-         _mulle_buffer_set_overflown( buffer);
-
-         ibuffer->_curr = ibuffer->_sentinel + 1;  // set "overflowed"
-         return( -2);
-      }
-      
-      ibuffer->_flushed += len;
-      ibuffer->_curr     = ibuffer->_storage;
-      
-      return( 0);
+   {
+      //
+      // this may or may not work, depending on its's being
+      // flushable
+      //
+      return( _mulle_buffer_flush( buffer));
    }
    
    malloc_block = NULL;
@@ -238,7 +257,7 @@ void   _mulle_buffer_make_inflexable( struct _mulle_buffer *buffer,
 
 
 void   _mulle_buffer_done( struct _mulle_buffer *buffer,
-                          struct mulle_allocator *allocator)
+                           struct mulle_allocator *allocator)
 {
    if( buffer->_storage != buffer->_initial_storage)
       _mulle_allocator_free( allocator, buffer->_storage);
