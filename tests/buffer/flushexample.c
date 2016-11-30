@@ -24,6 +24,19 @@ static void   example()
    mulle_flushablebuffer_done( &_buf);
 }
 
+static void   example2()
+{
+   struct mulle_flushablebuffer   _buf;
+   struct mulle_buffer            *buf;
+   char                           storage[ 8];
+
+   mulle_flushablebuffer_init( &_buf, storage, sizeof( storage), fwrite, stdout);
+
+   buf = &_buf;
+   mulle_buffer_add_string( buf, "VfL Bochum 1848\n");
+   mulle_flushablebuffer_done( &_buf);
+}
+
 
 int  main()
 {
@@ -31,6 +44,7 @@ int  main()
    mulle_default_allocator = mulle_test_allocator;
 
    example();
+   example2();
 
    mulle_test_allocator_reset();
    return( 0);
