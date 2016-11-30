@@ -12,7 +12,8 @@ used as a stream.
 Fork      |  Build Status | Release Version
 ----------|---------------|-----------------------------------
 [Mulle kybernetiK](//github.com/mulle-nat/mulle-buffer) | [![Build Status](https://travis-ci.org/mulle-nat/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-nat/mulle-buffer) | ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-nat/mulle-buffer.svg) [![Build Status](https://travis-ci.org/mulle-nat/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-nat/mulle-buffer)
-[Community](https://github.com/mulle-objc/mulle-buffer/tree/release) | [![Build Status](https://travis-ci.org/mulle-objc/mulle-buffer.svg)](https://travis-ci.org/mulle-objc/mulle-buffer) | ![Community tag](https://img.shields.io/github/tag/mulle-objc/mulle-buffer.svg) [![Build Status](https://travis-ci.org/mulle-objc/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-objc/mulle-buffer)
+
+<!--- [Community](https://github.com/mulle-objc/mulle-buffer/tree/release) | [![Build Status](https://travis-ci.org/mulle-objc/mulle-buffer.svg)](https://travis-ci.org/mulle-objc/mulle-buffer) | ![Community tag](https://img.shields.io/github/tag/mulle-objc/mulle-buffer.svg) [![Build Status](https://travis-ci.org/mulle-objc/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-objc/mulle-buffer) -->
 
 
 
@@ -59,7 +60,7 @@ On other platforms you can use **mulle-install** from
 [mulle-build](//github.com/mulle-nat/mulle-build) to install the library:
 
 ```
-mulle-install --prefix /usr/local --branch release https://github.com/mulle-objc/mulle-buffer
+mulle-install --prefix /usr/local --branch release https://github.com/mulle-nat/mulle-buffer
 ```
 
 Otherwise read:
