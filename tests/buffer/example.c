@@ -11,7 +11,7 @@ static void   example()
 
    buf = mulle_buffer_create( NULL);
    mulle_buffer_add_string( buf, "VfL");
-   mulle_buffer_add_char( buf, 0);
+   mulle_buffer_add_character( buf, 0);
    s = mulle_buffer_extract_all( buf);
    mulle_buffer_destroy( buf);
 

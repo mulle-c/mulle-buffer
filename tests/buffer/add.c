@@ -30,7 +30,7 @@ static void   simple_fill_test()
 
    printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( buffer));
 
-   printf( "simple_fill_test: %ld\n", mulle_buffer_get_static_bytes_length( buffer));
+   printf( "simple_fill_test: %ld\n", mulle_buffer_get_staticlength( buffer));
 
    mulle_buffer_reset( buffer);
    printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( buffer));
@@ -56,7 +56,7 @@ static void   simple_static_test()
 
    printf( "simple_static_test: %ld\n", mulle_buffer_get_length( &buffer));
    printf( "simple_static_test: %s\n", mulle_buffer_get_bytes( &buffer));
-   printf( "simple_static_test: %ld\n", mulle_buffer_get_static_bytes_length( &buffer));
+   printf( "simple_static_test: %ld\n", mulle_buffer_get_staticlength( &buffer));
 
    mulle_buffer_reset( &buffer);
    printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( &buffer));

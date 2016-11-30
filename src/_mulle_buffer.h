@@ -326,7 +326,7 @@ size_t   _mulle_buffer_get_seek( struct _mulle_buffer *buffer);
 int      _mulle_buffer_set_seek( struct _mulle_buffer *buffer, int mode, size_t seek);
 
 
-static inline size_t   _mulle_buffer_get_static_bytes_length( struct _mulle_buffer *buffer)
+static inline size_t   _mulle_buffer_get_staticlength( struct _mulle_buffer *buffer)
 {
    return( buffer->_storage == buffer->_initial_storage
           ? _mulle_buffer_get_length( buffer)
@@ -605,7 +605,7 @@ static inline int   _mulle_buffer_next_bytes( struct _mulle_buffer *buffer,
 }
 
 
-static inline int   _mulle_buffer_next_char( struct _mulle_buffer *buffer)
+static inline int   _mulle_buffer_next_character( struct _mulle_buffer *buffer)
 {
    if( _mulle_buffer_is_full( buffer))
       return( INT_MAX);

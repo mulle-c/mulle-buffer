@@ -1,7 +1,7 @@
 # mulle-buffer
 
 A growable array of C `unsigned char`. This can be used to construct arbitrary
-long binary data. It can be used to implement NSMutableData. But it can also be 
+long binary data. It can be used to implement NSMutableData. But it can also be
 used as a stream.
 
 
@@ -23,7 +23,7 @@ void  test( void)
 {
    unsigned int          i;
    struct mulle_buffer   *buffer;
-   
+
    buffer = mulle_buffer_create( NULL);
 
    for( i = 0; i < 10; i++)
@@ -31,7 +31,7 @@ void  test( void)
 
    mulle_buffer_memset( buffer, 'z', 10);
    mulle_buffer_add_string( buffer, "hello");
-   
+
    printf( "%s\n", mulle_buffer_get_bytes( buffer));
 
    mulle_buffer_destroy( buffer);

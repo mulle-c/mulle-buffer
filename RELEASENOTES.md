@@ -1,3 +1,10 @@
+0.2.1
+###
+
+* improve documentation
+* rename some functions for release and for orthogonality with future releases
+
+
 # 0.1.1-3
 
 * documentation improved somewhat
