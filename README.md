@@ -16,7 +16,6 @@ Fork      |  Build Status | Release Version
 <!--- [Community](https://github.com/mulle-objc/mulle-buffer/tree/release) | [![Build Status](https://travis-ci.org/mulle-objc/mulle-buffer.svg)](https://travis-ci.org/mulle-objc/mulle-buffer) | ![Community tag](https://img.shields.io/github/tag/mulle-objc/mulle-buffer.svg) [![Build Status](https://travis-ci.org/mulle-objc/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-objc/mulle-buffer) -->
 
 
-
 ```
 #include <mulle_buffer/mulle_buffer.h>
 
