@@ -197,7 +197,7 @@ int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
       return( rval);
    
    _mulle_buffer_done( (struct _mulle_buffer *) buffer,
-                      buffer->_allocator);
+                      mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
    return( 0);
 }
 
@@ -211,7 +211,7 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
       return( rval);
    
    _mulle_buffer_destroy( (struct _mulle_buffer *) buffer,
-                      buffer->_allocator);
+                      mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
    return( 0);
 }
 

@@ -141,7 +141,10 @@ int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer)
 {
    size_t   len;
    
-   len     = ibuffer->_curr - ibuffer->_storage;
+   len = ibuffer->_curr - ibuffer->_storage;
+   if( ! len)
+      return( 0);
+
    if( 1 != (*ibuffer->_flusher)( ibuffer->_storage, len, 1, ibuffer->_userinfo))
    {
       _mulle_buffer_set_overflown( (struct _mulle_buffer *) ibuffer);
@@ -172,8 +175,9 @@ int   _mulle_buffer_flush( struct _mulle_buffer *buffer)
 }
 
 
-
-int   _mulle_buffer_grow( struct _mulle_buffer *buffer, size_t min_amount, struct mulle_allocator *allocator)
+int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
+                          size_t min_amount,
+                          struct mulle_allocator *allocator)
 {
    void     *malloc_block;
    void     *p;
@@ -187,6 +191,7 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer, size_t min_amount, struc
       // this may or may not work, depending on its's being
       // flushable
       //
+      assert( buffer->_curr); // for the analyzer
       return( _mulle_buffer_flush( buffer));
    }
    

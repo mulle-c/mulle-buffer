@@ -186,12 +186,11 @@ void   _mulle_buffer_done( struct _mulle_buffer *buffer,
 
 // _initial_storage storage will be lost
 static inline void   _mulle_buffer_reset( struct _mulle_buffer *buffer,
-                                         struct mulle_allocator *allocator)
+                                          struct mulle_allocator *allocator)
 {
    _mulle_buffer_done( buffer, allocator);
    _mulle_buffer_init( buffer);
 }
-
 
 
 #pragma mark -
@@ -210,17 +209,16 @@ int    _mulle_buffer_grow( struct _mulle_buffer *buffer,
                            struct mulle_allocator *allocator);
 
 void   _mulle_buffer_size_to_fit( struct _mulle_buffer *buffer,
-                                 struct mulle_allocator *allocator);
+                                  struct mulle_allocator *allocator);
 
 void   _mulle_buffer_zero_to_length( struct _mulle_buffer *buffer,
-                                    size_t length,
-                                    struct mulle_allocator *allocator);
+                                     size_t length,
+                                     struct mulle_allocator *allocator);
 
 // this zeroes, when advancing, shrinks otherwise
 size_t   _mulle_buffer_set_length( struct _mulle_buffer *buffer,
-                                  size_t length,
-                                  struct mulle_allocator *allocator);
-
+                                   size_t length,
+                                   struct mulle_allocator *allocator);
 
 
 static inline int   _mulle_buffer_guarantee( struct _mulle_buffer *buffer,
@@ -231,8 +229,11 @@ static inline int   _mulle_buffer_guarantee( struct _mulle_buffer *buffer,
    
    missing = &buffer->_curr[ length] - buffer->_sentinel;
    if( missing <= 0)
+   {
+      assert( ! missing || buffer->_curr); // for the analyzer
       return( 0);
-
+   }
+   
    return( _mulle_buffer_grow( buffer, (size_t) missing, allocator));
 }
 
@@ -241,7 +242,7 @@ static inline void   *_mulle_buffer_advance( struct _mulle_buffer *buffer,
                                              size_t length,
                                              struct mulle_allocator *allocator)
 {
-   unsigned char    *reserved;
+   unsigned char   *reserved;
    
    if( _mulle_buffer_guarantee( buffer, length, allocator))
       return( NULL);
@@ -340,7 +341,7 @@ static inline size_t   _mulle_buffer_get_staticlength( struct _mulle_buffer *buf
 // you only do this once!, because you now own the malloc block
 //
 void   *_mulle_buffer_extract_all( struct _mulle_buffer *buffer,
-                                     struct mulle_allocator *allocator);
+                                   struct mulle_allocator *allocator);
 
 
 static inline void   *_mulle_buffer_get_bytes( struct _mulle_buffer *buffer)
@@ -362,6 +363,7 @@ static inline void    _mulle_buffer_add_byte( struct _mulle_buffer *buffer,
       if( _mulle_buffer_grow( buffer, 1, allocator))
          return;
 
+   assert( buffer->_curr); // for the analyzer
    *buffer->_curr++ = c;
 }
 
@@ -429,7 +431,6 @@ static inline void    _mulle_buffer_add_uint32( struct _mulle_buffer *buffer,
    *buffer->_curr++ = nsb;
    *buffer->_curr++ = lsb;
 }
-
 
 
 static inline int   _mulle_buffer_intersects_bytes( struct _mulle_buffer *buffer,
