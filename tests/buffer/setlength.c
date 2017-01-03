@@ -23,24 +23,24 @@ static void   test_normal()
 }
 
 
-static void   test_inflexable()
+static void   test_inflexible()
 {
    struct mulle_buffer   buffer;
 
-   mulle_buffer_init_inflexable_with_static_bytes( &buffer,
+   mulle_buffer_init_inflexible_with_static_bytes( &buffer,
                                                    "hello world",
                                                    12);
 
    // 0, because nothing has been read yet
-   printf( "test_inflexable: %d\n", (int) mulle_buffer_get_length( &buffer));
+   printf( "test_inflexible: %d\n", (int) mulle_buffer_get_length( &buffer));
 
    // can't be more than 12
    mulle_buffer_set_length( &buffer, 20);
-   printf( "test_inflexable: %d\n", (int) mulle_buffer_get_length( &buffer));
+   printf( "test_inflexible: %d\n", (int) mulle_buffer_get_length( &buffer));
 
    // has overflown will stick to 12
    mulle_buffer_set_length( &buffer, 8);
-   printf( "test_inflexable: %d\n", (int) mulle_buffer_get_length( &buffer));
+   printf( "test_inflexible: %d\n", (int) mulle_buffer_get_length( &buffer));
 
    mulle_buffer_done( &buffer);
 }
@@ -53,7 +53,7 @@ int  main()
    mulle_default_allocator = mulle_test_allocator;
 
    test_normal();
-   test_inflexable();
+   test_inflexible();
 
    mulle_test_allocator_reset();
 }

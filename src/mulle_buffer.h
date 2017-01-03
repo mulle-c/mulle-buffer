@@ -38,15 +38,20 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((0 << 20) | (3 << 8) | 1)
+#define MULLE_BUFFER_VERSION  ((0 << 20) | (4 << 8) | 1)
 
+#include <mulle_c11/mulle_c11.h>
 #include <mulle_allocator/mulle_allocator.h>
+#include "_mulle_buffer.h"
+
+
+#if MULLE_C11_VERSION < ((1 << 20) | (1 << 8) | 0)
+# error "mulle_c11 is too old"
+#endif
 
 #if MULLE_ALLOCATOR_VERSION < ((2 << 20) | (0 << 8) | 0)
 # error "mulle_allocator is too old"
 #endif
-
-#include "_mulle_buffer.h"
 
 
 // stupidities to fix:
@@ -70,7 +75,7 @@ struct mulle_buffer
 MULLE_C_NON_NULL_RETURN
 static inline struct mulle_allocator  *mulle_buffer_get_allocator( struct mulle_buffer *buffer)
 {
-   assert( buffer->_allocator);
+   assert( _mulle_buffer_is_inflexible( (struct _mulle_buffer *) buffer) || buffer->_allocator);
    return( buffer->_allocator);
 }
 
@@ -152,11 +157,11 @@ static inline void    mulle_buffer_init_with_capacity( struct mulle_buffer *buff
    guaranteeing that a buffer can not be overrun.
    The storage is overwritten from the start.
  */
-static inline void    mulle_buffer_init_inflexable_with_static_bytes( struct mulle_buffer *buffer,
+static inline void    mulle_buffer_init_inflexible_with_static_bytes( struct mulle_buffer *buffer,
                                                                       void *storage,
                                                                       size_t length)
 {
-   _mulle_buffer_init_inflexable_with_static_bytes( (struct _mulle_buffer *) buffer, storage, length);
+   _mulle_buffer_init_inflexible_with_static_bytes( (struct _mulle_buffer *) buffer, storage, length);
 }
 
 
@@ -180,11 +185,11 @@ static inline void   mulle_buffer_size_to_fit( struct mulle_buffer *buffer)
    the buffer is not flexable anymore.
    The insertion point is moved to &storage[length]
  */
-static inline void   mulle_buffer_make_inflexable( struct mulle_buffer *buffer,
+static inline void   mulle_buffer_make_inflexible( struct mulle_buffer *buffer,
                                                    void *storage,
                                                    size_t length)
 {
-   _mulle_buffer_make_inflexable( (struct _mulle_buffer *) buffer, storage, length, mulle_buffer_get_allocator( buffer));
+   _mulle_buffer_make_inflexible( (struct _mulle_buffer *) buffer, storage, length, mulle_buffer_get_allocator( buffer));
 }
 
 
@@ -269,9 +274,9 @@ static inline void   *mulle_buffer_advance( struct mulle_buffer *buffer,
 #pragma mark -
 #pragma mark query
 
-static inline int   mulle_buffer_is_inflexable( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_inflexible( struct mulle_buffer *buffer)
 {
-   return( _mulle_buffer_is_inflexable( (struct _mulle_buffer *) buffer));
+   return( _mulle_buffer_is_inflexible( (struct _mulle_buffer *) buffer));
 }
 
 
@@ -506,5 +511,23 @@ static inline int   mulle_flushablebuffer_flush( struct mulle_flushablebuffer *b
 
 int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer);
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
+
+
+#pragma mark - backwards compatibility
+
+MULLE_C_DEPRECATED
+static inline int   mulle_buffer_is_inflexable( struct mulle_buffer *buffer)
+{
+   return( mulle_buffer_is_inflexible( buffer));
+}
+
+
+MULLE_C_DEPRECATED
+static inline void    mulle_buffer_init_inflexable_with_static_bytes( struct mulle_buffer *buffer,
+                                                                     void *storage,
+                                                                     size_t length)
+{
+   mulle_buffer_init_inflexible_with_static_bytes( buffer, storage, length);
+}
 
 #endif /* mulle_buffer_h */

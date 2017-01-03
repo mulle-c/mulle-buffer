@@ -36,6 +36,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <mulle_c11/mulle_c11.h>
 
 
 struct mulle_allocator;
@@ -65,7 +66,7 @@ struct _mulle_buffer
 //
 typedef size_t   _mulle_flushablebuffer_flusher( void *, size_t len, size_t, void *);
 
-// _size will be -2 for a flushable buffer (always inflexable)
+// _size will be -2 for a flushable buffer (always inflexible)
 
 
 #define _MULLE_FLUSHABLEBUFFER_BASE             \
@@ -166,7 +167,7 @@ static inline void    _mulle_buffer_init_with_capacity( struct _mulle_buffer *bu
 }
 
 
-static inline void    _mulle_buffer_init_inflexable_with_static_bytes( struct _mulle_buffer *buffer,
+static inline void    _mulle_buffer_init_inflexible_with_static_bytes( struct _mulle_buffer *buffer,
                                                                       void *storage,
                                                                       size_t length)
 {
@@ -196,8 +197,8 @@ static inline void   _mulle_buffer_reset( struct _mulle_buffer *buffer,
 #pragma mark -
 #pragma mark change buffer type
 
-void   _mulle_buffer_make_inflexable( struct _mulle_buffer *buffer,
-                                      void *_storage,
+void   _mulle_buffer_make_inflexible( struct _mulle_buffer *buffer,
+                                      void *storage,
                                       size_t length,
                                       struct mulle_allocator *allocator);
 
@@ -266,7 +267,7 @@ static inline void   _mulle_buffer_remove_all( struct _mulle_buffer *buffer)
 #pragma mark -
 #pragma mark query
 
-static inline int     _mulle_buffer_is_inflexable( struct _mulle_buffer *buffer)
+static inline int     _mulle_buffer_is_inflexible( struct _mulle_buffer *buffer)
 {
    return( buffer->_size == (size_t) -1 || buffer->_size == (size_t) -2);
 }
@@ -305,7 +306,7 @@ static inline int   _mulle_buffer_is_void( struct _mulle_buffer *buffer)
 
 static inline int   _mulle_buffer_has_overflown( struct _mulle_buffer *buffer)
 {
-   return( buffer->_curr > buffer->_sentinel); // only ever yes for inflexable buffer
+   return( buffer->_curr > buffer->_sentinel); // only ever yes for inflexible buffer
 }
 
 
@@ -616,6 +617,34 @@ static inline int   _mulle_buffer_next_character( struct _mulle_buffer *buffer)
    if( _mulle_buffer_is_full( buffer))
       return( INT_MAX);
    return( (char) *buffer->_curr++);
+}
+
+
+#pragma mark - backwards compatibility
+
+MULLE_C_DEPRECATED
+static inline int   _mulle_buffer_is_inflexable( struct _mulle_buffer *buffer)
+{
+   return( _mulle_buffer_is_inflexible( buffer));
+}
+
+
+MULLE_C_DEPRECATED
+static inline void    _mulle_buffer_init_inflexable_with_static_bytes( struct _mulle_buffer *buffer,
+                                                                      void *storage,
+                                                                      size_t length)
+{
+   _mulle_buffer_init_inflexible_with_static_bytes( buffer, storage, length);
+}
+
+
+MULLE_C_DEPRECATED
+static inline void   _mulle_buffer_make_inflexable( struct _mulle_buffer *buffer,
+                                                    void *_storage,
+                                                    size_t length,
+                                                    struct mulle_allocator *allocator)
+{
+   _mulle_buffer_make_inflexible( buffer, _storage, length, allocator);
 }
 
 #endif
