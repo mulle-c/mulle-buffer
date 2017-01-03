@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((0 << 20) | (4 << 8) | 1)
+#define MULLE_BUFFER_VERSION  ((0 << 20) | (4 << 8) | 3)
 
 #include <mulle_c11/mulle_c11.h>
 #include <mulle_allocator/mulle_allocator.h>
@@ -528,6 +528,15 @@ static inline void    mulle_buffer_init_inflexable_with_static_bytes( struct mul
                                                                      size_t length)
 {
    mulle_buffer_init_inflexible_with_static_bytes( buffer, storage, length);
+}
+
+
+MULLE_C_DEPRECATED
+static inline void   mulle_buffer_make_inflexable( struct _mulle_buffer *buffer,
+                                                   void *storage,
+                                                   size_t length)
+{
+   mulle_buffer_make_inflexible( buffer, storage, length);
 }
 
 #endif /* mulle_buffer_h */
