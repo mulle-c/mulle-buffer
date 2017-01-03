@@ -113,7 +113,7 @@ void    _mulle_buffer_size_to_fit( struct _mulle_buffer *buffer, struct mulle_al
    size_t   length;
    void     *p;
    
-   if( _mulle_buffer_is_inflexable( buffer))
+   if( _mulle_buffer_is_inflexible( buffer))
       return;
       
    if( buffer->_storage == buffer->_initial_storage)
@@ -185,7 +185,7 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
    size_t   plus;
    size_t   len;
    
-   if( _mulle_buffer_is_inflexable( buffer))
+   if( _mulle_buffer_is_inflexible( buffer))
    {
       //
       // this may or may not work, depending on its's being
@@ -242,9 +242,9 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
 
 //
 // this transforms a buffer
-// into a inflexableBuffer 
+// into a inflexibleBuffer 
 //
-void   _mulle_buffer_make_inflexable( struct _mulle_buffer *buffer,
+void   _mulle_buffer_make_inflexible( struct _mulle_buffer *buffer,
                                       void *buf,
                                       size_t length,
                                       struct mulle_allocator *allocator)

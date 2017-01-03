@@ -62,3 +62,4 @@ tests/buffer/setlength.debug
 /bin/mulle-homebrew
 tests/buffer/flushexample
 tests/buffer/flushexample.debug
+tests/buffer/add.debug

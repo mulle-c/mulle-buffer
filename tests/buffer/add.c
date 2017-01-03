@@ -44,7 +44,7 @@ static void   simple_static_test()
    struct mulle_buffer   buffer;
 
    // this can't grow
-   mulle_buffer_init_inflexable_with_static_bytes( &buffer,
+   mulle_buffer_init_inflexible_with_static_bytes( &buffer,
                                                    "hello world",
                                                    12);
    // skip over first 11 bytes

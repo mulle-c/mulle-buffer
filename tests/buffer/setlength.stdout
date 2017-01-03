@@ -1,6 +1,6 @@
 test_normal: 0
 test_normal: 20
 test_normal: 8
-test_inflexable: 0
-test_inflexable: 12
-test_inflexable: 12
+test_inflexible: 0
+test_inflexible: 12
+test_inflexible: 12
