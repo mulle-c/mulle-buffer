@@ -38,20 +38,11 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((0 << 20) | (4 << 8) | 3)
+#define MULLE_BUFFER_VERSION  ((0 << 20) | (4 << 8) | 5)
 
 #include <mulle_c11/mulle_c11.h>
 #include <mulle_allocator/mulle_allocator.h>
 #include "_mulle_buffer.h"
-
-
-#if MULLE_C11_VERSION < ((1 << 20) | (1 << 8) | 0)
-# error "mulle_c11 is too old"
-#endif
-
-#if MULLE_ALLOCATOR_VERSION < ((2 << 20) | (0 << 8) | 0)
-# error "mulle_allocator is too old"
-#endif
 
 
 // stupidities to fix:
@@ -532,11 +523,22 @@ static inline void    mulle_buffer_init_inflexable_with_static_bytes( struct mul
 
 
 MULLE_C_DEPRECATED
-static inline void   mulle_buffer_make_inflexable( struct _mulle_buffer *buffer,
+static inline void   mulle_buffer_make_inflexable( struct mulle_buffer *buffer,
                                                    void *storage,
                                                    size_t length)
 {
    mulle_buffer_make_inflexible( buffer, storage, length);
 }
+
+
+
+#if MULLE_C11_VERSION < ((1 << 20) | (1 << 8) | 0)
+# error "mulle_c11 is too old"
+#endif
+
+#if MULLE_ALLOCATOR_VERSION < ((2 << 20) | (0 << 8) | 0)
+# error "mulle_allocator is too old"
+#endif
+
 
 #endif /* mulle_buffer_h */

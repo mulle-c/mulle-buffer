@@ -1,4 +1,4 @@
-### 0.4.1-3
+## 0.4.1-5
 
 * renamed inflexable methods to inflexible, but also kept old functions. So
 there is no breaking API change. Marked old functions as deprecated. Need
