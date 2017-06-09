@@ -44,11 +44,11 @@ size_t  _mulle_buffer_get_seek( struct _mulle_buffer *buffer)
 {
    size_t                          len;
    struct _mulle_flushablebuffer   *flushable;
-   
+
    len = _mulle_buffer_get_length( buffer);
    if( ! _mulle_buffer_is_flushable( buffer))
       return( len);
-   
+
    flushable = (struct _mulle_flushablebuffer *) buffer;
    return( flushable->_flushed + len);
 }
@@ -63,7 +63,7 @@ int   _mulle_buffer_set_seek( struct _mulle_buffer *buffer, int mode, size_t see
    case MULLE_BUFFER_SEEK_SET :
       plan = &buffer->_storage[ seek];
       break;
-      
+
    case MULLE_BUFFER_SEEK_CUR :
       if( _mulle_buffer_has_overflown( buffer))
          seek -= 1;
@@ -73,11 +73,11 @@ int   _mulle_buffer_set_seek( struct _mulle_buffer *buffer, int mode, size_t see
    case MULLE_BUFFER_SEEK_END :
       plan = &buffer->_sentinel[ -seek];
       break;
-      
+
    default :
       return( -1);
    }
-   
+
    if( plan > buffer->_sentinel || plan < buffer->_storage)
       return( -1);
 
@@ -90,7 +90,7 @@ void   *_mulle_buffer_extract_all( struct _mulle_buffer *buffer, struct mulle_al
 {
    size_t   size;
    void     *block;
-   
+
    block = buffer->_storage;
    if( block && buffer->_storage == buffer->_initial_storage)
    {
@@ -98,10 +98,10 @@ void   *_mulle_buffer_extract_all( struct _mulle_buffer *buffer, struct mulle_al
       block = _mulle_allocator_malloc( allocator, size);
       memcpy( block, buffer->_storage, size);
    }
-   
-   buffer->_storage          = 
-   buffer->_curr             = 
-   buffer->_sentinel         = 
+
+   buffer->_storage          =
+   buffer->_curr             =
+   buffer->_sentinel         =
    buffer->_initial_storage  = NULL;
 
    return( block);
@@ -112,13 +112,13 @@ void    _mulle_buffer_size_to_fit( struct _mulle_buffer *buffer, struct mulle_al
 {
    size_t   length;
    void     *p;
-   
+
    if( _mulle_buffer_is_inflexible( buffer))
       return;
-      
+
    if( buffer->_storage == buffer->_initial_storage)
       return;
-      
+
    length  = _mulle_buffer_get_length( buffer);
 
    p  = _mulle_allocator_realloc( allocator, buffer->_storage, sizeof( unsigned char) * length);
@@ -140,7 +140,7 @@ static inline void  _mulle_buffer_set_overflown( struct _mulle_buffer *buffer)
 int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer)
 {
    size_t   len;
-   
+
    len = ibuffer->_curr - ibuffer->_storage;
    if( ! len)
       return( 0);
@@ -148,14 +148,14 @@ int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer)
    if( 1 != (*ibuffer->_flusher)( ibuffer->_storage, len, 1, ibuffer->_userinfo))
    {
       _mulle_buffer_set_overflown( (struct _mulle_buffer *) ibuffer);
-      
+
       ibuffer->_curr = ibuffer->_sentinel + 1;  // set "overflowed"
       return( -2);
    }
-   
+
    ibuffer->_flushed += len;
    ibuffer->_curr     = ibuffer->_storage;
-   
+
    return( 0);
 }
 
@@ -163,13 +163,13 @@ int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer)
 int   _mulle_buffer_flush( struct _mulle_buffer *buffer)
 {
    struct _mulle_flushablebuffer  *ibuffer;
-   
+
    if( ! _mulle_buffer_is_flushable( buffer))
    {
       _mulle_buffer_set_overflown( buffer);
       return( -1);
    }
-   
+
    ibuffer = (struct _mulle_flushablebuffer *) buffer;
    return( _mulle_flushablebuffer_flush( ibuffer));
 }
@@ -184,7 +184,7 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
    size_t   new_size;
    size_t   plus;
    size_t   len;
-   
+
    if( _mulle_buffer_is_inflexible( buffer))
    {
       //
@@ -194,11 +194,11 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
       assert( buffer->_curr); // for the analyzer
       return( _mulle_buffer_flush( buffer));
    }
-   
+
    malloc_block = NULL;
    if( buffer->_storage != buffer->_initial_storage)
       malloc_block = buffer->_storage;
-   
+
    //
    // assume realloc is slow enough, to warrant all this code :)
    //
@@ -223,17 +223,17 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
          plus = buffer->_size;
       new_size = buffer->_size + plus;
    }
-   
+
    assert( new_size >= min_amount);
-   
+
    len = buffer->_curr - buffer->_storage;
    p   = _mulle_allocator_realloc( allocator, malloc_block, new_size);
-   
+
    buffer->_storage  = p;
    buffer->_curr     = &buffer->_storage[ len];
    buffer->_sentinel = &buffer->_storage[ new_size];
    buffer->_size     = new_size;
-   
+
    assert( buffer->_sentinel >= buffer->_curr);
 
    return( 0);
@@ -242,7 +242,7 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
 
 //
 // this transforms a buffer
-// into a inflexibleBuffer 
+// into a inflexibleBuffer
 //
 void   _mulle_buffer_make_inflexible( struct _mulle_buffer *buffer,
                                       void *buf,
@@ -251,11 +251,11 @@ void   _mulle_buffer_make_inflexible( struct _mulle_buffer *buffer,
 {
    if( buffer->_storage != buffer->_initial_storage)
       _mulle_allocator_free( allocator, buffer->_storage);
-   
-   buffer->_storage         = 
+
+   buffer->_storage         =
    buffer->_initial_storage = buf;
-   
-   buffer->_curr            = 
+
+   buffer->_curr            =
    buffer->_sentinel        = &buffer->_storage[ length];
    buffer->_size            = (size_t) -1;
 }
@@ -272,7 +272,7 @@ void   _mulle_buffer_done( struct _mulle_buffer *buffer,
 struct _mulle_buffer   *_mulle_buffer_create( struct mulle_allocator *allocator)
 {
    struct _mulle_buffer  *buffer;
-   
+
    buffer = _mulle_allocator_malloc( allocator, sizeof( struct _mulle_buffer));
    _mulle_buffer_init( buffer);
    return( buffer);
@@ -292,7 +292,7 @@ size_t   _mulle_buffer_set_length( struct _mulle_buffer *buffer,
                                    struct mulle_allocator *allocator)
 {
    long   diff;
-   
+
    diff = (long) length - (long) _mulle_buffer_get_length( buffer);
    if( diff <= 0)
    {
@@ -303,7 +303,7 @@ size_t   _mulle_buffer_set_length( struct _mulle_buffer *buffer,
       }
       return( 0);
    }
-   
+
    _mulle_buffer_memset( buffer, 0, (size_t) diff, allocator);
    return( (size_t) diff);
 }
@@ -314,7 +314,7 @@ void   _mulle_buffer_zero_to_length( struct _mulle_buffer *buffer,
                                     struct mulle_allocator *allocator)
 {
    long   diff;
-   
+
    diff = _mulle_buffer_set_length( buffer, length, allocator);
    memset( &buffer->_curr[ -diff], 0, (size_t) diff);
 }

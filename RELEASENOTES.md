@@ -1,3 +1,7 @@
+### 0.4.7
+
+* modernized project
+
 ## 0.4.1-5
 
 * renamed inflexable methods to inflexible, but also kept old functions. So
