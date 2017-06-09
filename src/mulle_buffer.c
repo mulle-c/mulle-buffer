@@ -44,10 +44,10 @@
 struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator)
 {
    struct mulle_buffer  *buffer;
-   
+
    if( ! allocator)
       allocator = &mulle_default_allocator;
-   
+
    buffer = mulle_allocator_malloc( allocator, sizeof( struct mulle_buffer));
    mulle_buffer_init( buffer, allocator);
    return( buffer);
@@ -71,27 +71,27 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
    uint8_t        *s;
    unsigned int   i;
    unsigned int   value;
-   
+
    memo = bytes;
-   
+
    s = mulle_buffer_advance( buffer, 10);
-   
+
    if( ! (options & 0x1))
    {
       *s++ = (uint8_t) hex( counter >> 28 & 0xF);
       *s++ = (uint8_t) hex( counter >> 24 & 0xF);
       *s++ = (uint8_t) hex( counter >> 20 & 0xF);
       *s++ = (uint8_t) hex( counter >> 16 & 0xF);
-      
+
       *s++ = (uint8_t) hex( counter >> 12 & 0xF);
       *s++ = (uint8_t) hex( counter >> 8 & 0xF);
       *s++ = (uint8_t) hex( counter >> 4 & 0xF);
       *s++ = (uint8_t) hex( counter >> 0 & 0xF);
-      
+
       *s++ = ' ';
       *s++ = ' ';
    }
-   
+
    if( ! (options & 0x2))
    {
       s = mulle_buffer_advance( buffer, 3 * 8);
@@ -110,16 +110,16 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
          }
          *s++ = ' ';
       }
-      
+
       mulle_buffer_add_byte( buffer, ' ');
-      
+
       s = mulle_buffer_advance( buffer, 3 * 8);
       for( ; i < 16; i++)
       {
          if( i < n)
          {
             value = *bytes++;
-            
+
             *s++ = (uint8_t) hex( value >> 4);
             *s++ = (uint8_t) hex( value & 0xF);
          }
@@ -131,14 +131,14 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
          *s++ = ' ';
       }
    }
-   
+
    if( ! (options & 0x4))
    {
       mulle_buffer_add_byte( buffer, ' ');
       mulle_buffer_add_byte( buffer, '|');
-      
+
       bytes = memo;
-      
+
       for( i = 0; i < 16; i++)
       {
          if( i < n)
@@ -151,7 +151,7 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
          else
             mulle_buffer_add_byte( buffer, ' ');
       }
-      
+
       mulle_buffer_add_byte( buffer, '|');
    }
 }
@@ -167,10 +167,10 @@ void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
    size_t   full_lines;
    size_t   remainder;
    size_t   i;
-   
+
    lines      = (length + 15) / 16;
    full_lines = length / 16;
-   
+
    for( i = 0; i < full_lines; i++)
    {
       mulle_buffer_dump_hex_16( buffer, bytes, 16, counter, options);
@@ -178,7 +178,7 @@ void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
       counter += 16;
       bytes   += 16;
    }
-   
+
    if( i < lines)
    {
       remainder = length - full_lines * 16;
@@ -191,11 +191,11 @@ void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
 int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
 {
    int   rval;
-   
+
    rval = _mulle_flushablebuffer_flush( (struct _mulle_flushablebuffer *) buffer);
    if( rval)
       return( rval);
-   
+
    _mulle_buffer_done( (struct _mulle_buffer *) buffer,
                       mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
    return( 0);
@@ -205,11 +205,11 @@ int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
 {
    int   rval;
-   
+
    rval = _mulle_flushablebuffer_flush( (struct _mulle_flushablebuffer *) buffer);
    if( rval)
       return( rval);
-   
+
    _mulle_buffer_destroy( (struct _mulle_buffer *) buffer,
                       mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
    return( 0);
