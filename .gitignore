@@ -7,6 +7,7 @@
 *.exe
 *.debug
 *.old
+*.bak
 old/
 tmp/
 build/
@@ -42,3 +43,5 @@ tests/buffer/setlength
 /.repos
 
 
+bin/tap-info.sh
+tap-info.sh
