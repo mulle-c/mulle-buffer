@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 3.0)
 # set(CMAKE_OSX_SYSROOT "macosx10.11")   # means current OS X
 
 
-project (mulle-buffer)
+project( mulle-buffer C)
 
 
 #
