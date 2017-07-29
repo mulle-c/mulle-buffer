@@ -94,10 +94,24 @@ endif()
 
 add_dependencies( mulle_buffer_standalone mulle_buffer)
 
+
+set( TARGET_ALL_LOAD_LIBRARIES
+$<TARGET_FILE:mulle_buffer>
+${DEPENDENCY_LIBRARIES}
+)
+
+if( FORCE_LOAD)
+   set( TMP)
+   foreach( library ${TARGET_ALL_LOAD_LIBRARIES})
+      list( APPEND TMP "${FORCE_LOAD} ${library}")
+   endforeach( library)
+   set( TARGET_ALL_LOAD_LIBRARIES ${TMP})
+endif()
+
+
 TARGET_LINK_LIBRARIES( mulle_buffer_standalone
 ${BEGIN_ALL_LOAD}
-mulle_buffer
-${DEPENDENCY_LIBRARIES}
+${TARGET_ALL_LOAD_LIBRARIES}
 ${END_ALL_LOAD}
 )
 
