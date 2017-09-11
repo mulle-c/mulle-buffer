@@ -1,8 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
-
-
-# set(CMAKE_OSX_SYSROOT "macosx10.11")   # means current OS X
-
+cmake_minimum_required( VERSION 3.0)
 
 project( mulle-buffer C)
 
@@ -20,61 +16,16 @@ else()
 endif()
 
 
-add_definitions( -DMULLE_ABA_TRACE_SWAP
-                 -DMULLE_ALLOCATOR_EXTERN_GLOBAL=extern)
-
-
 # using include_directories is a little bit shitty
-include_directories( src
-)
-
-include_directories( SYSTEM
-dependencies/include
-)
-
-set( HEADERS
-src/_mulle_buffer.h
-src/mulle_buffer.h
-)
-
-
-set( SOURCES
-src/_mulle_buffer.c
-src/mulle_buffer.c
-)
-
-
-add_library(mulle_buffer STATIC
-${SOURCES}
-)
-
-INSTALL( FILES ${HEADERS} DESTINATION "include/mulle_buffer")
-INSTALL( TARGETS mulle_buffer DESTINATION "lib")
-
-#
-# standalone shared library (for tests)
-#
-
-if( MSVC)
-  set( DEF_FILE mulle_buffer_standalone.def)
-  set_source_files_properties( ${DEF_FILE} PROPERTIES HEADER_FILE_ONLY TRUE)
-  set( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS OFF)
-  set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /DEF:${DEF_FILE}")
-  # /NODEFAULTLIB:MSVCRT")
-endif()
-
-
-add_library( mulle_buffer_standalone SHARED
-src/mulle_buffer_standalone.c
-${DEF_FILE}
-)
-
-add_dependencies( mulle_buffer_standalone mulle_buffer)
+include( CMakeSourcesAndHeaders.txt)
 
 
 find_library( MULLE_ALLOCATOR_LIBRARY      NAMES mulle_allocator)
+message( STATUS "MULLE_ALLOCATOR_LIBRARY is ${MULLE_ALLOCATOR_LIBRARY}")
 find_library( MULLE_TEST_ALLOCATOR_LIBRARY NAMES mulle_test_allocator)
+message( STATUS "MULLE_TEST_ALLOCATOR_LIBRARY is ${MULLE_TEST_ALLOCATOR_LIBRARY}")
 find_library( MULLE_THREAD_LIBRARY         NAMES mulle_thread)
+message( STATUS "MULLE_THREAD_LIBRARY is ${MULLE_THREAD_LIBRARY}")
 
 
 set( DEPENDENCY_LIBRARIES
@@ -84,37 +35,22 @@ ${MULLE_THREAD_LIBRARY}
 )
 
 
-if( MSVC)
-   add_custom_command( OUTPUT ${DEF_FILE}
-                       COMMAND mulle-mingw-dumpdef.bat -o "${DEF_FILE}" --prefix "mulle" ${DEPENDENCY_LIBRARIES} $<TARGET_FILE:mulle_buffer>
-                       DEPENDS "${DEPENDENCY_LIBRARIES}" mulle_buffer
-                       VERBATIM)
-endif()
+###
+#
+#
+add_library( mulle_buffer STATIC
+${SOURCES}
+)
 
-
-add_dependencies( mulle_buffer_standalone mulle_buffer)
-
+set( STANDALONE_BASE_NAME "mulle_buffer")
+set( STANDALONE_NAME "mulle_buffer_standalone")
 
 set( TARGET_ALL_LOAD_LIBRARIES
 $<TARGET_FILE:mulle_buffer>
 ${DEPENDENCY_LIBRARIES}
 )
 
-if( FORCE_LOAD)
-   set( TMP)
-   foreach( library ${TARGET_ALL_LOAD_LIBRARIES})
-      list( APPEND TMP "${FORCE_LOAD} ${library}")
-   endforeach( library)
-   set( TARGET_ALL_LOAD_LIBRARIES ${TMP})
-endif()
-
-
-TARGET_LINK_LIBRARIES( mulle_buffer_standalone
-${BEGIN_ALL_LOAD}
-${TARGET_ALL_LOAD_LIBRARIES}
-${END_ALL_LOAD}
-)
-
+include( Standalone)
 
 INSTALL( TARGETS mulle_buffer mulle_buffer_standalone DESTINATION "lib")
 INSTALL( FILES ${HEADERS} DESTINATION "include/mulle_buffer")
