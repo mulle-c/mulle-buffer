@@ -1,0 +1,18 @@
+# using include_directories is a little bit shitty
+include_directories( src
+)
+
+include_directories( SYSTEM
+dependencies/include
+)
+
+set( HEADERS
+src/_mulle_buffer.h
+src/mulle_buffer.h
+)
+
+
+set( SOURCES
+src/_mulle_buffer.c
+src/mulle_buffer.c
+)
