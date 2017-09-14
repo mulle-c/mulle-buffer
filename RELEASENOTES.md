@@ -1,3 +1,7 @@
+### 0.5.3
+
+* Modernize cmake
+
 ### 0.4.9
 
 * make cmake "C" project
