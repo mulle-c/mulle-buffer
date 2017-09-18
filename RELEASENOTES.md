@@ -1,3 +1,7 @@
+### 0.5.7
+
+* fixed scion wrapper command
+
 ### 0.5.5
 
 * follow mulle-configuration 3.1 changes and move .travis.yml to trusty
