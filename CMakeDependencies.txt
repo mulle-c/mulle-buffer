@@ -1,0 +1,21 @@
+if( NOT __MULLE_BUFFER_CMAKE_DEPENDENCIES_TXT__)
+   set( __MULLE_BUFFER_CMAKE_DEPENDENCIES_TXT__ ON)
+
+   message( STATUS "# Include mulle-buffer CMakeDependencies.txt")
+
+   include( ${DEPENDENCIES_DIR}/include/mulle_allocator/CMakeDependencies.txt)
+
+   if( NOT MULLE_BUFFER_LIBRARY)
+      find_library( MULLE_BUFFER_LIBRARY NAMES mulle_buffer)
+      message(STATUS "MULLE_BUFFER_LIBRARY is ${MULLE_BUFFER_LIBRARY}")
+      set( C_DEPENDENCY_LIBRARIES
+         ${MULLE_BUFFER_LIBRARY}
+         ${C_DEPENDENCY_LIBRARIES}
+         CACHE INTERNAL "need to cache this"
+      )
+   endif()
+
+   if( MSVC)
+      set( MULLE_BUFFER_DEFINITIONS ${MULLE_ALLOCATOR_DEFINITIONS})
+   endif()
+endif()
