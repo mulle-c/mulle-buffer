@@ -17,15 +17,16 @@ endif()
 
 
 # using include_directories is a little bit shitty
+set( MULLE_BUFFER_LIBRARY ON)
+
 include( CMakeSourcesAndHeaders.txt)
+include( CMakeDependencies.txt)
 
 
-find_library( MULLE_ALLOCATOR_LIBRARY      NAMES mulle_allocator)
-message( STATUS "MULLE_ALLOCATOR_LIBRARY is ${MULLE_ALLOCATOR_LIBRARY}")
-find_library( MULLE_TEST_ALLOCATOR_LIBRARY NAMES mulle_test_allocator)
-message( STATUS "MULLE_TEST_ALLOCATOR_LIBRARY is ${MULLE_TEST_ALLOCATOR_LIBRARY}")
-find_library( MULLE_THREAD_LIBRARY         NAMES mulle_thread)
-message( STATUS "MULLE_THREAD_LIBRARY is ${MULLE_THREAD_LIBRARY}")
+set( PUBLIC_HEADERS
+${HEADERS}
+CMakeDependencies.txt
+)
 
 
 set( DEPENDENCY_LIBRARIES
@@ -44,8 +45,8 @@ ${SOURCES}
 
 set( STANDALONE_BASE_NAME "mulle_buffer")
 set( STANDALONE_NAME "mulle_buffer_standalone")
-
-set( TARGET_ALL_LOAD_LIBRARIES
+set( STANDALONE_DEFINITIONS ${MULLE_BUFFER_DEFINITIONS})
+set( STANDALONE_ALL_LOAD_LIBRARIES
 $<TARGET_FILE:mulle_buffer>
 ${DEPENDENCY_LIBRARIES}
 )
@@ -53,4 +54,4 @@ ${DEPENDENCY_LIBRARIES}
 include( Standalone)
 
 INSTALL( TARGETS mulle_buffer mulle_buffer_standalone DESTINATION "lib")
-INSTALL( FILES ${HEADERS} DESTINATION "include/mulle_buffer")
+INSTALL( FILES ${PUBLIC_HEADERS} DESTINATION "include/mulle_buffer")

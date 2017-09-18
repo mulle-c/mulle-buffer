@@ -1,3 +1,7 @@
+### 0.5.5
+
+* follow mulle-configuration 3.1 changes and move .travis.yml to trusty
+
 ### 0.5.3
 
 * Modernize cmake
