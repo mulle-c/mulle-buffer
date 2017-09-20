@@ -55,3 +55,5 @@ include( Standalone)
 
 INSTALL( TARGETS mulle_buffer mulle_buffer_standalone DESTINATION "lib")
 INSTALL( FILES ${PUBLIC_HEADERS} DESTINATION "include/mulle_buffer")
+
+include( MulleTest)
