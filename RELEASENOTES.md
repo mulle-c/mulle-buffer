@@ -1,3 +1,8 @@
+## 0.6.1
+
+* rename mulle_buffer_dump_hex to mulle_buffer_hexdump and related
+
+
 ### 0.5.9
 
 * support new mulle-tests
