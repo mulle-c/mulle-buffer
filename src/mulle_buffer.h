@@ -457,15 +457,24 @@ static inline int   mulle_buffer_next_character( struct mulle_buffer *buffer)
 #pragma mark -
 #pragma mark hexdump fixed to 16 bytes per line
 
+// actually they are bits to be ORed
+enum mulle_buffer_hexdump_options
+{
+   mulle_buffer_hexdump_offset = 0x1,
+   mulle_buffer_hexdump_hex    = 0x2,
+   mulle_buffer_hexdump_ascii  = 0x4
+};
+
+
 // dumps only for n >= 1 && n <= 16
-void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
-                                uint8_t *bytes,
-                                unsigned int n,
-                                size_t counter,
-                                unsigned int options);
+void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
+                                 uint8_t *bytes,
+                                 unsigned int n,
+                                 size_t counter,
+                                 unsigned int options);
 
 // dumps all, does not append a \0
-void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
+void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
                              uint8_t *bytes,
                              size_t length,
                              size_t counter,

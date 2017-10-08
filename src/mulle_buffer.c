@@ -61,11 +61,11 @@ static inline unsigned int   hex( unsigned int c)
 }
 
 
-void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
-                                uint8_t *bytes,
-                                unsigned int n,
-                                size_t counter,
-                                unsigned int options)
+void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
+                                 uint8_t *bytes,
+                                 unsigned int n,
+                                 size_t counter,
+                                 unsigned int options)
 {
    uint8_t        *memo;
    uint8_t        *s;
@@ -76,7 +76,7 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
 
    s = mulle_buffer_advance( buffer, 10);
 
-   if( ! (options & 0x1))
+   if( ! (options & mulle_buffer_hexdump_offset))
    {
       *s++ = (uint8_t) hex( counter >> 28 & 0xF);
       *s++ = (uint8_t) hex( counter >> 24 & 0xF);
@@ -92,7 +92,7 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
       *s++ = ' ';
    }
 
-   if( ! (options & 0x2))
+   if( ! (options & mulle_buffer_hexdump_hex))
    {
       s = mulle_buffer_advance( buffer, 3 * 8);
       for( i = 0; i < 8; i++)
@@ -132,7 +132,7 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
       }
    }
 
-   if( ! (options & 0x4))
+   if( ! (options & mulle_buffer_hexdump_ascii))
    {
       mulle_buffer_add_byte( buffer, ' ');
       mulle_buffer_add_byte( buffer, '|');
@@ -157,11 +157,11 @@ void  mulle_buffer_dump_hex_16( struct mulle_buffer *buffer,
 }
 
 
-void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
-                             uint8_t *bytes,
-                             size_t   length,
-                             size_t counter,
-                             unsigned int options)
+void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
+                            uint8_t *bytes,
+                            size_t length,
+                            size_t counter,
+                            unsigned int options)
 {
    size_t   lines;
    size_t   full_lines;
@@ -173,7 +173,7 @@ void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
 
    for( i = 0; i < full_lines; i++)
    {
-      mulle_buffer_dump_hex_16( buffer, bytes, 16, counter, options);
+      mulle_buffer_hexdump_line( buffer, bytes, 16, counter, options);
       mulle_buffer_add_byte( buffer, '\n');
       counter += 16;
       bytes   += 16;
@@ -182,7 +182,7 @@ void  mulle_buffer_dump_hex( struct mulle_buffer *buffer,
    if( i < lines)
    {
       remainder = length - full_lines * 16;
-      mulle_buffer_dump_hex_16( buffer, bytes, (unsigned int) remainder, counter, options);
+      mulle_buffer_hexdump_line( buffer, bytes, (unsigned int) remainder, counter, options);
       mulle_buffer_add_byte( buffer, '\n');
    }
 }
