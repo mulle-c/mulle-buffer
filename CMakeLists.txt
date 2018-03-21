@@ -54,11 +54,27 @@ endif()
 
 include( PostLibrary OPTIONAL)
 
+
+set( STANDALONE_BASE_NAME "mulle-buffer")
+set( STANDALONE_NAME "mulle-buffer-standalone")
+set( STANDALONE_DEFINITIONS ${MULLE_BUFFER_DEFINITIONS})
+set( STANDALONE_DEPENDENCIES
+mulle-buffer
+)
+
+set( STANDALONE_ALL_LOAD_LIBRARIES
+$<TARGET_FILE:mulle-buffer>
+${C_DEPENDENCY_LIBRARIES}
+${OS_SPECIFIC_LIBRARIES}
+)
+
+include( Standalone)
+
 ### Install
 
 include( PreInstall OPTIONAL)
 
-install( TARGETS "mulle-buffer" DESTINATION "lib")
+install( TARGETS "mulle-buffer" "mulle-buffer-standalone" DESTINATION "lib")
 install( FILES ${PUBLIC_HEADERS}  DESTINATION "include/mulle-buffer")
 install( FILES ${PRIVATE_HEADERS} DESTINATION "include/mulle-buffer/private")
 
