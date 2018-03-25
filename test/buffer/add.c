@@ -1,5 +1,6 @@
-#include <mulle_buffer/mulle-buffer.h>
-#include <mulle_test_allocator/mulle_test_allocator.h>
+#include <mulle-buffer/mulle-buffer.h>
+#include <mulle-test-allocator/mulle-test-allocator.h>
+
 
 #include <stdio.h>
 
