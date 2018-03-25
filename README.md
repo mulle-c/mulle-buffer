@@ -39,7 +39,7 @@ Or let [mulle-sde](//github.com/mulle-sde) do it all for you.
 ## Example
 
 ```
-#include <mulle_buffer/mulle_buffer.h>
+#include <mulle-buffer/mulle-buffer.h>
 
 void  test( void)
 {

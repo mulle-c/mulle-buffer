@@ -13,7 +13,7 @@ include( _Sources)
 
 # add ignored header back in
 set( PUBLIC_HEADERS
-"src/_dependencies.h"
+"src/_mulle-buffer-dependencies.h"
 ${PUBLIC_HEADERS}
 )
 
