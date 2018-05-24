@@ -39,14 +39,19 @@ include( PostFiles OPTIONAL)
 include( PreLibrary OPTIONAL)
 
 add_library( "mulle-buffer"
+# definitions from cmake/HeadersAndSources.cmake
 ${SOURCES}
 ${PUBLIC_HEADERS}
 ${PRIVATE_HEADERS}
+# definitions from cmake/share/Environment.cmake
 ${CMAKE_EDITABLE_FILES}
 )
 
+
+
 if( BUILD_SHARED_LIBS)
    target_link_libraries( mulle-buffer
+# definitions from cmake/share/DependenciesAndLibraries.cmake
 ${DEPENDENCY_LIBRARIES}
 ${OS_SPECIFIC_LIBRARIES}
 )
@@ -54,34 +59,47 @@ endif()
 
 include( PostLibrary OPTIONAL)
 
+option( STANDALONE "Create standalone library for debugging" OFF)
 
-set( STANDALONE_BASE_NAME "mulle-buffer")
-set( STANDALONE_NAME "mulle-buffer-standalone")
-set( STANDALONE_DEFINITIONS ${MULLE_BUFFER_DEFINITIONS})
-set( STANDALONE_DEPENDENCIES
-mulle-buffer
+set( INSTALL_LIBRARY_TARGETS
+"mulle-buffer"
 )
 
-set( STANDALONE_ALL_LOAD_LIBRARIES
-$<TARGET_FILE:mulle-buffer>
-${DEPENDENCY_LIBRARIES}
-${OPTIONAL_DEPENDENCY_LIBRARIES}
-)
+if( STANDALONE)
+   set( STANDALONE_BASE_NAME "mulle-buffer")
+   set( STANDALONE_NAME "mulle-buffer-standalone")
+   set( STANDALONE_DEFINITIONS ${MULLE_BUFFER_DEFINITIONS})
+   set( STANDALONE_DEPENDENCIES
+   mulle-buffer
+   )
 
-set( STANDALONE_NORMAL_LOAD_LIBRARIES
-${OS_SPECIFIC_LIBRARIES}
-)
+   set( STANDALONE_ALL_LOAD_LIBRARIES
+   $<TARGET_FILE:mulle-buffer>
+   ${DEPENDENCY_LIBRARIES}
+   ${OPTIONAL_DEPENDENCY_LIBRARIES}
+   ${OS_SPECIFIC_LIBRARIES}
+   )
 
-include( Standalone)
+   include( Standalone)
+
+   set( INSTALL_LIBRARY_TARGETS
+   ${INSTALL_LIBRARY_TARGETS}
+   "mulle-buffer-standalone"
+   )
+endif()
 
 ### Install
 
 include( PreInstall OPTIONAL)
 
-install( TARGETS "mulle-buffer" "mulle-buffer-standalone" DESTINATION "lib")
+install( TARGETS ${INSTALL_LIBRARY_TARGETS} DESTINATION "lib")
 install( FILES ${PUBLIC_HEADERS}  DESTINATION "include/mulle-buffer")
 install( FILES ${PRIVATE_HEADERS} DESTINATION "include/mulle-buffer/private")
 
+# definitions from cmake/share/Environment.cmake
 install( FILES ${CMAKE_INCLUDES}  DESTINATION "include/mulle-buffer/cmake")
+
+# definitions from cmake/share/LinkManifest.cmake
+install( FILES ${LINK_MANIFEST_FILES}  DESTINATION "include/mulle-buffer/link")
 
 include( PostInstall OPTIONAL)
