@@ -1,3 +1,9 @@
+# 1.0.0
+
+* migrated to mulle-sde
+* made headernames hyphenated
+* no longer distributed as a homebrew package
+
 ## 0.6.1
 
 * rename mulle_buffer_dump_hex to mulle_buffer_hexdump and related
