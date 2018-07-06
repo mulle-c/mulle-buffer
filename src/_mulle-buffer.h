@@ -31,7 +31,7 @@
 #ifndef _mulle_buffer__h__
 #define _mulle_buffer__h__
 
-#include "dependencies.h"
+#include "include.h"
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
