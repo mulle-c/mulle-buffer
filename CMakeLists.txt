@@ -91,7 +91,12 @@ add_library( "mulle-buffer"
 )
 
 
-set( INSTALL_LIBRARY_TARGETS "mulle-buffer")
+include( Library OPTIONAL)
+
+set( INSTALL_LIBRARY_TARGETS
+   "mulle-buffer"
+   "${INSTALL_LIBRARY_TARGETS}"
+)
 
 include( PostLibrary OPTIONAL)
 
