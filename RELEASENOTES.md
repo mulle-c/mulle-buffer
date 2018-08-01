@@ -1,3 +1,7 @@
+### 1.0.5
+
+* remove obsolete file
+
 ### 1.0.4
 
 * fix mingw, update sde
