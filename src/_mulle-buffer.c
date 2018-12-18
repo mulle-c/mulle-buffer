@@ -81,12 +81,15 @@ int   _mulle_buffer_set_seek( struct _mulle_buffer *buffer, int mode, size_t see
    if( plan > buffer->_sentinel || plan < buffer->_storage)
       return( -1);
 
+   assert( ! _mulle_buffer_is_flushable( buffer));
+
    buffer->_curr = plan;
    return( 0);
 }
 
 
-void   *_mulle_buffer_extract_all( struct _mulle_buffer *buffer, struct mulle_allocator *allocator)
+void   *_mulle_buffer_extract_all( struct _mulle_buffer *buffer,
+                                   struct mulle_allocator *allocator)
 {
    size_t   size;
    void     *block;
@@ -136,7 +139,6 @@ static inline void  _mulle_buffer_set_overflown( struct _mulle_buffer *buffer)
       buffer->_curr = buffer->_sentinel + 1;  // set "overflowed"
 }
 
-
 int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer)
 {
    size_t   len;
@@ -145,7 +147,7 @@ int  _mulle_flushablebuffer_flush( struct _mulle_flushablebuffer *ibuffer)
    if( ! len)
       return( 0);
 
-   if( 1 != (*ibuffer->_flusher)( ibuffer->_storage, len, 1, ibuffer->_userinfo))
+   if( len != (*ibuffer->_flusher)( ibuffer->_storage, 1, len, ibuffer->_userinfo))
    {
       _mulle_buffer_set_overflown( (struct _mulle_buffer *) ibuffer);
 
@@ -185,8 +187,12 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
    size_t   plus;
    size_t   len;
 
+   assert( min_amount);
    if( _mulle_buffer_is_inflexible( buffer))
    {
+      if( _mulle_buffer_get_size( buffer) < min_amount)
+         return( -1);
+
       //
       // this may or may not work, depending on its's being
       // flushable
@@ -257,7 +263,8 @@ void   _mulle_buffer_make_inflexible( struct _mulle_buffer *buffer,
 
    buffer->_curr            =
    buffer->_sentinel        = &buffer->_storage[ length];
-   buffer->_size            = (size_t) -1;
+   buffer->_size            = length;
+   buffer->_type            = MULLE_BUFFER_IS_INFLEXIBLE;
 }
 
 
@@ -319,3 +326,43 @@ void   _mulle_buffer_zero_to_length( struct _mulle_buffer *buffer,
    memset( &buffer->_curr[ -diff], 0, (size_t) diff);
 }
 
+
+void   _mulle_buffer_add_buffer_range( struct _mulle_buffer *buffer,
+                                       struct _mulle_buffer *other,
+                                       size_t offset,
+                                       size_t length,
+                                       struct mulle_allocator *allocator)
+{
+   assert( buffer != other);
+
+   unsigned char   *start;
+   unsigned char   *sentinel;
+
+   start    = _mulle_buffer_get_bytes( other);
+   sentinel = &start[ _mulle_buffer_get_length( other)];
+
+   start    = &start[ offset];
+   if( &start[ length] <= sentinel)
+      _mulle_buffer_add_bytes( buffer,
+                               start,
+                               length,
+                               allocator);
+}
+
+
+
+void   _mulle_buffer_copy_range( struct _mulle_buffer *buffer,
+                                 size_t offset,
+                                 size_t length,
+                                 unsigned char *dst)
+{
+   unsigned char   *start;
+   unsigned char   *sentinel;
+
+   start    = _mulle_buffer_get_bytes( buffer);
+   sentinel = &start[ _mulle_buffer_get_length( buffer)];
+
+   start    = &start[ offset];
+   if( &start[ length] <= sentinel)
+      memmove( dst, start, length);
+}

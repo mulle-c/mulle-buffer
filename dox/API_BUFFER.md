@@ -569,6 +569,34 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
 This flushes the buffer before calling `mulle_buffer_destroy`. Will return 0 
 on success. If this is unsuccessful, the buffer remains alive!
 
+## Convenient quaffer / flusher implementations
+
+These are not part of the library as they use system calls.
+
+```
+size_t   _mulle_flushablebuffer_write_flusher( void *buf, size_t one, size_t len, void *userinfo)
+{
+   ssize_t  written_len;
+
+   written_len = write( (int) (intptr_t) userinfo, buf, len);
+   if( written_len != -1)
+      return( written_len);
+   return( 0);
+}
+```
+
+```
+size_t   _mulle_quaffingbuffer_read_quaffer( void *buf, size_t one, size_t len, void *userinfo)
+{
+   ssize_t  read_len;
+
+   read_len = read( (int) (intptr_t) userinfo, buf, len);
+   if( read_len != -1)
+      return( read_len);
+   return( 0);
+}
+```
+
 
 
 
