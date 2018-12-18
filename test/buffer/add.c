@@ -1,5 +1,5 @@
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-test-allocator/mulle-test-allocator.h>
+#include <mulle-testallocator/mulle-testallocator.h>
 
 
 #include <stdio.h>
@@ -68,13 +68,13 @@ static void   simple_static_test()
 
 int  main()
 {
-   mulle_test_allocator_initialize();
-   mulle_default_allocator = mulle_test_allocator;
+   mulle_testallocator_initialize();
+   mulle_default_allocator = mulle_testallocator;
 
    simple_fill_test();
-   mulle_test_allocator_reset();
+   mulle_testallocator_reset();
    simple_static_test();
 
-   mulle_test_allocator_reset();
+   mulle_testallocator_reset();
 }
 

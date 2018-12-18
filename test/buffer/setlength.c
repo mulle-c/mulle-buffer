@@ -1,5 +1,5 @@
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-test-allocator/mulle-test-allocator.h>
+#include <mulle-testallocator/mulle-testallocator.h>
 #include <stdio.h>
 
 
@@ -49,12 +49,12 @@ static void   test_inflexible()
 
 int  main()
 {
-   mulle_test_allocator_initialize();
-   mulle_default_allocator = mulle_test_allocator;
+   mulle_testallocator_initialize();
+   mulle_default_allocator = mulle_testallocator;
 
    test_normal();
    test_inflexible();
 
-   mulle_test_allocator_reset();
+   mulle_testallocator_reset();
 }
 
