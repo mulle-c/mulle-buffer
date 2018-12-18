@@ -1,3 +1,8 @@
+## 1.1.0
+
+* added `add_buffer` range functions
+
+
 ### 1.0.5
 
 * remove obsolete file

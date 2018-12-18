@@ -1,6 +1,6 @@
 
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-test-allocator/mulle-test-allocator.h>
+#include <mulle-testallocator/mulle-testallocator.h>
 
 #include <stdio.h>
 
@@ -23,11 +23,11 @@ static void   example()
 
 int  main()
 {
-   mulle_test_allocator_initialize();
-   mulle_default_allocator = mulle_test_allocator;
+   mulle_testallocator_initialize();
+   mulle_default_allocator = mulle_testallocator;
 
    example();
 
-   mulle_test_allocator_reset();
+   mulle_testallocator_reset();
    return( 0);
 }
