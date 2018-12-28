@@ -1,2 +1,2 @@
+mulle-testallocator;tar;no-import;81DFF2B4-0D8A-4CAB-98FA-E156DB3D0B7F;${MULLE_TESTALLOCATOR_URL:-https://github.com/mulle-core/mulle-testallocator/archive/${MULLE_TESTALLOCATOR_BRANCH:-latest}.tar.gz};;;;
 mulle-buffer;tar;no-all-load,no-import,only-standalone;AAFD3D9C-E2B5-4801-805D-7B2C6D181F88;${MULLE_BUFFER_URL:-https://github.com/mulle-c/mulle-buffer/archive/${MULLE_BUFFER_BRANCH:-latest}.tar.gz};;;;
-mulle-testallocator;tar;no-all-load,no-import;81DFF2B4-0D8A-4CAB-98FA-E156DB3D0B7F;${MULLE_TESTALLOCATOR_URL:-https://github.com/mulle-core/mulle-testallocator/archive/${MULLE_TESTALLOCATOR_BRANCH:-latest}.tar.gz};;;;
