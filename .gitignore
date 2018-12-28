@@ -12,7 +12,6 @@ var/
 stacktrace/
 malloc-error/
 
-
 environment-os-*.sh
 environment-host-*.sh
 

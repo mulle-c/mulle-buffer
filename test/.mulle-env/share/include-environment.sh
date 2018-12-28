@@ -11,7 +11,7 @@ MULLE_ENV_ETC_DIR="${MULLE_VIRTUAL_ROOT}/.mulle-env/etc"
 # .mulle-env/etc                        | .mulle-env/share
 # --------------------------------------|--------------------
 #                                       | environment-plugin.sh
-#                                       | environment-os-${MULLE_UNAME}.sh
+#                                       | environment-plugin-os-${MULLE_UNAME}.sh
 #                                       | environment-project.sh
 #                                       | environment-extension.sh
 # environment-global.sh                 |

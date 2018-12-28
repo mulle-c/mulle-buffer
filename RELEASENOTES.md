@@ -1,3 +1,7 @@
+### 1.1.2
+
+* fix test a bit
+
 ### 1.1.1
 
 * Various small improvements
