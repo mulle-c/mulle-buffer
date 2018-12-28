@@ -1,3 +1,7 @@
+### 1.1.3
+
+* add missing file
+
 ### 1.1.2
 
 * fix test a bit
