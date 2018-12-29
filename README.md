@@ -13,7 +13,7 @@ used as a stream.
 
 Build Status | Release Version
 -------------|-----------------------------------
-[![Build Status](https://travis-ci.org/mulle-nat/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-nat/mulle-buffer) | ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-nat/mulle-buffer.svg) [![Build Status](https://travis-ci.org/mulle-nat/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-nat/mulle-buffer)
+[![Build Status](https://travis-ci.org/mulle-c/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-c/mulle-buffer) | ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg) [![Build Status](https://travis-ci.org/mulle-c/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-c/mulle-buffer)
 
 
 ## Install
