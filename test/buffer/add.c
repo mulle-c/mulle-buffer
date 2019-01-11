@@ -68,13 +68,10 @@ static void   simple_static_test()
 
 int  main()
 {
-   mulle_testallocator_initialize();
-   mulle_default_allocator = mulle_testallocator;
-
    simple_fill_test();
    mulle_testallocator_reset();
    simple_static_test();
 
-   mulle_testallocator_reset();
+   return( 0);
 }
 

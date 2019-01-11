@@ -95,11 +95,17 @@ void   *_mulle_buffer_extract_all( struct _mulle_buffer *buffer,
    void     *block;
 
    block = buffer->_storage;
-   if( block && buffer->_storage == buffer->_initial_storage)
+
+   if( block && block == buffer->_initial_storage)
    {
       size  = _mulle_buffer_get_length( buffer);
       block = _mulle_allocator_malloc( allocator, size);
       memcpy( block, buffer->_storage, size);
+
+      buffer->_curr    =
+      buffer->_storage = buffer->_initial_storage;
+
+      return( block);
    }
 
    buffer->_storage          =
@@ -111,7 +117,8 @@ void   *_mulle_buffer_extract_all( struct _mulle_buffer *buffer,
 }
 
 
-void    _mulle_buffer_size_to_fit( struct _mulle_buffer *buffer, struct mulle_allocator *allocator)
+void    _mulle_buffer_size_to_fit( struct _mulle_buffer *buffer,
+                                   struct mulle_allocator *allocator)
 {
    size_t   length;
    void     *p;

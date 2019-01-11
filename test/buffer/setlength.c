@@ -49,12 +49,8 @@ static void   test_inflexible()
 
 int  main()
 {
-   mulle_testallocator_initialize();
-   mulle_default_allocator = mulle_testallocator;
-
    test_normal();
    test_inflexible();
-
-   mulle_testallocator_reset();
+   return( 0);
 }
 

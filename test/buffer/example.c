@@ -23,11 +23,9 @@ static void   example()
 
 int  main()
 {
-   mulle_testallocator_initialize();
-   mulle_default_allocator = mulle_testallocator;
+   fprintf( stderr, "test start: mulle_default_allocator (%p)\n", &mulle_default_allocator);
 
    example();
 
-   mulle_testallocator_reset();
    return( 0);
 }

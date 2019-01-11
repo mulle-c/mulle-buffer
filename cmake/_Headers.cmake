@@ -7,7 +7,7 @@ endif()
 
 set( INCLUDE_DIRS
 src
-) 
+)
 
 set( PRIVATE_HEADERS
 src/include-private.h
@@ -17,5 +17,5 @@ set( PUBLIC_HEADERS
 src/include.h
 src/_mulle-buffer.h
 src/mulle-buffer.h
-) 
+)
 
