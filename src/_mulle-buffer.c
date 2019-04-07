@@ -36,7 +36,7 @@
 #if DEBUG
 # define MULLE_BUFFER_MIN_GROW_SIZE    4        // minimum realloc increment
 #else
-# define MULLE_BUFFER_MIN_GROW_SIZE    64       // minimum realloc increment
+# define MULLE_BUFFER_MIN_GROW_SIZE    64
 #endif
 
 
@@ -184,6 +184,38 @@ int   _mulle_buffer_flush( struct _mulle_buffer *buffer)
 }
 
 
+static size_t   _mulle_buffer_grow_size( struct _mulle_buffer *buffer,
+                                         size_t min_amount)
+{
+   size_t   plus;
+   size_t   new_size;
+
+   plus = MULLE_BUFFER_MIN_GROW_SIZE;
+   if( min_amount > plus)
+      plus = min_amount;
+
+   //
+   // ! buffer->_curr,  buffer->size is capacity, which we should respect
+   //
+   if( ! buffer->_curr)
+   {
+      if( plus < buffer->_size)
+         new_size = buffer->_size;
+      else
+         new_size = plus;
+   }
+   else
+   {
+      // at least double buffer->size
+      if( plus < buffer->_size)
+         plus = buffer->_size;
+      new_size = buffer->_size + plus;
+   }
+   assert( new_size >= min_amount);
+   return( new_size);
+}
+
+
 int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
                           size_t min_amount,
                           struct mulle_allocator *allocator)
@@ -191,7 +223,6 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
    void     *malloc_block;
    void     *p;
    size_t   new_size;
-   size_t   plus;
    size_t   len;
 
    assert( min_amount);
@@ -215,32 +246,13 @@ int   _mulle_buffer_grow( struct _mulle_buffer *buffer,
    //
    // assume realloc is slow enough, to warrant all this code :)
    //
-   plus = MULLE_BUFFER_MIN_GROW_SIZE;
-   if( min_amount > MULLE_BUFFER_MIN_GROW_SIZE)
-      plus = min_amount;
 
-   //
-   // ! buffer->_curr,  buffer->size is capacity, which we should respect
-   //
-   if( ! buffer->_curr)
-   {
-      if( plus < buffer->_size)
-         new_size = buffer->_size;
-      else
-         new_size = plus;
-   }
-   else
-   {
-      // at least double buffer->size
-      if( plus < buffer->_size)
-         plus = buffer->_size;
-      new_size = buffer->_size + plus;
-   }
+   new_size          = _mulle_buffer_grow_size( buffer, min_amount);
+   len               = buffer->_curr - buffer->_storage;
+   p                 = _mulle_allocator_realloc( allocator, malloc_block, new_size);
 
-   assert( new_size >= min_amount);
-
-   len = buffer->_curr - buffer->_storage;
-   p   = _mulle_allocator_realloc( allocator, malloc_block, new_size);
+   if( ! malloc_block)
+      memcpy( p, buffer->_initial_storage, len);
 
    buffer->_storage  = p;
    buffer->_curr     = &buffer->_storage[ len];
