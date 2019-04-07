@@ -557,9 +557,9 @@ static inline int   mulle_buffer_find_byte( struct mulle_buffer *buffer,
 // actually they are bits to be ORed
 enum mulle_buffer_hexdump_options
 {
-   mulle_buffer_hexdump_offset = 0x1,
-   mulle_buffer_hexdump_hex    = 0x2,
-   mulle_buffer_hexdump_ascii  = 0x4
+   mulle_buffer_hexdump_no_offset = 0x1,
+   mulle_buffer_hexdump_no_hex    = 0x2,
+   mulle_buffer_hexdump_no_ascii  = 0x4
 };
 
 
