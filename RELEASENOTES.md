@@ -1,3 +1,9 @@
+## 1.2.0
+
+* fix problem with static/dynamic mixed mode
+* hex options are now inverted, making 0 the default and not -1
+
+
 ### 1.1.5
 
 * modernized to mulle-sde with .mulle folder

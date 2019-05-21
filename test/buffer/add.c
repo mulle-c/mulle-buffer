@@ -56,7 +56,7 @@ static void   simple_static_test()
    mulle_buffer_memset( &buffer, 'y', 3);
 
    printf( "simple_static_test: %ld\n", mulle_buffer_get_length( &buffer));
-   printf( "simple_static_test: %s\n", mulle_buffer_get_bytes( &buffer));
+   printf( "simple_static_test: %s\n", (char *) mulle_buffer_get_bytes( &buffer));
    printf( "simple_static_test: %ld\n", mulle_buffer_get_staticlength( &buffer));
 
    mulle_buffer_reset( &buffer);
