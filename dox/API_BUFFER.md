@@ -534,7 +534,7 @@ typedef size_t   _mulle_flushablebuffer_flusher( void *userinfo, size_t len, siz
 which is actually the quite the same signature as `fwrite`.
 
 The `mulle_flushablebuffer` does not manage its own backing buffer, you have to
-pass in your own `storage` of `length` bytes, which should exit as long as
+pass in your own `storage` of `length` bytes, which should exist as long as
 `buffer` is used.
 
 
