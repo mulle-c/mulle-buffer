@@ -8,6 +8,5 @@ mulle-sde/cmake;buildtool
 mulle-c/travis;extra
 mulle-sde/c-demo;extra
 mulle-c/c-demo;extra
-mulle-objc/vscode-clang;extra
 mulle-sde/vscode-clang;extra
 mulle-sde/vscode;extra
