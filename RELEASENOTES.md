@@ -1,3 +1,7 @@
+### 1.2.1
+
+* Various small improvements
+
 ## 1.2.0
 
 * fix problem with static/dynamic mixed mode
