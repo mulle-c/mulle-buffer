@@ -15,7 +15,7 @@ Term            | Description
 `inflexable`    | a buffer that does not grow
 `static`        | storage is on the stack or in .bss / .data segement
 `flushable`     | buffer contents can be "flushed" out to a consumer, freeing it up to hold more contents. This goes hand in hand with being inflexable.
-`overflown`     | the inflexable buffer had to truncate content, or a buffer read couldn't be done. 
+`overflown`     | the inflexable buffer had to truncate content, or a buffer read couldn't be done.
 
 
 ## Examples
@@ -227,7 +227,7 @@ free( s);
 ```
 
 In general it is preferable to use `NULL` instead of `&mulle_stdlib_allocator` and
-then `mulle_free` instead of `free`. In the example it is assumed, that `malloc` 
+then `mulle_free` instead of `free`. In the example it is assumed, that `malloc`
 must be used.
 
 
@@ -376,7 +376,7 @@ Add character 'c' to the buffer. This therefore adds 1 byte to the buffer.
 void    mulle_buffer_add_uint16( struct mulle_buffer *buffer,
                                  uint16_t c)
 {
-   _mulle_buffer_add_uint16( (struct _mulle_buffer *) buffer, c, buffer->_allocator);
+   _mulle__buffer_add_uint16( (struct mulle__buffer *) buffer, c, buffer->_allocator);
 }
 ```
 
@@ -528,7 +528,7 @@ Initialize `buffer` with `flusher` and `userinfo`. `flusher` is a callback
 function with the following signature:
 
 ```
-typedef size_t   _mulle_flushablebuffer_flusher( void *userinfo, size_t len, size_t, void *buffer);
+typedef size_t   mulle__flushablebuffer_flusher( void *userinfo, size_t len, size_t, void *buffer);
 ```
 
 which is actually the quite the same signature as `fwrite`.
@@ -556,7 +556,7 @@ This flushes out the accumulated data so far. Will return 0 on success.
 int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
 ```
 
-This flushes the buffer before calling `mulle_buffer_done`. Will return 0 
+This flushes the buffer before calling `mulle_buffer_done`. Will return 0
 on success. If this is unsuccessful, the buffer remains alive!
 
 
@@ -566,7 +566,7 @@ on success. If this is unsuccessful, the buffer remains alive!
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
 ```
 
-This flushes the buffer before calling `mulle_buffer_destroy`. Will return 0 
+This flushes the buffer before calling `mulle_buffer_destroy`. Will return 0
 on success. If this is unsuccessful, the buffer remains alive!
 
 ## Convenient quaffer / flusher implementations

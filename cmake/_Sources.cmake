@@ -6,10 +6,7 @@ if( MULLE_TRACE_INCLUDE)
 endif()
 
 set( SOURCES
-src/_mulle-buffer.c
+src/mulle-_buffer.c
 src/mulle-buffer.c
-)
-
-set( STANDALONE_SOURCES
 src/mulle-buffer-standalone.c
 )

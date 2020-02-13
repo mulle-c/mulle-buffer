@@ -13,12 +13,11 @@
 #define _mulle_buffer_include_h__
 
 // How to tweak the following mulle-allocator #include
-//    remove:        `mulle-sourcetree mark mulle-allocator no-header`
-//    rename:        `mulle-sourcetree mark mulle-allocator set include whatever.h`
-//    make private:  `mulle-sourcetree mark mulle-allocator no-public`
-//    make public:   `mulle-sourcetree mark mulle-allocator public`
-//    make optional: `mulle-sourcetree mark mulle-allocator no-require`
-//    remove for os: `mulle-sourcetree mark mulle-allocator no-os-<osname>`
+//    remove:          `mulle-sourcetree mark mulle-allocator no-header`
+//    rename:          `mulle-sourcetree mark mulle-allocator set include whatever.h`
+//    toggle public:   `mulle-sourcetree mark mulle-allocator [no-]public`
+//    toggle optional: `mulle-sourcetree mark mulle-allocator [no-]require`
+//    remove for os:   `mulle-sourcetree mark mulle-allocator no-os-<osname>`
 # include <mulle-allocator/mulle-allocator.h>   // mulle-allocator
 
 #endif

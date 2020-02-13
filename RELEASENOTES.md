@@ -97,7 +97,7 @@ new mulle_c11 for this.
 ### 0.3.1
 
 * better asserts
-* allow _mulle_buffer_done to run on an initialized buffer (still got to be
+* allow _mulle__buffer_done to run on an initialized buffer (still got to be
 zeroed though)
 
 ### 0.2.1-7
