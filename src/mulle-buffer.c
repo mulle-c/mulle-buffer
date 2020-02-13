@@ -205,11 +205,11 @@ int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
 {
    int   rval;
 
-   rval = _mulle_flushablebuffer_flush( (struct _mulle_flushablebuffer *) buffer);
+   rval = _mulle__flushablebuffer_flush( (struct mulle__flushablebuffer *) buffer);
    if( rval)
       return( rval);
 
-   _mulle_buffer_done( (struct _mulle_buffer *) buffer,
+   _mulle__buffer_done( (struct mulle__buffer *) buffer,
                       mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
    return( 0);
 }
@@ -219,11 +219,11 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
 {
    int   rval;
 
-   rval = _mulle_flushablebuffer_flush( (struct _mulle_flushablebuffer *) buffer);
+   rval = _mulle__flushablebuffer_flush( (struct mulle__flushablebuffer *) buffer);
    if( rval)
       return( rval);
 
-   _mulle_buffer_destroy( (struct _mulle_buffer *) buffer,
+   _mulle__buffer_destroy( (struct mulle__buffer *) buffer,
                       mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
    return( 0);
 }
