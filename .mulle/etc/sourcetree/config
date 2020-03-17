@@ -1,1 +1,1 @@
-mulle-allocator;${MULLE_ALLOCATOR_NODETYPE:-tar};no-all-load,no-import,no-singlephase;d98d1cc8-2bdf-4bf0-9caa-905f4aa9b581;${MULLE_ALLOCATOR_URL:-https://github.com/mulle-c/mulle-allocator/archive/${MULLE_TAG}.tar.gz};;${MULLE_ALLOCATOR_TAG:-latest};;
+mulle-allocator;${MULLE_ALLOCATOR_NODETYPE:-tar};no-all-load,no-import,no-singlephase;B8174030-DEEE-41DE-BACD-D93F25A0315A;${MULLE_ALLOCATOR_URL:-https://github.com/mulle-c/mulle-allocator/archive/${MULLE_TAG}.tar.gz};${MULLE_ALLOCATOR_BRANCH};${MULLE_ALLOCATOR_TAG:-latest};;

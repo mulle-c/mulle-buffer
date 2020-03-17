@@ -67,7 +67,7 @@ static inline struct mulle__buffer   *mulle_buffer_as_buffer( struct mulle_buffe
 }
 
 
-MULLE_C_NON_NULL_RETURN static inline struct mulle_allocator  *
+MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
    mulle_buffer_get_allocator( struct mulle_buffer *buffer)
 {
    if( ! buffer)
@@ -246,14 +246,14 @@ static inline size_t   mulle_buffer_set_length( struct mulle_buffer *buffer,
    if( ! buffer)
       return( 0);
    return( _mulle__buffer_set_length( (struct mulle__buffer *) buffer,
-                                     length,
-                                     mulle_buffer_get_allocator( buffer)));
+                                       length,
+                                       mulle_buffer_get_allocator( buffer)));
 }
 
 
 //
 // you only do this once!, because you now own the malloc block
-//
+// TODO: rename to extract only ?
 static inline void   *mulle_buffer_extract_all( struct mulle_buffer *buffer)
 {
    if( ! buffer)
@@ -297,6 +297,14 @@ static inline size_t   mulle_buffer_get_length( struct mulle_buffer *buffer)
    if( ! buffer)
       return( 0);
    return( _mulle__buffer_get_length( (struct mulle__buffer *) buffer));
+}
+
+
+static inline size_t   mulle_buffer_get_capacity( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return( 0);
+   return( _mulle__buffer_get_capacity( (struct mulle__buffer *) buffer));
 }
 
 
@@ -451,8 +459,8 @@ static inline int   mulle_buffer_guarantee( struct mulle_buffer *buffer,
 }
 
 
-static inline void    mulle_buffer_add_byte( struct mulle_buffer *buffer,
-                                             unsigned char c)
+static inline void   mulle_buffer_add_byte( struct mulle_buffer *buffer,
+                                            unsigned char c)
 {
    if( ! buffer)
       return;
@@ -463,14 +471,14 @@ static inline void    mulle_buffer_add_byte( struct mulle_buffer *buffer,
 }
 
 
-static inline void    mulle_buffer_remove_last_byte( struct mulle_buffer *buffer)
+static inline void   mulle_buffer_remove_last_byte( struct mulle_buffer *buffer)
 {
    _mulle__buffer_remove_last_byte( (struct mulle__buffer *) buffer);
 }
 
 
-static inline void    mulle_buffer_add_character( struct mulle_buffer *buffer,
-                                                  int c)
+static inline void   mulle_buffer_add_character( struct mulle_buffer *buffer,
+                                                 int c)
 {
    if( ! buffer)
       return;
@@ -481,8 +489,8 @@ static inline void    mulle_buffer_add_character( struct mulle_buffer *buffer,
 }
 
 
-static inline void    mulle_buffer_add_uint16( struct mulle_buffer *buffer,
-                                               uint16_t c)
+static inline void   mulle_buffer_add_uint16( struct mulle_buffer *buffer,
+                                              uint16_t c)
 {
    if( ! buffer)
       return;
@@ -493,8 +501,8 @@ static inline void    mulle_buffer_add_uint16( struct mulle_buffer *buffer,
 }
 
 
-static inline void    mulle_buffer_add_uint32( struct mulle_buffer *buffer,
-                                               uint32_t c)
+static inline void   mulle_buffer_add_uint32( struct mulle_buffer *buffer,
+                                              uint32_t c)
 {
    _mulle__buffer_add_uint32( (struct mulle__buffer *) buffer,
                              c,

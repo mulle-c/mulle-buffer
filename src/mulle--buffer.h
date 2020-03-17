@@ -183,7 +183,7 @@ static inline void    _mulle__buffer_set_initial_capacity( struct mulle__buffer 
 
 
 static inline void    _mulle__buffer_init_with_capacity( struct mulle__buffer *buffer,
-                                                        size_t capacity)
+                                                         size_t capacity)
 {
    buffer->_initial_storage  =
    buffer->_curr             =
@@ -239,7 +239,7 @@ int    _mulle__buffer_grow( struct mulle__buffer *buffer,
                            struct mulle_allocator *allocator);
 
 void   _mulle__buffer_size_to_fit( struct mulle__buffer *buffer,
-                                  struct mulle_allocator *allocator);
+                                   struct mulle_allocator *allocator);
 
 void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
                                      size_t length,
@@ -247,8 +247,8 @@ void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
 
 // this zeroes, when advancing, shrinks otherwise
 size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
-                                   size_t length,
-                                   struct mulle_allocator *allocator);
+                                    size_t length,
+                                    struct mulle_allocator *allocator);
 
 
 static inline int   _mulle__buffer_guarantee( struct mulle__buffer *buffer,
@@ -345,6 +345,15 @@ static inline size_t   _mulle__buffer_get_length( struct mulle__buffer *buffer)
           ? buffer->_sentinel - buffer->_storage
           : buffer->_curr - buffer->_storage);
 }
+
+
+static inline size_t  _mulle__buffer_get_capacity( struct mulle__buffer *buffer)
+{
+   if( buffer->_storage == NULL)
+      return( buffer->_size << 1);
+   return( _mulle__buffer_get_length( buffer));
+}
+
 
 enum
 {
