@@ -477,8 +477,8 @@ static inline void    _mulle__buffer_add_uint32( struct mulle__buffer *buffer,
 
 
 static inline int   _mulle__buffer_intersects_bytes( struct mulle__buffer *buffer,
-                                                    void *bytes,
-                                                    size_t length)
+                                                     void *bytes,
+                                                     size_t length)
 {
    unsigned char   *start;
    unsigned char   *end;
@@ -577,6 +577,17 @@ static inline void   _mulle__buffer_memset( struct mulle__buffer *buffer,
    s = _mulle__buffer_advance( buffer, length, allocator);
    if( s)
       memset( s, c, length);
+}
+
+
+static inline int   _mulle__buffer_memcmp( struct mulle__buffer *buffer,
+                                           void  *bytes,
+                                           size_t length)
+{
+   if( length > _mulle__buffer_get_length( buffer))
+      return( 1);
+
+   return( memcmp( buffer->_storage, bytes, length));
 }
 
 

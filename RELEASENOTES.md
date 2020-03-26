@@ -1,3 +1,8 @@
+## 2.1.0
+
+* added `mulle_buffer_memcmp` function
+
+
 # 2.0.0
 
 * renamed struct `_mulle_buffer` to struct `mulle__buffer,` which cleans up the underscore prefixed function mess
