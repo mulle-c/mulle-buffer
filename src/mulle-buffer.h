@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((2 << 20) | (0 << 8) | 0)
+#define MULLE_BUFFER_VERSION  ((2 << 20) | (1 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -78,7 +78,7 @@ MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
    return( buffer->_allocator);
 }
 
-# pragma mark - intialization and destruction
+# pragma mark - initialization and destruction
 
 struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator);
 
@@ -565,6 +565,19 @@ static inline void   mulle_buffer_memset( struct mulle_buffer *buffer,
                          c,
                          length,
                          mulle_buffer_get_allocator( buffer));
+}
+
+
+static inline int   mulle_buffer_memcmp( struct mulle_buffer *buffer,
+                                         void  *bytes,
+                                         size_t length)
+{
+   if( ! buffer)
+      return( +1);
+
+   return( _mulle__buffer_memcmp( (struct mulle__buffer *) buffer,
+                                  bytes,
+                                  length));
 }
 
 
