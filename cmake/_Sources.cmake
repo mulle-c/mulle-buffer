@@ -8,5 +8,8 @@ endif()
 set( SOURCES
 src/mulle--buffer.c
 src/mulle-buffer.c
+)
+
+set( STANDALONE_SOURCES
 src/mulle-buffer-standalone.c
 )

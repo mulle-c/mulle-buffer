@@ -15,6 +15,7 @@
 // How to tweak the following mulle-allocator #include
 //    remove:          `mulle-sourcetree mark mulle-allocator no-header`
 //    rename:          `mulle-sourcetree mark mulle-allocator set include whatever.h`
+//    toggle #import:  `mulle-sourcetree mark mulle-allocator [no-]import`
 //    toggle public:   `mulle-sourcetree mark mulle-allocator [no-]public`
 //    toggle optional: `mulle-sourcetree mark mulle-allocator [no-]require`
 //    remove for os:   `mulle-sourcetree mark mulle-allocator no-os-<osname>`
