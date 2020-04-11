@@ -59,7 +59,7 @@ mulle-sde dependency add --c --github mulle-c mulle-buffer
 
 ### mulle-sde
 
-Use [mulle-sde](//github.com/mulle-sde) to build and install mulle-thread and all dependencies:
+Use [mulle-sde](//github.com/mulle-sde) to build and install mulle-buffer and all dependencies:
 
 ```
 mulle-sde install --prefix /usr/local \
