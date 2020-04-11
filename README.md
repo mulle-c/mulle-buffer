@@ -15,32 +15,6 @@ Build Status | Release Version
 -------------|-----------------------------------
 [![Build Status](https://travis-ci.org/mulle-c/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-c/mulle-buffer) | ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg) [![Build Status](https://travis-ci.org/mulle-c/mulle-buffer.svg?branch=release)](https://travis-ci.org/mulle-c/mulle-buffer)
 
-
-## Install
-
-Install the prerequisites first:
-
-| Prerequisites                                           |
-|---------------------------------------------------------|
-| [mulle-allocator](//github.com/mulle-c/mulle-allocator) |
-
-
-Install into /usr/local:
-
-```
-mkdir build 2> /dev/null
-(
-   cd build ;
-   cmake -DCMAKE_INSTALL_PREFIX=/usr/local \
-         -DCMAKE_PREFIX_PATH=/usr/local \
-         -DCMAKE_BUILD_TYPE=Release .. ;
-   make install
-)
-```
-
-Or let [mulle-sde](//github.com/mulle-sde) do it all for you.
-
-
 ## Example
 
 ```
@@ -71,6 +45,49 @@ void  test( void)
 File                                 | Description
 ------------------------------------ | ----------------------------------------
 [`mulle_buffer`](dox/API_BUFFER.md)  | The array data structure.
+
+
+## Add 
+
+Use [mulle-sde](//github.com/mulle-sde) to add mulle-buffer to your project:
+
+```
+mulle-sde dependency add --c --github mulle-c mulle-buffer
+```
+
+## Install
+
+### mulle-sde
+
+Use [mulle-sde](//github.com/mulle-sde) to build and install mulle-thread and all dependencies:
+
+```
+mulle-sde install --prefix /usr/local \
+   https://github.com/mulle-c/mulle-buffer/archive/latest.tar.gz
+```
+
+### Manual Installation
+
+
+Install the requirements:
+
+Requirements                                             | Description
+---------------------------------------------------------|-----------------------
+[mulle-allocator](//github.com/mulle-c/mulle-allocator)  | Memory allocation wrapper
+
+
+Install into `/usr/local`:
+
+```
+mkdir build 2> /dev/null
+(
+   cd build ;
+   cmake -DCMAKE_INSTALL_PREFIX=/usr/local \
+         -DCMAKE_PREFIX_PATH=/usr/local \
+         -DCMAKE_BUILD_TYPE=Release .. ;
+   make install
+)
+```
 
 
 ### Platforms and Compilers
