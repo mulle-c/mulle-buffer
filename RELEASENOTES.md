@@ -1,3 +1,7 @@
+### 2.1.1
+
+* new mulle-sde project structure
+
 ## 2.1.0
 
 * added `mulle_buffer_memcmp` function
