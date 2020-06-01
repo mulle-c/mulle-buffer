@@ -38,9 +38,10 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((2 << 20) | (1 << 8) | 1)
+#define MULLE_BUFFER_VERSION  ((2 << 20) | (2 << 8) | 0)
 
 #include "include.h"
+#include "mulle-data.h"
 #include "mulle--buffer.h"
 
 
@@ -61,7 +62,8 @@ struct mulle_buffer
 };
 
 
-static inline struct mulle__buffer   *mulle_buffer_as_buffer( struct mulle_buffer *buffer)
+static inline struct mulle__buffer   *
+   mulle_buffer_as_buffer( struct mulle_buffer *buffer)
 {
   return( (struct mulle__buffer *) buffer);
 }
@@ -77,6 +79,7 @@ MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
            buffer->_allocator);
    return( buffer->_allocator);
 }
+
 
 # pragma mark - initialization and destruction
 
@@ -150,6 +153,12 @@ static inline void
 }
 
 
+//
+// The allocator you pass in will provide the alignment guarantees of
+// the internal buffer. So if it is malloc based and doesn't change the
+// address the "return[ed] ... memory ... is suitably aligned for any
+// built-in type"
+//
 static inline void    mulle_buffer_init( struct mulle_buffer *buffer,
                                          struct mulle_allocator *allocator)
 {
@@ -259,7 +268,7 @@ static inline void   *mulle_buffer_extract_all( struct mulle_buffer *buffer)
    if( ! buffer)
       return( NULL);
    return( _mulle__buffer_extract_all( (struct mulle__buffer *) buffer,
-                                      mulle_buffer_get_allocator( buffer)));
+                                       mulle_buffer_get_allocator( buffer)));
 }
 
 
@@ -505,8 +514,8 @@ static inline void   mulle_buffer_add_uint32( struct mulle_buffer *buffer,
                                               uint32_t c)
 {
    _mulle__buffer_add_uint32( (struct mulle__buffer *) buffer,
-                             c,
-                             mulle_buffer_get_allocator( buffer));
+                              c,
+                              mulle_buffer_get_allocator( buffer));
 }
 
 
@@ -521,9 +530,9 @@ static inline void   mulle_buffer_add_bytes( struct mulle_buffer *buffer,
       return;
 
    _mulle__buffer_add_bytes( (struct mulle__buffer *) buffer,
-                            bytes,
-                            length,
-                            mulle_buffer_get_allocator( buffer));
+                              bytes,
+                              length,
+                              mulle_buffer_get_allocator( buffer));
 }
 
 
