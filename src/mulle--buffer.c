@@ -146,6 +146,7 @@ static inline void  _mulle_buffer_set_overflown( struct mulle__buffer *buffer)
       buffer->_curr = buffer->_sentinel + 1;  // set "overflowed"
 }
 
+
 int  _mulle__flushablebuffer_flush( struct mulle__flushablebuffer *ibuffer)
 {
    size_t   len;
@@ -288,10 +289,13 @@ void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
 
 
 void   _mulle__buffer_done( struct mulle__buffer *buffer,
-                           struct mulle_allocator *allocator)
+                            struct mulle_allocator *allocator)
 {
    if( buffer->_storage != buffer->_initial_storage)
       _mulle_allocator_free( allocator, buffer->_storage);
+#ifdef DEBUG
+   memset( buffer, 0xFD, sizeof( struct mulle__buffer));
+#endif
 }
 
 
@@ -367,7 +371,6 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
                                length,
                                allocator);
 }
-
 
 
 void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,

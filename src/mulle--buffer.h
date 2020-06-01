@@ -77,7 +77,10 @@ struct mulle__buffer
 // this is fairly conveniently, just like fwrite(  _storage, len, nElems, fp)
 // though a non-buffering write could be better
 //
-typedef size_t   mulle__flushablebuffer_flusher( void *buf, size_t one, size_t len, void *userinfo);
+typedef size_t   mulle__flushablebuffer_flusher( void *buf,
+                                                 size_t one,
+                                                 size_t len,
+                                                 void *userinfo);
 
 // _size will be -2 for a flushable buffer (always inflexible)
 
@@ -105,17 +108,16 @@ static inline struct mulle__buffer   *
   return( (struct mulle__buffer *) buffer);
 }
 
-#pragma mark -
-#pragma mark creation destruction
+#pragma mark - creation destruction
 
-struct mulle__buffer     *_mulle__buffer_create( struct mulle_allocator *allocator);
-void                     _mulle__buffer_destroy( struct mulle__buffer *buffer,
-                                                struct mulle_allocator *allocator);
+struct mulle__buffer   *_mulle__buffer_create( struct mulle_allocator *allocator);
+void                   _mulle__buffer_destroy( struct mulle__buffer *buffer,
+                                                 struct mulle_allocator *allocator);
 
-#pragma mark -
-#pragma mark initialization
 
-static inline void    _mulle__flushablebuffer_init( struct mulle__flushablebuffer *buffer,
+#pragma mark - initialization
+
+static inline void   _mulle__flushablebuffer_init( struct mulle__flushablebuffer *buffer,
                                                    void *storage,
                                                    size_t length,
                                                    mulle__flushablebuffer_flusher *flusher,
@@ -136,7 +138,7 @@ static inline void    _mulle__flushablebuffer_init( struct mulle__flushablebuffe
 }
 
 
-static inline void    _mulle__buffer_init_with_allocated_bytes( struct mulle__buffer *buffer,
+static inline void   _mulle__buffer_init_with_allocated_bytes( struct mulle__buffer *buffer,
                                                                void *storage,
                                                                size_t length)
 {
@@ -151,7 +153,7 @@ static inline void    _mulle__buffer_init_with_allocated_bytes( struct mulle__bu
 }
 
 
-static inline void    _mulle__buffer_init_with_static_bytes( struct mulle__buffer *buffer,
+static inline void   _mulle__buffer_init_with_static_bytes( struct mulle__buffer *buffer,
                                                             void *storage,
                                                             size_t length)
 {
@@ -172,7 +174,7 @@ static inline void    _mulle__buffer_init( struct mulle__buffer *buffer)
 }
 
 
-static inline void    _mulle__buffer_set_initial_capacity( struct mulle__buffer *buffer,
+static inline void   _mulle__buffer_set_initial_capacity( struct mulle__buffer *buffer,
                                                           size_t capacity)
 {
    assert( buffer);
@@ -182,8 +184,8 @@ static inline void    _mulle__buffer_set_initial_capacity( struct mulle__buffer 
 }
 
 
-static inline void    _mulle__buffer_init_with_capacity( struct mulle__buffer *buffer,
-                                                         size_t capacity)
+static inline void   _mulle__buffer_init_with_capacity( struct mulle__buffer *buffer,
+                                                        size_t capacity)
 {
    buffer->_initial_storage  =
    buffer->_curr             =
@@ -196,8 +198,8 @@ static inline void    _mulle__buffer_init_with_capacity( struct mulle__buffer *b
 
 static inline void
   _mulle__buffer_init_inflexible_with_static_bytes( struct mulle__buffer *buffer,
-                                                   void *storage,
-                                                   size_t length)
+                                                    void *storage,
+                                                    size_t length)
 {
    assert( length != (size_t) -1);
 
@@ -211,7 +213,7 @@ static inline void
 
 
 void   _mulle__buffer_done( struct mulle__buffer *buffer,
-                           struct mulle_allocator *allocator);
+                            struct mulle_allocator *allocator);
 
 
 // _initial_storage storage will be lost
@@ -223,27 +225,25 @@ static inline void   _mulle__buffer_reset( struct mulle__buffer *buffer,
 }
 
 
-#pragma mark -
-#pragma mark change buffer type
+#pragma mark - change buffer type
 
 void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
                                       void *storage,
                                       size_t length,
                                       struct mulle_allocator *allocator);
 
-#pragma mark -
-#pragma mark resize
+#pragma mark - resize
 
 int    _mulle__buffer_grow( struct mulle__buffer *buffer,
-                           size_t min_amount,
-                           struct mulle_allocator *allocator);
+                            size_t min_amount,
+                            struct mulle_allocator *allocator);
 
 void   _mulle__buffer_size_to_fit( struct mulle__buffer *buffer,
                                    struct mulle_allocator *allocator);
 
 void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
-                                     size_t length,
-                                     struct mulle_allocator *allocator);
+                                      size_t length,
+                                      struct mulle_allocator *allocator);
 
 // this zeroes, when advancing, shrinks otherwise
 size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
@@ -252,8 +252,8 @@ size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
 
 
 static inline int   _mulle__buffer_guarantee( struct mulle__buffer *buffer,
-                                             size_t length,
-                                             struct mulle_allocator *allocator)
+                                              size_t length,
+                                              struct mulle_allocator *allocator)
 {
    ptrdiff_t   missing;
 
@@ -284,8 +284,7 @@ static inline void   *_mulle__buffer_advance( struct mulle__buffer *buffer,
 }
 
 
-#pragma mark -
-#pragma mark removal
+#pragma mark - removal
 
 static inline void   _mulle__buffer_remove_all( struct mulle__buffer *buffer)
 {
@@ -293,16 +292,15 @@ static inline void   _mulle__buffer_remove_all( struct mulle__buffer *buffer)
 }
 
 
-#pragma mark -
-#pragma mark query
+#pragma mark - query
 
-static inline int     _mulle__buffer_is_inflexible( struct mulle__buffer *buffer)
+static inline int   _mulle__buffer_is_inflexible( struct mulle__buffer *buffer)
 {
    return( buffer->_type & MULLE_BUFFER_IS_INFLEXIBLE);
 }
 
 
-static inline int     _mulle__buffer_is_flushable( struct mulle__buffer *buffer)
+static inline int   _mulle__buffer_is_flushable( struct mulle__buffer *buffer)
 {
    return( buffer->_type & MULLE_BUFFER_IS_FLUSHABLE);
 }
@@ -314,7 +312,8 @@ static inline int   _mulle__buffer_is_full( struct mulle__buffer *buffer)
 }
 
 
-static inline int   _mulle__buffer_is_big_enough( struct mulle__buffer *buffer, size_t len)
+static inline int   _mulle__buffer_is_big_enough( struct mulle__buffer *buffer,
+                                                  size_t len)
 {
    assert( len);
    return( &buffer->_curr[ len] <= buffer->_sentinel);
@@ -374,8 +373,7 @@ static inline size_t   _mulle__buffer_get_staticlength( struct mulle__buffer *bu
 }
 
 
-#pragma mark -
-#pragma mark retrieval
+#pragma mark - retrieval
 //
 // you only do this once!, because you now own the malloc block
 //
@@ -393,14 +391,13 @@ static inline size_t   _mulle__buffer_get_size( struct mulle__buffer *buffer)
    return( buffer->_size);
 }
 
-#pragma mark -
-#pragma mark modification
+#pragma mark - modification
 
 // instead of checking every char, run it for a while and then check
 // _mulle__buffer_has_overflown.
 static inline void    _mulle__buffer_add_byte( struct mulle__buffer *buffer,
-                                              unsigned char c,
-                                              struct mulle_allocator *allocator)
+                                               uint8_t c,
+                                               struct mulle_allocator *allocator)
 {
    if( _mulle__buffer_is_full( buffer))
       if( _mulle__buffer_grow( buffer, 1, allocator))
@@ -420,8 +417,8 @@ static inline void    _mulle__buffer_remove_last_byte( struct mulle__buffer *buf
 
 
 static inline void    _mulle__buffer_add_char( struct mulle__buffer *buffer,
-                                              int c,
-                                              struct mulle_allocator *allocator)
+                                               int c,
+                                               struct mulle_allocator *allocator)
 {
    assert( c <= CHAR_MAX && c >= CHAR_MIN);
    _mulle__buffer_add_byte( buffer, (unsigned char) c, allocator);
@@ -449,8 +446,8 @@ static inline void    _mulle__buffer_add_uint16( struct mulle__buffer *buffer,
 
 
 static inline void    _mulle__buffer_add_uint32( struct mulle__buffer *buffer,
-                                                uint32_t c,
-                                                struct mulle_allocator *allocator)
+                                                 uint32_t c,
+                                                 struct mulle_allocator *allocator)
 {
    unsigned char   lsb;
    unsigned char   nsb;
@@ -542,16 +539,19 @@ static inline size_t   _mulle_char_strnlen( char *s, size_t len)
 }
 
 
-static inline size_t   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
-                                                                 char *bytes,
-                                                                 size_t maxlength,
-                                                                 struct mulle_allocator *allocator)
+static inline size_t
+   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
+                                             char *bytes,
+                                             size_t maxlength,
+                                             struct mulle_allocator *allocator)
 {
    char   c;
    char   *s;
    char   *sentinel;
 
-   assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, _mulle_char_strnlen( bytes, maxlength)));
+   assert( ! _mulle__buffer_intersects_bytes( buffer,
+                                              bytes,
+                                              _mulle_char_strnlen( bytes, maxlength)));
 
    s        = bytes;
    sentinel = &s[ maxlength];
@@ -658,7 +658,8 @@ static inline int   _mulle__buffer_peek_byte( struct mulle__buffer *buffer)
 }
 
 
-static inline void   *_mulle__buffer_reference_bytes( struct mulle__buffer *buffer, size_t len)
+static inline void   *_mulle__buffer_reference_bytes( struct mulle__buffer *buffer,
+                                                      size_t len)
 {
    void   *start;
 
@@ -711,9 +712,9 @@ static inline int   _mulle__buffer_find_byte( struct mulle__buffer *buffer,
 #pragma mark - copy out
 
 void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
-                                 size_t offset,
-                                 size_t length,
-                                 unsigned char *dst);
+                                  size_t offset,
+                                  size_t length,
+                                  unsigned char *dst);
 
 
 #pragma mark - backwards compatibility
