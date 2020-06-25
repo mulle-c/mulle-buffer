@@ -17,25 +17,28 @@ Build Status | Release Version
 
 ## Example
 
+Here a C string is constructed. You don't have to worry about calculating
+the necessary buffer size. It's easy, fast and safe:
+
 ```
 #include <mulle-buffer/mulle-buffer.h>
 
 void  test( void)
 {
    unsigned int          i;
-   struct mulle_buffer   *buffer;
+   struct mulle_buffer   buffer;
 
-   buffer = mulle_buffer_create( NULL);
+   mulle_buffer_init( &buffer, NULL);
 
    for( i = 0; i < 10; i++)
-      mulle_buffer_add_byte( buffer, 'a' + i % 26);
+      mulle_buffer_add_byte( &buffer, 'a' + i % 26);
 
-   mulle_buffer_memset( buffer, 'z', 10);
-   mulle_buffer_add_string( buffer, "hello");
+   mulle_buffer_memset( &buffer, 'z', 10);
+   mulle_buffer_add_string( &buffer, "hello");
 
-   printf( "%s\n", mulle_buffer_get_bytes( buffer));
+   printf( "%s\n", mulle_buffer_get_string( buffer));
 
-   mulle_buffer_destroy( buffer);
+   mulle_buffer_done( &buffer);
 }
 ```
 
@@ -47,7 +50,7 @@ File                                 | Description
 [`mulle_buffer`](dox/API_BUFFER.md)  | The array data structure.
 
 
-## Add 
+## Add
 
 Use [mulle-sde](//github.com/mulle-sde) to add mulle-buffer to your project:
 

@@ -32,6 +32,9 @@
 #define mulle__buffer__h__
 
 #include "include.h"
+
+#include "mulle-data.h"
+
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
@@ -374,11 +377,44 @@ static inline size_t   _mulle__buffer_get_staticlength( struct mulle__buffer *bu
 
 
 #pragma mark - retrieval
+
 //
 // you only do this once!, because you now own the malloc block
 //
-void   *_mulle__buffer_extract_all( struct mulle__buffer *buffer,
-                                    struct mulle_allocator *allocator);
+struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
+                                                 struct mulle_allocator *allocator);
+
+// old name, obsolete now
+static inline void   *_mulle__buffer_extract_all( struct mulle__buffer *buffer,
+                                                  struct mulle_allocator *allocator)
+{
+   return( _mulle__buffer_extract_data( buffer, allocator).bytes);
+}
+
+//
+// Like _mulle__buffer_extract_data/_mulle__buffer_extract_all but guarantees
+// it's a C-String
+//
+void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
+                                       struct mulle_allocator *allocator);
+//
+// Nice when building up a C string dynamically. This will ensure the last
+// byte is a zero or append one if necessary. For a static buffer it may
+// lop of the last character if the buffer is full
+//
+void   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
+                                   struct mulle_allocator *allocator);
+
+
+static inline struct mulle_data   _mulle__buffer_get_data( struct mulle__buffer *buffer)
+{
+   struct mulle_data   data;
+
+   data.bytes  = buffer->_storage;
+   data.length = _mulle__buffer_get_length( buffer);
+
+   return( data);
+}
 
 
 static inline void   *_mulle__buffer_get_bytes( struct mulle__buffer *buffer)
@@ -606,7 +642,7 @@ static inline int   _mulle__buffer_memcmp( struct mulle__buffer *buffer,
 //
 // a bit weird, but it is used to truncate or a append a 0 string
 // but size is not adjusted, useful when retrieving the buffer and
-// use it as cString
+// use it as cString, but the buffer is fixed size.
 //
 static inline void   _mulle__buffer_zero_last_byte( struct mulle__buffer *buffer)
 {
