@@ -88,24 +88,34 @@ int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t se
 }
 
 
-void   *_mulle__buffer_extract_all( struct mulle__buffer *buffer,
-                                    struct mulle_allocator *allocator)
+static void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
+                                          struct mulle_allocator *allocator)
 {
-   size_t   size;
-   void     *block;
+   if( _mulle__buffer_is_inflexible( buffer))
+      _mulle__buffer_zero_last_byte( buffer);
+   else
+      if( _mulle__buffer_get_last_byte( buffer))
+         _mulle__buffer_add_byte( buffer, 0, allocator);
+}
 
-   block = buffer->_storage;
 
-   if( block && block == buffer->_initial_storage)
+struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
+                                                 struct mulle_allocator *allocator)
+{
+   struct mulle_data   data;
+
+   data.bytes = buffer->_storage;
+   data.length  = _mulle__buffer_get_length( buffer);
+
+   if( data.bytes && data.bytes == buffer->_initial_storage)
    {
-      size  = _mulle__buffer_get_length( buffer);
-      block = _mulle_allocator_malloc( allocator, size);
-      memcpy( block, buffer->_storage, size);
+      data.bytes = _mulle_allocator_malloc( allocator, data.length);
+      memcpy( data.bytes, buffer->_storage, data.length);
 
       buffer->_curr    =
       buffer->_storage = buffer->_initial_storage;
 
-      return( block);
+      return( data);
    }
 
    buffer->_storage          =
@@ -113,7 +123,23 @@ void   *_mulle__buffer_extract_all( struct mulle__buffer *buffer,
    buffer->_sentinel         =
    buffer->_initial_storage  = NULL;
 
-   return( block);
+   return( data);
+}
+
+
+void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
+                                        struct mulle_allocator *allocator)
+{
+  _mulle__buffer_make_string( buffer, allocator);
+  return( _mulle__buffer_extract_all( buffer, allocator));
+}
+
+
+void   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
+                                    struct mulle_allocator *allocator)
+{
+  _mulle__buffer_make_string( buffer, allocator);
+   return( _mulle__buffer_get_bytes( buffer));
 }
 
 
@@ -185,8 +211,8 @@ int   _mulle__buffer_flush( struct mulle__buffer *buffer)
 }
 
 
-static size_t   mulle__buffer_grow_size( struct mulle__buffer *buffer,
-                                         size_t min_amount)
+static size_t   _mulle__buffer_grow_size( struct mulle__buffer *buffer,
+                                          size_t min_amount)
 {
    size_t   plus;
    size_t   new_size;
@@ -248,7 +274,7 @@ int   _mulle__buffer_grow( struct mulle__buffer *buffer,
    // assume realloc is slow enough, to warrant all this code :)
    //
 
-   new_size          = mulle__buffer_grow_size( buffer, min_amount);
+   new_size          = _mulle__buffer_grow_size( buffer, min_amount);
    len               = buffer->_curr - buffer->_storage;
    p                 = _mulle_allocator_realloc( allocator, malloc_block, new_size);
 

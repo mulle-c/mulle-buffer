@@ -271,6 +271,25 @@ static inline void   *mulle_buffer_extract_all( struct mulle_buffer *buffer)
 }
 
 
+static inline struct mulle_data   mulle_buffer_extract_data( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return( mulle_data_make_invalid());
+   return( _mulle__buffer_extract_data( (struct mulle__buffer *) buffer,
+                                         mulle_buffer_get_allocator( buffer)));
+}
+
+
+static inline void   *mulle_buffer_extract_string( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return( NULL);
+   return( _mulle__buffer_extract_string( (struct mulle__buffer *) buffer,
+                                           mulle_buffer_get_allocator( buffer)));
+}
+
+
+
 static inline void   mulle_buffer_remove_all( struct mulle_buffer *buffer)
 {
    if( ! buffer)
@@ -291,11 +310,27 @@ static inline void
 
 #pragma mark - accessors
 
+
+static inline struct mulle_data   mulle__buffer_get_data( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return( mulle_data_make_invalid());
+   return( _mulle__buffer_get_data( (struct mulle__buffer *) buffer));
+}
+
 static inline void   *mulle_buffer_get_bytes( struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( NULL);
    return( _mulle__buffer_get_bytes( (struct mulle__buffer *) buffer));
+}
+
+
+static inline void   *mulle_buffer_get_string( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return( NULL);
+   return( _mulle__buffer_get_string( (struct mulle__buffer *) buffer, buffer->_allocator));
 }
 
 
