@@ -386,6 +386,7 @@ static inline void   *_mulle__buffer_get_bytes( struct mulle__buffer *buffer)
    return( buffer->_storage);
 }
 
+
 static inline size_t   _mulle__buffer_get_size( struct mulle__buffer *buffer)
 {
    return( buffer->_size);
@@ -406,6 +407,17 @@ static inline void    _mulle__buffer_add_byte( struct mulle__buffer *buffer,
    assert( buffer->_curr); // for the analyzer
    *buffer->_curr++ = c;
 }
+
+
+static inline int    _mulle__buffer_get_last_byte( struct mulle__buffer *buffer)
+{
+   assert( ! _mulle__buffer_is_empty( buffer));
+
+   if( buffer->_curr == buffer->_storage)
+      return( -1);
+   return( buffer->_curr[ 1]);
+}
+
 
 
 static inline void    _mulle__buffer_remove_last_byte( struct mulle__buffer *buffer)

@@ -191,13 +191,12 @@ static inline void    mulle_buffer_init_inflexible_with_static_bytes( struct mul
    if( ! buffer)
       return;
    _mulle__buffer_init_inflexible_with_static_bytes( (struct mulle__buffer *) buffer,
-                                                    storage,
-                                                    length);
+                                                     storage,
+                                                     length);
 }
 
 
-#pragma mark -
-#pragma mark sizing
+#pragma mark - sizing
 
 static inline int    mulle_buffer_grow( struct mulle_buffer *buffer,
                                         size_t min_amount)
@@ -290,14 +289,21 @@ static inline void
 }
 
 
-#pragma mark -
-#pragma mark accessors
+#pragma mark - accessors
 
 static inline void   *mulle_buffer_get_bytes( struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( NULL);
    return( _mulle__buffer_get_bytes( (struct mulle__buffer *) buffer));
+}
+
+
+static inline int    mulle_buffer_get_last_byte( struct mulle__buffer *buffer)
+{
+   if( ! buffer)
+      return( -1);
+   return( _mulle__buffer_get_last_byte( (struct mulle__buffer *) buffer));
 }
 
 
@@ -354,8 +360,7 @@ static inline void   *mulle_buffer_advance( struct mulle_buffer *buffer,
 }
 
 
-#pragma mark -
-#pragma mark copy out
+#pragma mark - copy out
 
 static inline void   mulle_buffer_copy_range( struct mulle_buffer *buffer,
                                               size_t offset,
@@ -371,8 +376,7 @@ static inline void   mulle_buffer_copy_range( struct mulle_buffer *buffer,
 }
 
 
-#pragma mark -
-#pragma mark query
+#pragma mark - query
 
 static inline int   mulle_buffer_is_inflexible( struct mulle_buffer *buffer)
 {
@@ -453,8 +457,7 @@ static inline int   mulle_buffer_intersects_bytes( struct mulle_buffer *buffer,
 }
 
 
-#pragma mark -
-#pragma mark additions
+#pragma mark - additions
 
 static inline int   mulle_buffer_guarantee( struct mulle_buffer *buffer,
                                             size_t length)
@@ -519,8 +522,7 @@ static inline void   mulle_buffer_add_uint32( struct mulle_buffer *buffer,
 }
 
 
-#pragma mark -
-#pragma mark add memory ranges
+#pragma mark - add memory ranges
 
 static inline void   mulle_buffer_add_bytes( struct mulle_buffer *buffer,
                                              void *bytes,
@@ -640,8 +642,7 @@ static inline void   mulle_buffer_reset( struct mulle_buffer *buffer)
 }
 
 
-#pragma mark -
-#pragma mark reading
+#pragma mark - reading
 
 /*
  * Limited read support for buffers
@@ -706,8 +707,7 @@ static inline int   mulle_buffer_find_byte( struct mulle_buffer *buffer,
 }
 
 
-#pragma mark -
-#pragma mark hexdump fixed to 16 bytes per line
+#pragma mark - hexdump fixed to 16 bytes per line
 
 // actually they are bits to be ORed
 enum mulle_buffer_hexdump_options
@@ -732,8 +732,7 @@ void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
                             size_t counter,
                             unsigned int options);
 
-#pragma mark -
-#pragma mark mulle_flushablebuffer
+#pragma mark - mulle_flushablebuffer
 
 #define MULLE_FLUSHABLEBUFFER_BASE    \
 MULLE__FLUSHABLEBUFFER_BASE;          \
