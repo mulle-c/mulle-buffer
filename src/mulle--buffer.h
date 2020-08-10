@@ -57,10 +57,10 @@ enum {
 // and none of the functions check for NULL pointers
 //
 #define MULLE__BUFFER_BASE            \
-   unsigned char   *_initial_storage; \
    unsigned char   *_storage;         \
    unsigned char   *_curr;            \
    unsigned char   *_sentinel;        \
+   unsigned char   *_initial_storage; \
    size_t          _size;             \
    unsigned int    _type
 
@@ -272,8 +272,8 @@ static inline int   _mulle__buffer_guarantee( struct mulle__buffer *buffer,
 
 
 static inline void   *_mulle__buffer_advance( struct mulle__buffer *buffer,
-                                             size_t length,
-                                             struct mulle_allocator *allocator)
+                                              size_t length,
+                                              struct mulle_allocator *allocator)
 {
    unsigned char   *reserved;
 

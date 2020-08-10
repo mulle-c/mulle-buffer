@@ -1,6 +1,6 @@
 # mulle-buffer
 
-↗️ A growable C char array and also a stream
+#### ↗️ A growable C char array and also a stream
 
 A growable array of C `unsigned char`. This can be used to construct arbitrary
 long binary data. It can be used to implement NSMutableData. But it can also be
