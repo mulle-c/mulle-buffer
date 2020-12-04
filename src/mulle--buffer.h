@@ -33,8 +33,6 @@
 
 #include "include.h"
 
-#include "mulle-data.h"
-
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
@@ -244,6 +242,7 @@ int    _mulle__buffer_grow( struct mulle__buffer *buffer,
 void   _mulle__buffer_size_to_fit( struct mulle__buffer *buffer,
                                    struct mulle_allocator *allocator);
 
+// this zeroes, when advancing, shrinks otherwise
 void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
                                       size_t length,
                                       struct mulle_allocator *allocator);
@@ -254,20 +253,19 @@ size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
                                     struct mulle_allocator *allocator);
 
 
-static inline int   _mulle__buffer_guarantee( struct mulle__buffer *buffer,
-                                              size_t length,
-                                              struct mulle_allocator *allocator)
+static inline void   *_mulle__buffer_guarantee( struct mulle__buffer *buffer,
+                                                size_t length,
+                                                struct mulle_allocator *allocator)
 {
    ptrdiff_t   missing;
 
    missing = &buffer->_curr[ length] - buffer->_sentinel;
-   if( missing <= 0)
-   {
-      assert( ! missing || buffer->_curr); // for the analyzer
-      return( 0);
-   }
+   if( missing > 0)
+      if( _mulle__buffer_grow( buffer, (size_t) missing, allocator))
+         return( NULL);
 
-   return( _mulle__buffer_grow( buffer, (size_t) missing, allocator));
+   assert( ! missing || buffer->_curr); // for the analyzer
+   return( buffer->_curr);
 }
 
 
@@ -277,11 +275,9 @@ static inline void   *_mulle__buffer_advance( struct mulle__buffer *buffer,
 {
    unsigned char   *reserved;
 
-   if( _mulle__buffer_guarantee( buffer, length, allocator))
-      return( NULL);
-
-   reserved      = buffer->_curr;
-   buffer->_curr = &buffer->_curr[ length];
+   reserved = _mulle__buffer_guarantee( buffer, length, allocator);
+   if( reserved)
+      buffer->_curr = &buffer->_curr[ length];
 
    return( reserved);
 }
@@ -385,18 +381,19 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
                                                  struct mulle_allocator *allocator);
 
 // old name, obsolete now
-static inline void   *_mulle__buffer_extract_all( struct mulle__buffer *buffer,
-                                                  struct mulle_allocator *allocator)
-{
-   return( _mulle__buffer_extract_data( buffer, allocator).bytes);
-}
+//static inline void   *_mulle__buffer_extract_all( struct mulle__buffer *buffer,
+//                                                  struct mulle_allocator *allocator)
+//{
+//   return( _mulle__buffer_extract_data( buffer, allocator).bytes);
+//}
 
 //
-// Like _mulle__buffer_extract_data/_mulle__buffer_extract_all but guarantees
-// it's a C-String
+// Like _mulle__buffer_extract_data but guarantees
+// it's a C-String and sizes to fit
 //
 void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator);
+
 //
 // Nice when building up a C string dynamically. This will ensure the last
 // byte is a zero or append one if necessary. For a static buffer it may
@@ -480,7 +477,7 @@ static inline void    _mulle__buffer_add_uint16( struct mulle__buffer *buffer,
    unsigned char   lsb;
    unsigned char   msb;
 
-   if( _mulle__buffer_guarantee( buffer, 2, allocator))
+   if( ! _mulle__buffer_guarantee( buffer, 2, allocator))
       return;
 
    lsb = c & 0xFF;
@@ -502,7 +499,7 @@ static inline void    _mulle__buffer_add_uint32( struct mulle__buffer *buffer,
    unsigned char   qsb;
    unsigned char   msb;
 
-   if( _mulle__buffer_guarantee( buffer, 4, allocator))
+   if( ! _mulle__buffer_guarantee( buffer, 4, allocator))
       return;
 
    lsb = c & 0xFF;

@@ -26,6 +26,5 @@ set( PUBLIC_HEADERS
 src/include.h
 src/mulle--buffer.h
 src/mulle-buffer.h
-src/mulle-data.h
 )
 
