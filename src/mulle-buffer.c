@@ -74,7 +74,6 @@ void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 
    memo = bytes;
 
-
    if( ! (options & mulle_buffer_hexdump_no_offset))
    {
       s = mulle_buffer_advance( buffer, 10);

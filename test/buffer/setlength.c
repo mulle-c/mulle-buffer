@@ -23,6 +23,26 @@ static void   test_normal()
 }
 
 
+static void   test_zero()
+{
+   struct mulle_buffer    *buffer;
+   unsigned int           i;
+   size_t                 len;
+
+   buffer = mulle_buffer_create( NULL);
+
+   printf( "test_zero: %d\n", (int) mulle_buffer_get_length( buffer));
+
+   mulle_buffer_zero_to_length( buffer, 20);
+   printf( "test_zero: %d\n", (int) mulle_buffer_get_length( buffer));
+
+   mulle_buffer_zero_to_length( buffer, 8);
+   printf( "test_zero: %d\n", (int) mulle_buffer_get_length( buffer));
+
+   mulle_buffer_destroy( buffer);
+}
+
+
 static void   test_inflexible()
 {
    struct mulle_buffer   buffer;
@@ -50,6 +70,7 @@ static void   test_inflexible()
 int  main()
 {
    test_normal();
+   test_zero();
    test_inflexible();
    return( 0);
 }

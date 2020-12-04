@@ -41,7 +41,6 @@
 #define MULLE_BUFFER_VERSION  ((2 << 20) | (2 << 8) | 0)
 
 #include "include.h"
-#include "mulle-data.h"
 #include "mulle--buffer.h"
 
 
@@ -262,13 +261,13 @@ static inline size_t   mulle_buffer_set_length( struct mulle_buffer *buffer,
 //
 // you only do this once!, because you now own the malloc block
 // TODO: rename to extract only ?
-static inline void   *mulle_buffer_extract_all( struct mulle_buffer *buffer)
-{
-   if( ! buffer)
-      return( NULL);
-   return( _mulle__buffer_extract_all( (struct mulle__buffer *) buffer,
-                                       mulle_buffer_get_allocator( buffer)));
-}
+//static inline void   *mulle_buffer_extract_all( struct mulle_buffer *buffer)
+//{
+//   if( ! buffer)
+//      return( NULL);
+//   return( _mulle__buffer_extract_all( (struct mulle__buffer *) buffer,
+//                                       mulle_buffer_get_allocator( buffer)));
+//}
 
 
 static inline struct mulle_data   mulle_buffer_extract_data( struct mulle_buffer *buffer)
@@ -288,6 +287,18 @@ static inline void   *mulle_buffer_extract_string( struct mulle_buffer *buffer)
                                            mulle_buffer_get_allocator( buffer)));
 }
 
+
+static inline void   *mulle_buffer_extract_bytes( struct mulle_buffer *buffer)
+{
+   struct mulle_data   data;
+
+   if( ! buffer)
+      return( NULL);
+
+   data = _mulle__buffer_extract_data( (struct mulle__buffer *) buffer,
+                                        mulle_buffer_get_allocator( buffer));
+   return( data.bytes);
+}
 
 
 static inline void   mulle_buffer_remove_all( struct mulle_buffer *buffer)
@@ -494,15 +505,20 @@ static inline int   mulle_buffer_intersects_bytes( struct mulle_buffer *buffer,
 
 #pragma mark - additions
 
-static inline int   mulle_buffer_guarantee( struct mulle_buffer *buffer,
-                                            size_t length)
+//
+// returns NULL, if length can not be guaranteed. Otherwise a pointer to
+// the unused area. Use mulle_buffer_advance to forward the current
+// pointer after writing into the area.
+// 
+static inline void   *mulle_buffer_guarantee( struct mulle_buffer *buffer,
+                                              size_t length)
 {
    if( ! buffer)
-      return( length == 0);
+      return( NULL);
 
    return( _mulle__buffer_guarantee( (struct mulle__buffer *) buffer,
-                                    length,
-                                    mulle_buffer_get_allocator( buffer)));
+                                     length,
+                                     mulle_buffer_get_allocator( buffer)));
 }
 
 
