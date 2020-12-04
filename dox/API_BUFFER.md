@@ -30,7 +30,7 @@ char                  *s;
 buf = mulle_buffer_create( NULL);
 mulle_buffer_add_string( buf, "VfL");
 mulle_buffer_add_char( buf, 0);
-s = mulle_buffer_extract( buf);
+s = mulle_buffer_extract_string( buf);
 mulle_buffer_destroy( buf);
 
 printf( "%s\n", s);
@@ -164,7 +164,8 @@ The storage is overwritten from the start.
 void   mulle_buffer_size_to_fit( struct mulle_buffer *buffer)
 ```
 
-Release all unneeded memory. Useful to call before `mulle_buffer_extract_all` when using larger buffers.
+Release all unneeded memory. Useful to call before
+`mulle_buffer_extract_data` when using larger buffers.
 
 
 ### `mulle_buffer_make_inflexable`
@@ -201,15 +202,43 @@ Truncate or widen a buffer to `length` size. If the buffer is expanded, the new 
 will be set to zero.
 
 
-### `mulle_buffer_extract_bytes`
+### `mulle_buffer_extract_data`
 
 ```
-void   *mulle_buffer_extract_bytes( struct mulle_buffer *buffer)
+struct mulle_data   mulle_buffer_extract_data( struct mulle_buffer *buffer)
 ```
 
 Retrieve the internal storage. The buffer is empty afterwards. Here is
 an example how to concatenate strings and retrieve them in a `malloc` (stdlib)
 allocated memory region):
+
+```
+struct mulle_buffer   buf;
+struct mulle_data     data;
+
+mulle_buffer_init( &buf, &mulle_stdlib_allocator);
+mulle_buffer_add_string( &buf, "VfL");
+mulle_buffer_add_char( &buf, ' ');
+mulle_buffer_add_string( &buf, "Bochum");
+data = mulle_buffer_extract_data( &buf);
+mulle_buffer_done( &buf);
+printf( "%s\n", data.characters);
+free( data.characters);
+```
+
+In general it is preferable to use `NULL` instead of `&mulle_stdlib_allocator` and
+then `mulle_free` instead of `free`. In the example it is assumed, that `malloc`
+must be used.
+
+
+### `mulle_buffer_extract_string`
+
+```
+char *   mulle_buffer_extract_string( struct mulle_buffer *buffer)
+```
+
+A convenience around `mulle_buffer_extract_data`. It ensures that there is a
+trailing zero and also resizes the allocated memory to fit the string size.
 
 ```
 struct mulle_buffer   buf;
@@ -219,16 +248,11 @@ mulle_buffer_init( &buf, &mulle_stdlib_allocator);
 mulle_buffer_add_string( &buf, "VfL");
 mulle_buffer_add_char( &buf, ' ');
 mulle_buffer_add_string( &buf, "Bochum");
-mulle_buffer_size_to_fit( &buf);
-s = mulle_buffer_extract( &buf);
+s = mulle_buffer_extract_string( &buf);
 mulle_buffer_done( &buf);
 printf( "%s\n", s);
 free( s);
 ```
-
-In general it is preferable to use `NULL` instead of `&mulle_stdlib_allocator` and
-then `mulle_free` instead of `free`. In the example it is assumed, that `malloc`
-must be used.
 
 
 ### `mulle_buffer_remove_all`
@@ -333,12 +357,14 @@ An inflexable buffer may overflow. If that is the case, many operations on
 ### `mulle_buffer_guarantee`
 
 ```
-static inline int   mulle_buffer_guarantee( struct mulle_buffer *buffer,
-                                            size_t length)
+static inline void   *mulle_buffer_guarantee( struct mulle_buffer *buffer,
+                                             size_t length)
 ```
 
 Increase capacity of `buffer` so that `length` bytes can be added next time
-without needing to realloc. Returns 0 on success.
+without needing to realloc. Returns a pointer to the reserved area (of size
+length) on success. Otherwise NULL. NULL can only happen if you are dealing
+with a non-flexable buffer.
 
 
 ### `mulle_buffer_remove_last_byte`
