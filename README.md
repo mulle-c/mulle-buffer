@@ -7,10 +7,6 @@ long binary data. It can be used to implement NSMutableData. But it can also be
 used as a stream.
 
 
-> This library could benefit from more tests. Do not assume, that it
-> is completely bug free.
-
-
 | Release Version
 |-----------------------------------
 | ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg?branch=release) [![Build Status](https://github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg?branch=release)](https://github.com/mulle-c/mulle-buffer/actions)
