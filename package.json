@@ -1,0 +1,17 @@
+{
+   "name" : "mulle-buffer",
+   "version" : "2.2.0",
+   "description" : "↗️ A growable C char array and also a stream",
+   "homepage" : "https://github.com/mulle-c/mulle-buffer",
+   "bugs" : "https://github.com/mulle-c/mulle-buffer/issues",
+   "keywords" : [],
+   "license" : "BSD-3-Clause",
+   "repository" : {
+      "type" : "git",
+      "url" : "mulle-c/mulle-buffer"
+   },
+   "dependencies" : {
+      "mulle-allocator" : "mulle-c/mulle-allocator",
+      "mulle-data" : "mulle-c/mulle-data"
+   }
+}
