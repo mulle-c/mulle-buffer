@@ -1,3 +1,15 @@
+## 2.2.0
+
+* ``mulle_buffer_extract/mulle_buffer_extract_all`` is now `mulle_buffer_extract_data` or ``mulle_buffer_extract_string``
+* ``mulle_buffer_guarantee`` now returns a non-null `void *` on success instead of an `int`
+* added ``mulle_buffer_size_to_fit``
+* reorder `mulle_buffer` ``_initial_storage`` field to below ``_sentinel``
+* add some string functions for easier and less errorprone c-string construction
+* added `mulle_buffer_get_last_byte`
+* added `struct `mulle_data`` for benefit of *NSData*
+* destroy buffer contents in ``_mulle__buffer_done`` if DEBUG is defined
+
+
 ### 2.1.1
 
 * new mulle-sde project structure
