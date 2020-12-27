@@ -16,6 +16,8 @@ jobs:
     - name: Set MULLE_HOSTNAME
       run: |
         name="${GITHUB_REF##*/}"
+        name="${GITHUB_REF##*/}"
+        MULLE_HOSTNAME="ci-${name##*-}""
         echo "MULLE_HOSTNAME=ci-${name##*-}" >> $GITHUB_ENV
         echo "MULLE_HOSTNAME=${MULLE_HOSTNAME}" >&2
 
