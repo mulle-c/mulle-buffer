@@ -509,7 +509,7 @@ static inline int   mulle_buffer_intersects_bytes( struct mulle_buffer *buffer,
 // returns NULL, if length can not be guaranteed. Otherwise a pointer to
 // the unused area. Use mulle_buffer_advance to forward the current
 // pointer after writing into the area.
-// 
+//
 static inline void   *mulle_buffer_guarantee( struct mulle_buffer *buffer,
                                               size_t length)
 {
@@ -689,7 +689,7 @@ static inline void   mulle_buffer_reset( struct mulle_buffer *buffer)
       return;
 
    _mulle__buffer_reset( (struct mulle__buffer *) buffer,
-                        mulle_buffer_get_allocator( buffer));
+                          mulle_buffer_get_allocator( buffer));
 }
 
 

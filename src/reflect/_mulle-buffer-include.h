@@ -16,28 +16,18 @@
 //    remove:             `mulle-sourcetree mark mulle-allocator no-header`
 //    rename:             `mulle-sde dependency|library set mulle-allocator include whatever.h`
 //    toggle #import:     `mulle-sourcetree mark mulle-allocator [no-]import`
-//    toggle localheader: `mulle-sourcetree mark mulle-allocator [no-]localheader`
 //    toggle public:      `mulle-sourcetree mark mulle-allocator [no-]public`
 //    toggle optional:    `mulle-sourcetree mark mulle-allocator [no-]require`
 //    remove for os:      `mulle-sourcetree mark mulle-allocator no-os-<osname>`
-# if defined( __has_include) && __has_include("mulle-allocator.h")
-#   include "mulle-allocator.h"   // mulle-allocator
-# else
-#   include <mulle-allocator/mulle-allocator.h>   // mulle-allocator
-# endif
+# include <mulle-allocator/mulle-allocator.h>   // mulle-allocator
 
 // How to tweak the following mulle-data #include
 //    remove:             `mulle-sourcetree mark mulle-data no-header`
 //    rename:             `mulle-sde dependency|library set mulle-data include whatever.h`
 //    toggle #import:     `mulle-sourcetree mark mulle-data [no-]import`
-//    toggle localheader: `mulle-sourcetree mark mulle-data [no-]localheader`
 //    toggle public:      `mulle-sourcetree mark mulle-data [no-]public`
 //    toggle optional:    `mulle-sourcetree mark mulle-data [no-]require`
 //    remove for os:      `mulle-sourcetree mark mulle-data no-os-<osname>`
-# if defined( __has_include) && __has_include("mulle-data.h")
-#   include "mulle-data.h"   // mulle-data
-# else
-#   include <mulle-data/mulle-data.h>   // mulle-data
-# endif
+# include <mulle-data/mulle-data.h>   // mulle-data
 
 #endif
