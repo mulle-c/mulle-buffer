@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((2 << 20) | (2 << 8) | 0)
+#define MULLE_BUFFER_VERSION  ((3 << 20) | (0 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -795,12 +795,13 @@ struct mulle_flushablebuffer
 };
 
 typedef mulle__flushablebuffer_flusher   mulle_flushablebuffer_flusher;
+typedef mulle__flushablebuffer_flusher   *mulle_flushablebuffer_flusher_t;
 
 static inline void
    mulle_flushablebuffer_init( struct mulle_flushablebuffer *buffer,
                                void *storage,
                                size_t length,
-                               mulle_flushablebuffer_flusher *flusher,
+                               mulle_flushablebuffer_flusher_t flusher,
                                void *userinfo)
 {
    if( ! buffer || ! storage || ! flusher)

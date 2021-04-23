@@ -11,7 +11,11 @@ static void   example()
    struct mulle_buffer            *buf;
    char                           storage[ 8];
 
-   mulle_flushablebuffer_init( &_buf, storage, sizeof( storage), fwrite, stdout);
+   mulle_flushablebuffer_init( &_buf,
+                               storage,
+                               sizeof( storage),
+                               (mulle_flushablebuffer_flusher_t) fwrite,
+                               stdout);
 
    buf = (struct mulle_buffer  *) &_buf;
    mulle_buffer_add_string( buf, "VfL");
@@ -31,7 +35,11 @@ static void   example2()
    struct mulle_buffer            *buf;
    char                           storage[ 8];
 
-   mulle_flushablebuffer_init( &_buf, storage, sizeof( storage), fwrite, stdout);
+   mulle_flushablebuffer_init( &_buf,
+                               storage,
+                               sizeof( storage),
+                               (mulle_flushablebuffer_flusher_t) fwrite,
+                               stdout);
 
    buf = (struct mulle_buffer  *) &_buf;
    mulle_buffer_add_string( buf, "VfL Bochum 1848\n");
