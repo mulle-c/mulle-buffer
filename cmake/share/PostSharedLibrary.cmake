@@ -9,7 +9,6 @@ if( MULLE_TRACE_INCLUDE)
 endif()
 
 # included by PostLibrary already
-# include( AllLoadC)
 
 CreateForceAllLoadList( ALL_LOAD_DEPENDENCY_LIBRARIES FORCE_ALL_LOAD_DEPENDENCY_LIBRARIES)
 
