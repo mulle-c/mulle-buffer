@@ -36,14 +36,15 @@ if( NOT __ALL_LOAD_C_CMAKE__)
    #
    # for APPLE we mention the library twice, that's because it happens to
    # be a shared library for some reason, that cmake still picks it up
-   # to generate an RPATH
+   # to generate an RPATH. ALL_LOAD_PREFIX can be set to "-Xlinker -reexport_library "  
+   # and then symbols will be reexported. 
    #
    function( CreateForceAllLoadList listname outputname)
       if( ${listname})
          set( list ${BEGIN_ALL_LOAD})
          foreach( library ${${listname}})
             if( APPLE)
-               list( APPEND list "${library}")
+               list( APPEND list "${ALL_LOAD_PREFIX}${library}")
             endif()
             list( APPEND list "${FORCE_LOAD_PREFIX}${library}")
          endforeach()

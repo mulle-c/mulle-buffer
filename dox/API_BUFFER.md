@@ -529,7 +529,11 @@ Here is an example of `mulle_flushablebuffer` as a flushing string stream writer
    struct mulle_buffer            *buf;
    char                           storage[ 8];
 
-   mulle_flushablebuffer_init( &_buf, storage, sizeof( storage), fwrite, stdout);
+   mulle_flushablebuffer_init( &_buf,
+                               storage,
+                               sizeof( storage),
+                               (mulle_flushablebuffer_flusher_t) fwrite,
+                               stdout);
 
    buf = &_buf;
    mulle_buffer_add_string( buf, "VfL Bochum 1848\n");
@@ -546,7 +550,7 @@ Here is an example of `mulle_flushablebuffer` as a flushing string stream writer
 void    mulle_flushablebuffer_init( struct mulle_flushablebuffer *buffer,
                                     void *storage,
                                     size_t length,
-                                    mulle_flushablebuffer_flusher *flusher,
+                                    mulle_flushablebuffer_flusher_t flusher,
                                     void *userinfo)
 ```
 

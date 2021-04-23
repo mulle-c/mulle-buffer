@@ -536,9 +536,9 @@ static inline int   _mulle__buffer_intersects_bytes( struct mulle__buffer *buffe
 
 
 static inline void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
-                                              void *bytes,
-                                              size_t length,
-                                              struct mulle_allocator *allocator)
+                                               void *bytes,
+                                               size_t length,
+                                               struct mulle_allocator *allocator)
 {
    void   *s;
 
@@ -551,8 +551,8 @@ static inline void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
 
 
 static inline void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
-                                               char *bytes,
-                                               struct mulle_allocator *allocator)
+                                                char *bytes,
+                                                struct mulle_allocator *allocator)
 {
    char   c;
 
@@ -639,7 +639,9 @@ static inline int   _mulle__buffer_memcmp( struct mulle__buffer *buffer,
 //
 // a bit weird, but it is used to truncate or a append a 0 string
 // but size is not adjusted, useful when retrieving the buffer and
-// use it as cString, but the buffer is fixed size.
+// use it as cString, but the buffer is fixed size. You can then print
+// the strlen or print the contents. You can then easily just append
+// another string.
 //
 static inline void   _mulle__buffer_zero_last_byte( struct mulle__buffer *buffer)
 {
