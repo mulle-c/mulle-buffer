@@ -61,86 +61,96 @@ static inline unsigned int   hex( unsigned int c)
 }
 
 
-void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
-                                 uint8_t *bytes,
-                                 unsigned int n,
-                                 size_t counter,
-                                 unsigned int options)
+void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
+                                  void *bytes,
+                                  unsigned int n,
+                                  size_t counter,
+                                  unsigned int options)
 {
    uint8_t        *memo;
    uint8_t        *s;
    unsigned int   i;
    unsigned int   value;
+   uint8_t        *p;
 
    memo = bytes;
+   p    = bytes;
 
    if( ! (options & mulle_buffer_hexdump_no_offset))
    {
-      s = mulle_buffer_advance( buffer, 10);
+      s     = mulle_buffer_advance( buffer, 10);
+      if( s)
+      {
+         *s++ = (uint8_t) hex( counter >> 28 & 0xF);
+         *s++ = (uint8_t) hex( counter >> 24 & 0xF);
+         *s++ = (uint8_t) hex( counter >> 20 & 0xF);
+         *s++ = (uint8_t) hex( counter >> 16 & 0xF);
 
-      *s++ = (uint8_t) hex( counter >> 28 & 0xF);
-      *s++ = (uint8_t) hex( counter >> 24 & 0xF);
-      *s++ = (uint8_t) hex( counter >> 20 & 0xF);
-      *s++ = (uint8_t) hex( counter >> 16 & 0xF);
+         *s++ = (uint8_t) hex( counter >> 12 & 0xF);
+         *s++ = (uint8_t) hex( counter >> 8 & 0xF);
+         *s++ = (uint8_t) hex( counter >> 4 & 0xF);
+         *s++ = (uint8_t) hex( counter >> 0 & 0xF);
 
-      *s++ = (uint8_t) hex( counter >> 12 & 0xF);
-      *s++ = (uint8_t) hex( counter >> 8 & 0xF);
-      *s++ = (uint8_t) hex( counter >> 4 & 0xF);
-      *s++ = (uint8_t) hex( counter >> 0 & 0xF);
-
-      *s++ = ' ';
-      *s++ = ' ';
+         *s++ = ' ';
+         *s++ = ' ';
+      }
    }
 
    if( ! (options & mulle_buffer_hexdump_no_hex))
    {
+      i = 0;
       s = mulle_buffer_advance( buffer, 3 * 8);
-
-      for( i = 0; i < 8; i++)
+      if( s)
       {
-         if( i < n)
+         for( ; i < 8; i++)
          {
-            value = *bytes++;
-            *s++ = (uint8_t) hex( value >> 4);
-            *s++ = (uint8_t) hex( value & 0xF);
-         }
-         else
-         {
-            if( options & mulle_buffer_hexdump_no_ascii)
+            if( i < n)
             {
-               buffer->_curr = s;
-               return;
+               value = *p++;
+               *s++ = (uint8_t) hex( value >> 4);
+               *s++ = (uint8_t) hex( value & 0xF);
+            }
+            else
+            {
+               if( options & mulle_buffer_hexdump_no_ascii)
+               {
+                  buffer->_curr = s;
+                  return;
+               }
+               *s++ = ' ';
+               *s++ = ' ';
             }
             *s++ = ' ';
-            *s++ = ' ';
          }
-         *s++ = ' ';
       }
 
       mulle_buffer_add_byte( buffer, ' ');
 
       s = mulle_buffer_advance( buffer, 3 * 8);
-      for( ; i < 16; i++)
+      if( s)
       {
-         if( i < n)
+         for( ; i < 16; i++)
          {
-            value = *bytes++;
-
-            *s++ = (uint8_t) hex( value >> 4);
-            *s++ = (uint8_t) hex( value & 0xF);
-         }
-         else
-         {
-            if( options & mulle_buffer_hexdump_no_ascii)
+            if( i < n)
             {
-               buffer->_curr = s;
-               return;
-            }
+               value = *p++;
 
-            *s++ = ' ';
+               *s++ = (uint8_t) hex( value >> 4);
+               *s++ = (uint8_t) hex( value & 0xF);
+            }
+            else
+            {
+               if( options & mulle_buffer_hexdump_no_ascii)
+               {
+                  buffer->_curr = s;
+                  return;
+               }
+
+               *s++ = ' ';
+               *s++ = ' ';
+            }
             *s++ = ' ';
          }
-         *s++ = ' ';
       }
    }
 
@@ -149,13 +159,13 @@ void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
       mulle_buffer_add_byte( buffer, ' ');
       mulle_buffer_add_byte( buffer, '|');
 
-      bytes = memo;
+      p = memo;
 
       for( i = 0; i < 16; i++)
       {
          if( i < n)
          {
-            value = *bytes++;
+            value = *p++;
             if( ! isprint( value))
                value = '.';
             mulle_buffer_add_byte( buffer, (uint8_t) value);
@@ -170,7 +180,7 @@ void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 
 
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
-                            uint8_t *bytes,
+                            void *bytes,
                             size_t length,
                             size_t counter,
                             unsigned int options)
@@ -179,22 +189,24 @@ void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
    size_t   full_lines;
    size_t   remainder;
    size_t   i;
+   uint8_t  *p;
 
    lines      = (length + 15) / 16;
    full_lines = length / 16;
+   p          = bytes;
 
    for( i = 0; i < full_lines; i++)
    {
-      mulle_buffer_hexdump_line( buffer, bytes, 16, counter, options);
+      mulle_buffer_hexdump_line( buffer, p, 16, counter, options);
       mulle_buffer_add_byte( buffer, '\n');
       counter += 16;
-      bytes   += 16;
+      p   += 16;
    }
 
    if( i < lines)
    {
       remainder = length - full_lines * 16;
-      mulle_buffer_hexdump_line( buffer, bytes, (unsigned int) remainder, counter, options);
+      mulle_buffer_hexdump_line( buffer, p, (unsigned int) remainder, counter, options);
       mulle_buffer_add_byte( buffer, '\n');
    }
 }

@@ -601,6 +601,31 @@ static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
 }
 
 
+static inline void   mulle_buffer_add_string_if_empty( struct mulle_buffer *buffer,
+                                                       char *bytes)
+{
+   if( ! buffer)
+      return;
+
+   _mulle__buffer_add_string_if_empty( (struct mulle__buffer *) buffer,
+                                       bytes,
+                                       mulle_buffer_get_allocator( buffer));
+}
+
+
+static inline void   mulle_buffer_add_string_if_not_empty( struct mulle_buffer *buffer,
+                                                           char *bytes)
+{
+   if( ! buffer)
+      return;
+
+   _mulle__buffer_add_string_if_not_empty( (struct mulle__buffer *) buffer,
+                                           bytes,
+                                           mulle_buffer_get_allocator( buffer));
+}
+
+
+
 static inline size_t
    mulle_buffer_add_string_with_maxlength( struct mulle_buffer *buffer,
                                            char *bytes,
@@ -771,14 +796,14 @@ enum mulle_buffer_hexdump_options
 
 // dumps only for n >= 1 && n <= 16
 void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
-                                 uint8_t *bytes,
+                                 void *bytes,
                                  unsigned int n,
                                  size_t counter,
                                  unsigned int options);
 
 // dumps all, does not append a \0
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
-                            uint8_t *bytes,
+                            void *bytes,
                             size_t length,
                             size_t counter,
                             unsigned int options);
@@ -825,6 +850,13 @@ static inline int
 
 int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer);
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
+
+
+static inline struct mulle_buffer   *
+   mulle_flushablebuffer_as_buffer( struct mulle_flushablebuffer *buffer)
+{
+   return( (struct mulle_buffer *) buffer);
+}
 
 
 #pragma mark - backwards compatibility
