@@ -5,7 +5,7 @@
  *
  *      mulle-sde environment set MULLE_SOURCETREE_TO_C_INCLUDE_FILE DISABLE
  *
- *   To not generate any header files:
+ *   To not let mulle-sourcetree-to-c generate any header files:
  *
  *      mulle-sde environment set MULLE_SOURCETREE_TO_C_RUN DISABLE
  *
@@ -22,7 +22,8 @@
 //    toggle #include:    `mulle-sourcetree mark mulle-allocator [no-]import`
 //    toggle public:      `mulle-sourcetree mark mulle-allocator [no-]public`
 //    toggle optional:    `mulle-sourcetree mark mulle-allocator [no-]require`
-//    remove for platform:`mulle-sourcetree mark mulle-allocator no-platform-<name>`
+//    remove for platform:`mulle-sourcetree mark mulle-allocator no-platform-<uname>`
+//        (use mulle-sourcetree-to-c --unames for known values)
 #include <mulle-allocator/mulle-allocator.h>   // mulle-allocator
 
 // You can tweak the following #include with these commands.
@@ -33,7 +34,8 @@
 //    toggle #include:    `mulle-sourcetree mark mulle-data [no-]import`
 //    toggle public:      `mulle-sourcetree mark mulle-data [no-]public`
 //    toggle optional:    `mulle-sourcetree mark mulle-data [no-]require`
-//    remove for platform:`mulle-sourcetree mark mulle-data no-platform-<name>`
+//    remove for platform:`mulle-sourcetree mark mulle-data no-platform-<uname>`
+//        (use mulle-sourcetree-to-c --unames for known values)
 #include <mulle-data/mulle-data.h>   // mulle-data
 
 #endif

@@ -8,11 +8,17 @@ if( MULLE_TRACE_INCLUDE)
    MESSAGE( STATUS "# Include \"${CMAKE_CURRENT_LIST_FILE}\"" )
 endif()
 
+#
+# contents selected with patternfile ??-source--sources
+#
 set( SOURCES
 src/mulle--buffer.c
 src/mulle-buffer.c
 )
 
+#
+# contents selected with patternfile ??-source--standalone-sources
+#
 set( STANDALONE_SOURCES
 src/mulle-buffer-standalone.c
 )
