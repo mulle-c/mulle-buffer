@@ -448,7 +448,7 @@ static inline int    _mulle__buffer_get_last_byte( struct mulle__buffer *buffer)
 
    if( buffer->_curr == buffer->_storage)
       return( -1);
-   return( buffer->_curr[ 1]);
+   return( buffer->_curr[ -1]);
 }
 
 
@@ -561,6 +561,15 @@ static inline void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
    while( (c = *bytes++))
       _mulle__buffer_add_byte( buffer, c, allocator);
 }
+
+
+void   _mulle__buffer_add_string_if_empty( struct mulle__buffer *buffer,
+                                           char *bytes,
+                                           struct mulle_allocator *allocator);
+
+void   _mulle__buffer_add_string_if_not_empty( struct mulle__buffer *buffer,
+                                               char *bytes,
+                                               struct mulle_allocator *allocator);
 
 
 //

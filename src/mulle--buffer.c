@@ -416,3 +416,21 @@ void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
    if( &start[ length] <= sentinel)
       memmove( dst, start, length);
 }
+
+
+void   _mulle__buffer_add_string_if_empty( struct mulle__buffer *buffer,
+                                           char *bytes,
+                                           struct mulle_allocator *allocator)
+{
+   if( ! _mulle__buffer_get_length( buffer))
+      _mulle__buffer_add_string( buffer, bytes, allocator);
+}
+
+
+void   _mulle__buffer_add_string_if_not_empty( struct mulle__buffer *buffer,
+                                               char *bytes,
+                                               struct mulle_allocator *allocator)
+{
+   if( _mulle__buffer_get_length( buffer))
+      _mulle__buffer_add_string( buffer, bytes, allocator);
+}
