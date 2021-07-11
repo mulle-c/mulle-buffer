@@ -49,7 +49,7 @@ The intermediate `mulle_buffer` is removed.
 
 
 ```
-static struct mulle_data    read_file( FILE *fp)
+struct mulle_data    read_file( FILE *fp)
 {
    struct mulle_buffer   buffer;
    struct mulle_data     data;
@@ -76,6 +76,32 @@ static struct mulle_data    read_file( FILE *fp)
    return( data);
 }
 ```
+
+### Hex memory dumper
+
+
+```
+void  dump( FILE *fp, void *p, size_t bytes)
+{
+   struct mulle_flushablebuffer  flushable_buffer;
+   struct mulle_buffer           *buffer;
+   char                          storage[ 1024];  // storage for buffer
+
+   mulle_flushablebuffer_init( &flushable_buffer,
+                               storage,
+                               sizeof( storage),
+                               (mulle_flushablebuffer_flusher_t) fwrite,
+                               fp);
+   {
+      buffer = mulle_flushablebuffer_as_buffer( &flushable_buffer);
+      mulle_buffer_add_string( buffer, "---\n");
+      mulle_buffer_hexdump( buffer, p, bytes, 0);
+      mulle_buffer_add_string( buffer, "---\n");
+   }
+   mulle_flushablebuffer_done( &flushable_buffer);
+}
+```
+
 
 
 ## API
