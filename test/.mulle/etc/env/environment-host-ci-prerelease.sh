@@ -1,4 +1,3 @@
-# Fill it with mulle-env envirionment --scope  set <key> <value>
 #
 # mulle-testallocator nodetype: ${MULLE_TESTALLOCATOR_NODETYPE:-tar}
 #
@@ -177,3 +176,5 @@ export MULLE_DATA_URL="https://github.com/mulle-c/mulle-data.git"
 # mulle-data branch: ${MULLE_DATA_BRANCH}
 #
 export MULLE_DATA_BRANCH="prerelease"
+
+

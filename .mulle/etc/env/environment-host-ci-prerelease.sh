@@ -1,4 +1,3 @@
-# Fill it with mulle-env envirionment --scope  set <key> <value>
 #
 # mulle-allocator nodetype: ${MULLE_ALLOCATOR_NODETYPE:-tar}
 #
@@ -51,3 +50,5 @@ export MULLE_DATA_URL="https://github.com/mulle-c/mulle-data.git"
 # mulle-data branch: ${MULLE_DATA_BRANCH}
 #
 export MULLE_DATA_BRANCH="prerelease"
+
+
