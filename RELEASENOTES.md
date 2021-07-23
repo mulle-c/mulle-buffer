@@ -1,3 +1,11 @@
+# 3.0.0
+
+* added ``mulle_buffer_add_string_if_empty`` and ``mulle_buffer_add_string_if_not_empty``
+* changed type for hexdump memory from ``uint8_t` *` to `void *`, which is more convenient
+* added ``mulle_flushablebuffer_as_buffer`` casting function
+* the typedef `mulle_flushablebuffer_flusher` is now `mulle_flushablebuffer_flusher_t`
+
+
 ## 2.2.0
 
 * ``mulle_buffer_extract/mulle_buffer_extract_all`` is now `mulle_buffer_extract_data` or ``mulle_buffer_extract_string``
