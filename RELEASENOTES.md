@@ -6,9 +6,6 @@
     add stdthreads library for FreeBSD
 
 
-* the typedef `mulle_flushablebuffer_flusher` is now `mulle_flushablebuffer_flusher_t`
-
-
 ## 2.2.0
 
 * ``mulle_buffer_extract/mulle_buffer_extract_all`` is now `mulle_buffer_extract_data` or ``mulle_buffer_extract_string``
