@@ -1,7 +1,7 @@
 # 3.0.0
 
 * added `mulle_buffer_add_string_if_empty` and `mulle_buffer_add_string_if_not_empty`
-* changed type for hexdump memory from `uint8_t` *` to `void *`, which is more convenient
+* changed type for hexdump memory from `uint8_t *` to `void *`, which is more convenient
 * added `mulle_flushablebuffer_as_buffer` casting function
     add stdthreads library for FreeBSD
 
