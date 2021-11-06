@@ -73,6 +73,7 @@ struct mulle__buffer
    MULLE__BUFFER_BASE;
 };
 
+#define MULLE__BUFFER_INIT ((struct mulle__buffer){ 0, 0, 0, 0, 0, MULLE_BUFFER_IS_FLEXIBLE })
 
 //
 // this is fairly conveniently, just like fwrite(  _storage, len, nElems, fp)
@@ -247,6 +248,7 @@ void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
                                       size_t length,
                                       struct mulle_allocator *allocator);
 
+
 // this zeroes, when advancing, shrinks otherwise
 size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
                                     size_t length,
@@ -386,6 +388,7 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 //{
 //   return( _mulle__buffer_extract_data( buffer, allocator).bytes);
 //}
+
 
 //
 // Like _mulle__buffer_extract_data but guarantees
@@ -685,6 +688,19 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
                                         size_t offset,
                                         size_t length,
                                         struct mulle_allocator *allocator);
+
+
+// zeroes if inflexible, otherwise adds
+static inline void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
+                                                 struct mulle_allocator *allocator)
+{
+   if( _mulle__buffer_is_inflexible( buffer))
+      _mulle__buffer_zero_last_byte( buffer);
+   else
+      if( _mulle__buffer_get_last_byte( buffer))
+         _mulle__buffer_add_byte( buffer, 0, allocator);
+}
+
 
 
 int  _mulle__buffer_flush( struct mulle__buffer *buffer);

@@ -61,6 +61,8 @@ struct mulle_buffer
 };
 
 
+#define MULLE_BUFFER_INIT ((struct mulle_buffer){ 0, 0, 0, 0, 0, MULLE_BUFFER_IS_FLEXIBLE, &mulle_default_allocator })
+
 static inline struct mulle__buffer   *
    mulle_buffer_as_buffer( struct mulle_buffer *buffer)
 {
@@ -674,6 +676,16 @@ static inline void   mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
       return;
 
    _mulle__buffer_zero_last_byte( (struct mulle__buffer *) buffer);
+}
+
+
+static inline void   mulle_buffer_make_string( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return;
+
+   _mulle__buffer_make_string( (struct mulle__buffer *) buffer,
+                               mulle_buffer_get_allocator( buffer));
 }
 
 
