@@ -88,18 +88,6 @@ int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t se
 }
 
 
-static void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
-                                          struct mulle_allocator *allocator)
-{
-   if( _mulle__buffer_is_inflexible( buffer))
-      _mulle__buffer_zero_last_byte( buffer);
-   else
-      if( _mulle__buffer_get_last_byte( buffer))
-         _mulle__buffer_add_byte( buffer, 0, allocator);
-}
-
-
-
 void   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
                                     struct mulle_allocator *allocator)
 {
