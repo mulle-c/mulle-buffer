@@ -16,26 +16,26 @@
 
 // You can tweak the following #include with these commands.
 // (Use B8174030-DEEE-41DE-BACD-D93F25A0315A instead of mulle-allocator if there are duplicate entries)
-//    remove:             `mulle-sourcetree mark mulle-allocator no-header`
+//    remove:             `mulle-sde dependency mark mulle-allocator no-header`
 //    rename:             `mulle-sde dependency|library set mulle-allocator include whatever.h`
-//    reorder:            `mulle-sourcetree move mulle-allocator <up|down>`
-//    toggle #include:    `mulle-sourcetree mark mulle-allocator [no-]import`
-//    toggle public:      `mulle-sourcetree mark mulle-allocator [no-]public`
-//    toggle optional:    `mulle-sourcetree mark mulle-allocator [no-]require`
-//    remove for platform:`mulle-sourcetree mark mulle-allocator no-platform-<uname>`
-//        (use mulle-sourcetree-to-c --unames for known values)
+//    reorder:            `mulle-sde dependency move mulle-allocator <up|down>`
+//    toggle #include:    `mulle-sde dependency mark mulle-allocator [no-]import`
+//    toggle public:      `mulle-sde dependency mark mulle-allocator [no-]public`
+//    toggle optional:    `mulle-sde dependency mark mulle-allocator [no-]require`
+//    remove for platform:`mulle-sde dependency mark mulle-allocator no-platform-<uname>`
+//        (use `mulle-sourcetree-to-c --unames` to list known values)
 #include <mulle-allocator/mulle-allocator.h>   // mulle-allocator
 
 // You can tweak the following #include with these commands.
 // (Use 1B1CB2BA-0620-4D84-AC63-CF78411EEF1F instead of mulle-data if there are duplicate entries)
-//    remove:             `mulle-sourcetree mark mulle-data no-header`
+//    remove:             `mulle-sde dependency mark mulle-data no-header`
 //    rename:             `mulle-sde dependency|library set mulle-data include whatever.h`
-//    reorder:            `mulle-sourcetree move mulle-data <up|down>`
-//    toggle #include:    `mulle-sourcetree mark mulle-data [no-]import`
-//    toggle public:      `mulle-sourcetree mark mulle-data [no-]public`
-//    toggle optional:    `mulle-sourcetree mark mulle-data [no-]require`
-//    remove for platform:`mulle-sourcetree mark mulle-data no-platform-<uname>`
-//        (use mulle-sourcetree-to-c --unames for known values)
+//    reorder:            `mulle-sde dependency move mulle-data <up|down>`
+//    toggle #include:    `mulle-sde dependency mark mulle-data [no-]import`
+//    toggle public:      `mulle-sde dependency mark mulle-data [no-]public`
+//    toggle optional:    `mulle-sde dependency mark mulle-data [no-]require`
+//    remove for platform:`mulle-sde dependency mark mulle-data no-platform-<uname>`
+//        (use `mulle-sourcetree-to-c --unames` to list known values)
 #include <mulle-data/mulle-data.h>   // mulle-data
 
 #endif
