@@ -84,6 +84,7 @@ MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
 
 # pragma mark - initialization and destruction
 
+MULLE_BUFFER_EXTERN_GLOBAL
 struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator);
 
 
@@ -417,10 +418,10 @@ static inline void   mulle_buffer_copy_range( struct mulle_buffer *buffer,
 {
    if( ! buffer || ! dst)
       return;
-   return( _mulle__buffer_copy_range( (struct mulle__buffer *) buffer,
-                                     offset,
-                                     length,
-                                     dst));
+   _mulle__buffer_copy_range( (struct mulle__buffer *) buffer,
+                              offset,
+                              length,
+                              dst);
 }
 
 
@@ -807,6 +808,7 @@ enum mulle_buffer_hexdump_options
 
 
 // dumps only for n >= 1 && n <= 16
+MULLE_BUFFER_EXTERN_GLOBAL
 void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
                                  void *bytes,
                                  unsigned int n,
@@ -814,6 +816,7 @@ void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
                                  unsigned int options);
 
 // dumps all, does not append a \0
+MULLE_BUFFER_EXTERN_GLOBAL
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
                             void *bytes,
                             size_t length,
@@ -860,7 +863,10 @@ static inline int
    return( _mulle__flushablebuffer_flush( (struct mulle__flushablebuffer *) buffer));
 }
 
+MULLE_BUFFER_EXTERN_GLOBAL
 int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer);
+
+MULLE_BUFFER_EXTERN_GLOBAL
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 
 
