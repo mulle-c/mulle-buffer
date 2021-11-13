@@ -21,6 +21,10 @@
 
 #include "_mulle-buffer-include.h"
 
+
+#ifndef MULLE_BUFFER_EXTERN_GLOBAL
+# define MULLE_BUFFER_EXTERN_GLOBAL MULLE_C_EXTERN_GLOBAL
+#endif
 /* You can add some more include statements here */
 
 #endif
