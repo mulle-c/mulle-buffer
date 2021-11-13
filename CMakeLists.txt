@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 3.1)
 
 project( mulle-buffer C)
 
+add_definitions( -DMULLE_BUFFER_EXTERN_GLOBAL=extern)
 
 ### mulle-sde environment
 

@@ -71,7 +71,7 @@ int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t se
       break;
 
    case MULLE_BUFFER_SEEK_END :
-      plan = &buffer->_sentinel[ -seek];
+      plan = &buffer->_sentinel[ -(long)seek];
       break;
 
    default :
