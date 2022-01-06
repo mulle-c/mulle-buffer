@@ -1,3 +1,9 @@
+## 3.1.0
+
+* ``mulle_buffer_make_string`` added
+* ``MULLE_BUFFER_INIT`` added
+
+
 # 3.0.0
 
 * added `mulle_buffer_add_string_if_empty` and `mulle_buffer_add_string_if_not_empty`
