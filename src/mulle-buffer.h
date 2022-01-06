@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((3 << 20) | (0 << 8) | 0)
+#define MULLE_BUFFER_VERSION  ((3 << 20) | (1 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -905,12 +905,10 @@ MULLE_C_DEPRECATED static inline void
 
 
 
-#if MULLE_C11_VERSION < ((1 << 20) | (1 << 8) | 0)
-# error "mulle_c11 is too old"
-#endif
-
-#if MULLE_ALLOCATOR_VERSION < ((2 << 20) | (0 << 8) | 0)
-# error "mulle_allocator is too old"
+#ifdef __has_include
+# if __has_include( "_mulle-buffer-versioncheck.h")
+#  include "_mulle-buffer-versioncheck.h"
+# endif
 #endif
 
 
