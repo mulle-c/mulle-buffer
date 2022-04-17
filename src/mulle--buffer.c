@@ -146,6 +146,17 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 }
 
 
+void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
+                                   struct mulle_allocator *allocator)
+{
+   if( _mulle__buffer_is_inflexible( buffer))
+      _mulle__buffer_zero_last_byte( buffer);
+   else
+      if( _mulle__buffer_is_empty( buffer) || _mulle__buffer_get_last_byte( buffer))
+         _mulle__buffer_add_byte( buffer, 0, allocator);
+}
+
+
 void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator)
 {
@@ -153,6 +164,7 @@ void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
   _mulle__buffer_size_to_fit( buffer, allocator);
   return( _mulle__buffer_extract_data( buffer, allocator).bytes);
 }
+
 
 
 static inline void  _mulle_buffer_set_overflown( struct mulle__buffer *buffer)

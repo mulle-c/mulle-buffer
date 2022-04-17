@@ -112,10 +112,10 @@ static inline struct mulle__buffer   *
 
 #pragma mark - creation destruction
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 struct mulle__buffer   *_mulle__buffer_create( struct mulle_allocator *allocator);
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void                   _mulle__buffer_destroy( struct mulle__buffer *buffer,
                                                  struct mulle_allocator *allocator);
 
@@ -232,7 +232,7 @@ static inline void   _mulle__buffer_reset( struct mulle__buffer *buffer,
 
 #pragma mark - change buffer type
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
                                       void *storage,
                                       size_t length,
@@ -240,24 +240,24 @@ void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
 
 #pragma mark - resize
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 int    _mulle__buffer_grow( struct mulle__buffer *buffer,
                             size_t min_amount,
                             struct mulle_allocator *allocator);
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   _mulle__buffer_size_to_fit( struct mulle__buffer *buffer,
                                    struct mulle_allocator *allocator);
 
 // this zeroes, when advancing, shrinks otherwise
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
                                       size_t length,
                                       struct mulle_allocator *allocator);
 
 
 // this zeroes, when advancing, shrinks otherwise
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
                                     size_t length,
                                     struct mulle_allocator *allocator);
@@ -370,10 +370,10 @@ enum
    MULLE_BUFFER_SEEK_END = 2
 };
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 size_t   _mulle__buffer_get_seek( struct mulle__buffer *buffer);
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 int      _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t seek);
 
 
@@ -390,7 +390,7 @@ static inline size_t   _mulle__buffer_get_staticlength( struct mulle__buffer *bu
 //
 // you only do this once!, because you now own the malloc block
 //
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
                                                  struct mulle_allocator *allocator);
 
@@ -406,7 +406,7 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 // Like _mulle__buffer_extract_data but guarantees
 // it's a C-String and sizes to fit
 //
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator);
 
@@ -415,7 +415,7 @@ void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
 // byte is a zero or append one if necessary. For a static buffer it may
 // lop of the last character if the buffer is full
 //
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
                                    struct mulle_allocator *allocator);
 
@@ -579,12 +579,12 @@ static inline void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
 }
 
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   _mulle__buffer_add_string_if_empty( struct mulle__buffer *buffer,
                                            char *bytes,
                                            struct mulle_allocator *allocator);
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   _mulle__buffer_add_string_if_not_empty( struct mulle__buffer *buffer,
                                                char *bytes,
                                                struct mulle_allocator *allocator);
@@ -698,7 +698,7 @@ static inline void    _mulle__buffer_add_buffer( struct mulle__buffer *buffer,
 }
 
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
                                         struct mulle__buffer *other,
                                         size_t offset,
@@ -707,22 +707,14 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
 
 
 // zeroes if inflexible, otherwise adds
-static inline void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
-                                                 struct mulle_allocator *allocator)
-{
-   if( _mulle__buffer_is_inflexible( buffer))
-      _mulle__buffer_zero_last_byte( buffer);
-   else
-      if( _mulle__buffer_get_last_byte( buffer))
-         _mulle__buffer_add_byte( buffer, 0, allocator);
-}
+MULLE_BUFFER_GLOBAL
+void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
+                                   struct mulle_allocator *allocator);
 
-
-
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 int  _mulle__buffer_flush( struct mulle__buffer *buffer);
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 int  _mulle__flushablebuffer_flush( struct mulle__flushablebuffer *ibuffer);
 
 
@@ -801,7 +793,7 @@ static inline int   _mulle__buffer_find_byte( struct mulle__buffer *buffer,
 
 #pragma mark - copy out
 
-MULLE_BUFFER_EXTERN_GLOBAL
+MULLE_BUFFER_GLOBAL
 void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
                                   size_t offset,
                                   size_t length,
