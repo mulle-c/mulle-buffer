@@ -41,6 +41,13 @@ void  test( void)
 }
 ```
 
+> #### Tip
+>
+> Use the companion project [mulle-sprintf](//mulle-core/mulle-sprintf) to
+> print data with format strings a la `sprintf` into a mulle-buffer.
+>
+
+
 ### Dynamic File reader
 
 Read a file into a malloced memory buffer. The buffer is efficiently
@@ -82,7 +89,7 @@ struct mulle_data    read_file( FILE *fp)
 
 
 ```
-void  dump( FILE *fp, void *p, size_t bytes)
+void  dump( FILE *fp, void *bytes, size_t length)
 {
    struct mulle_flushablebuffer  flushable_buffer;
    struct mulle_buffer           *buffer;
@@ -96,7 +103,7 @@ void  dump( FILE *fp, void *p, size_t bytes)
    {
       buffer = mulle_flushablebuffer_as_buffer( &flushable_buffer);
       mulle_buffer_add_string( buffer, "---\n");
-      mulle_buffer_hexdump( buffer, p, bytes, 0);
+      mulle_buffer_hexdump( buffer, bytes, length, 0, mulle_buffer_hexdump_default);
       mulle_buffer_add_string( buffer, "---\n");
    }
    mulle_flushablebuffer_done( &flushable_buffer);
