@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((3 << 20) | (1 << 8) | 0)
+#define MULLE_BUFFER_VERSION  ((3 << 20) | (2 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -161,8 +161,8 @@ static inline void
 // address the "return[ed] ... memory ... is suitably aligned for any
 // built-in type"
 //
-static inline void    mulle_buffer_init( struct mulle_buffer *buffer,
-                                         struct mulle_allocator *allocator)
+static inline void   mulle_buffer_init( struct mulle_buffer *buffer,
+                                        struct mulle_allocator *allocator)
 {
    if( ! buffer)
       return;
@@ -171,9 +171,9 @@ static inline void    mulle_buffer_init( struct mulle_buffer *buffer,
 }
 
 
-static inline void    mulle_buffer_init_with_capacity( struct mulle_buffer *buffer,
-                                                       size_t capacity,
-                                                       struct mulle_allocator *allocator)
+static inline void   mulle_buffer_init_with_capacity( struct mulle_buffer *buffer,
+                                                      size_t capacity,
+                                                      struct mulle_allocator *allocator)
 {
    if( ! buffer)
       return;
@@ -186,9 +186,9 @@ static inline void    mulle_buffer_init_with_capacity( struct mulle_buffer *buff
    guaranteeing that a buffer can not be overrun.
    The storage is overwritten from the start.
  */
-static inline void    mulle_buffer_init_inflexible_with_static_bytes( struct mulle_buffer *buffer,
-                                                                      void *storage,
-                                                                      size_t length)
+static inline void   mulle_buffer_init_inflexible_with_static_bytes( struct mulle_buffer *buffer,
+                                                                     void *storage,
+                                                                     size_t length)
 {
    if( ! buffer)
       return;
@@ -200,8 +200,8 @@ static inline void    mulle_buffer_init_inflexible_with_static_bytes( struct mul
 
 #pragma mark - sizing
 
-static inline int    mulle_buffer_grow( struct mulle_buffer *buffer,
-                                        size_t min_amount)
+static inline int   mulle_buffer_grow( struct mulle_buffer *buffer,
+                                       size_t min_amount)
 {
    if( ! buffer)
       return( 0);
@@ -599,8 +599,8 @@ static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
       return;
 
    _mulle__buffer_add_string( (struct mulle__buffer *) buffer,
-                             bytes,
-                             mulle_buffer_get_allocator( buffer));
+                              bytes,
+                              mulle_buffer_get_allocator( buffer));
 }
 
 
@@ -801,6 +801,7 @@ static inline int   mulle_buffer_find_byte( struct mulle_buffer *buffer,
 // actually they are bits to be ORed
 enum mulle_buffer_hexdump_options
 {
+   mulle_buffer_hexdump_default   = 0x0,
    mulle_buffer_hexdump_no_offset = 0x1,
    mulle_buffer_hexdump_no_hex    = 0x2,
    mulle_buffer_hexdump_no_ascii  = 0x4

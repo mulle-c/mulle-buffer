@@ -1,3 +1,8 @@
+## 3.2.0
+
+* add `mulle_buffer_hexdump_default` constant
+
+
 ## 3.1.0
 
 * ``mulle_buffer_make_string`` added
