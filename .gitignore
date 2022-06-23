@@ -51,3 +51,6 @@ tmp.*/
 .vscode/
 *.code-workspace
 src/failed-quaff-idea.txt
+.mulle-make-build-dir
+version.old
+.gdb_history
