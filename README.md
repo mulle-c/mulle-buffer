@@ -9,7 +9,7 @@ used as a stream.
 
 | Release Version
 |-----------------------------------
-| ![Mulle kybernetiK tag](//img.shields.io/github/tag/mulle-c/mulle-buffer.svg?branch=release) [![Build Status](//github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg?branch=release)](//github.com/mulle-c/mulle-buffer/actions)
+| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg?branch=release) [![Build Status](https://github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg?branch=release)](//github.com/mulle-c/mulle-buffer/actions)
 
 ## Examples
 
@@ -19,7 +19,7 @@ Here a C string is constructed. You don't have to worry about calculating
 the necessary buffer size. It's easy, fast and safe:
 The intermediate `mulle_buffer` is removed.
 
-```
+``` c
 #include <mulle-buffer/mulle-buffer.h>
 
 void  test( void)
@@ -55,7 +55,7 @@ grown as to minimize reallocs. The returned buffer is sized to fit.
 The intermediate `mulle_buffer` is removed.
 
 
-```
+``` c
 struct mulle_data    read_file( FILE *fp)
 {
    struct mulle_buffer   buffer;
@@ -88,7 +88,7 @@ struct mulle_data    read_file( FILE *fp)
 ### Output stream to file handle
 
 
-```
+``` c
 void  dump( FILE *fp, void *bytes, size_t length)
 {
    struct mulle_flushablebuffer  flushable_buffer;
@@ -131,7 +131,7 @@ File                                 | Description
 
 Use [mulle-sde](//github.com/mulle-sde) to add mulle-buffer to your project:
 
-```
+``` sh
 mulle-sde dependency add --c --github mulle-c mulle-buffer
 ```
 
@@ -147,7 +147,7 @@ how to add mulle-c source code into your own projects.
 
 Use [mulle-sde](//github.com/mulle-sde) to build and install mulle-buffer and all dependencies:
 
-```
+``` sh
 mulle-sde install --prefix /usr/local \
    //github.com/mulle-c/mulle-buffer/archive/latest.tar.gz
 ```
@@ -165,7 +165,7 @@ Requirements                                             | Description
 
 Install into `/usr/local`:
 
-```
+``` sh
 mkdir build 2> /dev/null
 (
    cd build ;
