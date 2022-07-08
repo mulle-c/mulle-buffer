@@ -9,7 +9,7 @@ used as a stream.
 
 | Release Version
 |-----------------------------------
-| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg?branch=release) [![Build Status](https://github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg?branch=release)](https://github.com/mulle-c/mulle-buffer/actions)
+| ![Mulle kybernetiK tag](//img.shields.io/github/tag/mulle-c/mulle-buffer.svg?branch=release) [![Build Status](//github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg?branch=release)](//github.com/mulle-c/mulle-buffer/actions)
 
 ## Examples
 
@@ -43,7 +43,7 @@ void  test( void)
 
 > #### Tip
 >
-> Use the companion project [mulle-sprintf](//mulle-core/mulle-sprintf) to
+> Use the companion project [mulle-sprintf](//github.com/mulle-core/mulle-sprintf) to
 > print data with format strings a la `sprintf` into a mulle-buffer.
 >
 
@@ -149,7 +149,7 @@ Use [mulle-sde](//github.com/mulle-sde) to build and install mulle-buffer and al
 
 ```
 mulle-sde install --prefix /usr/local \
-   https://github.com/mulle-c/mulle-buffer/archive/latest.tar.gz
+   //github.com/mulle-c/mulle-buffer/archive/latest.tar.gz
 ```
 
 ### Manual Installation
