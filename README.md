@@ -17,7 +17,8 @@ used as a stream.
 
 Here a C string is constructed. You don't have to worry about calculating
 the necessary buffer size. It's easy, fast and safe:
-The intermediate `mulle_buffer` is removed.
+The intermediate `mulle_buffer` will be removed once `mulle_buffer_done`
+executes.
 
 ``` c
 #include <mulle-buffer/mulle-buffer.h>
@@ -35,11 +36,119 @@ void  test( void)
    mulle_buffer_memset( &buffer, 'z', 10);
    mulle_buffer_add_string( &buffer, "hello");
 
-   printf( "%s\n", mulle_buffer_get_string( buffer));
+   printf( "%s\n", mulle_buffer_get_string( &buffer));
 
    mulle_buffer_done( &buffer);
 }
 ```
+
+### Convenience macros
+
+The convenience macro `mulle_buffer_do` saves you from typing the
+variable declaration and the `_init` and `_done` calls. The scope of the
+mulle_buffer is restricted to the blockquote following the `mulle_buffer_do`.
+Also note that, though the actual "mulle_buffer" is stack based, within the
+"do" scope, you are accessing the "mulle_buffer" with a pointer, to save a
+bit more type work:
+
+
+``` c
+// ...
+
+void  test( void)
+{
+   // ...
+
+   mulle_buffer_do( buffer)
+   {
+      // ...
+      mulle_buffer_add_string( buffer, "hello");
+
+      printf( "%s\n", mulle_buffer_get_string( buffer));
+   }
+}
+```
+
+You can use `break` inside the `mulle_buffer_do` block to leave it. If you use
+`return`, you will risk a memory leak. Use `mulle_buffer_return` instead. Or
+explicitly delete the buffer with `mulle_buffer_done` before issuing `return`.
+
+
+### Convenience macros for small strings
+
+If you expect the string to be small in most circumstances, you can use
+`mulle_buffer_do_flexible` to keep character storage on the stack:
+
+
+``` c
+void  test( void)
+{
+   char   tmp[ 256];
+
+   mulle_buffer_do_flexible( buffer, tmp)
+   {
+      mulle_buffer_add_string( buffer, "hello");
+
+      printf( "%s\n", mulle_buffer_get_string( buffer));
+   }
+}
+```
+
+If you don't want the produced string to ever exceed the initial storage length
+you can use `mulle_buffer_do_inflexible`
+
+``` c
+void  test( void)
+{
+   char   tmp[ 4];
+
+   mulle_buffer_do_inflexible( buffer, tmp)
+   {
+      mulle_buffer_add_string( buffer, "hello");
+
+      printf( "%s\n", mulle_buffer_get_string( buffer));
+   }
+}
+```
+
+This should print "hel", as a trailing zero will be needed for the last
+character.
+
+
+### Convenience macro for creating allocated strings
+
+To construct a dynamically allocated string, you can use the
+`mulle_buffer_do_string` convenience macro. It's similar to `mulle_buffer_do`,
+but takes two more arguments. The second argument is the allocator to use for
+the string. Use NULL for the default allocator or `&mulle_stdlib_allocator` for
+the standard C allocator. The third parameter is the `char *`  variable name
+that will hold the resultant C string:
+
+
+
+``` c
+void  test( void)
+{
+   unsigned int   i;
+   char           *s;
+
+   mulle_buffer_do_string( buffer, NULL, s)
+   {
+      for( i = 0; i < 10; i++)
+         mulle_buffer_add_byte( buffer, 'a' + i % 26);
+
+      mulle_buffer_memset( buffer, 'z', 10);
+      mulle_buffer_add_string( buffer, "hello");
+   }
+
+   printf( "%s\n", s);
+   mulle_free( s);         // this time its allocated
+}
+```
+
+You will have to `mulle_free` the constructed string "s".
+
+
 
 > #### Tip
 >
@@ -91,9 +200,9 @@ struct mulle_data    read_file( FILE *fp)
 ``` c
 void  dump( FILE *fp, void *bytes, size_t length)
 {
-   struct mulle_flushablebuffer  flushable_buffer;
-   struct mulle_buffer           *buffer;
-   char                          storage[ 1024];  // storage for buffer
+   struct mulle_flushablebuffer   flushable_buffer;
+   struct mulle_buffer            *buffer;
+   char                           storage[ 1024];  // storage for buffer
 
    mulle_flushablebuffer_init( &flushable_buffer,
                                storage,
@@ -110,7 +219,75 @@ void  dump( FILE *fp, void *bytes, size_t length)
 }
 ```
 
+##### flexbuffer, a replacement for alloca
 
+The `mulle_flexbuffer` can be used as an replacement for `alloca`. The problem
+with `alloca` is always two-fold. 1.) It's non-standard and not available on
+all platforms. 2.) The amount of memory to `alloca` may exceed the available
+stack space. The `mulle_flexbuffer` solves this problem by using a small amount
+of stack space for low memory scenarios and moving to `malloc`, when it's
+needed.
+
+Example:
+
+``` c
+ void  foo( char *s)
+{
+   size_t   n;
+
+   n = strlen( s) + 1;
+   mulle_flexbuffer_do( copy, 32, n)
+   {
+      strcpy( copy, s);
+   }
+}
+```
+
+
+A `char *` named "copy" is created. "copy" either points to stack memory or to
+a malloced area. `mulle_flexbuffer_do` defines the maximum amout of memory
+to be stored on the stack. In this case its `char[ 32]`. The actual amount
+used is determined by `n`. The flexbuffer will be valid in the scope of the
+`mulle_flexbuffer_do` block statement only.
+
+> `mulle_flexbuffer` is actually a macro for `mulle_buffer`.
+> Due to a C language limitations, the symbol "copy" will be available outside
+> the block, but it will be reset to NULL.
+
+If you use a `return` statement in a `mulle_flexbuffer_do` block you risk a
+leak unless you issue `mulle_flexbuffer_done` before the return or use
+`mulle_flexbuffer_return` (which needs the compiler extension `__typeof__` to
+work though).
+
+``` c
+   mulle_flexbuffer_do( copy, int, 32, n)
+   {
+      memset( copy, 0, sizeof( int) * n);
+      if( n == 1)
+         mulle_flexbuffer_return( copy, copy[ 0]);
+      if( n == 2)
+      {
+         tmp = copy[ 0];                // rescue return value
+         mulle_flexbuffer_done( copy);   // "copy" is invalid after done
+         return( tmp);   // possible!
+      }
+   }
+```
+
+Using `break` to break out of `mulle_flexbuffer_do` is not a problem. A
+`continue` statement in `mulle_flexbuffer_do` will do the same thing as
+`break` though and is therefore only confusing:
+
+
+``` c
+   for( n = 0; n < 2; n++)
+   {
+      mulle_flexbuffer_do( copy, int, 16, n)
+      {
+         continue;  // affects mulle_flexbuffer_do, not for
+      }
+   }
+```
 
 ## API
 
@@ -149,7 +326,7 @@ Use [mulle-sde](//github.com/mulle-sde) to build and install mulle-buffer and al
 
 ``` sh
 mulle-sde install --prefix /usr/local \
-   //github.com/mulle-c/mulle-buffer/archive/latest.tar.gz
+   https://github.com/mulle-c/mulle-buffer/archive/latest.tar.gz
 ```
 
 ### Manual Installation
@@ -166,14 +343,12 @@ Requirements                                             | Description
 Install into `/usr/local`:
 
 ``` sh
-mkdir build 2> /dev/null
-(
-   cd build ;
-   cmake -DCMAKE_INSTALL_PREFIX=/usr/local \
-         -DCMAKE_PREFIX_PATH=/usr/local \
-         -DCMAKE_BUILD_TYPE=Release .. ;
-   make install
-)
+cmake -B build \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DCMAKE_PREFIX_PATH=/usr/local \
+      -DCMAKE_BUILD_TYPE=Release &&
+cmake --build build --config Release &&
+cmake --install build --config Release
 ```
 
 

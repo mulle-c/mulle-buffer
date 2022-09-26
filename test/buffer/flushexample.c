@@ -19,11 +19,11 @@ static void   example()
 
    buf = (struct mulle_buffer  *) &_buf;
    mulle_buffer_add_string( buf, "VfL");
-   mulle_buffer_add_character( buf, ' ');
+   mulle_buffer_add_char( buf, ' ');
    mulle_buffer_add_string( buf, "Bochum");
-   mulle_buffer_add_character( buf, ' ');
+   mulle_buffer_add_char( buf, ' ');
    mulle_buffer_add_string( buf, "1848");
-   mulle_buffer_add_character( buf, '\n');
+   mulle_buffer_add_char( buf, '\n');
 
    // call this or the last flush won't happen
    mulle_flushablebuffer_done( &_buf);

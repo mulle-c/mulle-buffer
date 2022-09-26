@@ -35,7 +35,6 @@ src/generic/include-private.h
 #
 set( PUBLIC_GENERATED_HEADERS
 src/reflect/_mulle-buffer-include.h
-src/reflect/_mulle-buffer-provide.h
 src/reflect/_mulle-buffer-versioncheck.h
 )
 
@@ -52,5 +51,6 @@ src/generic/include.h
 set( PUBLIC_HEADERS
 src/mulle--buffer.h
 src/mulle-buffer.h
+src/mulle-flexbuffer.h
 )
 

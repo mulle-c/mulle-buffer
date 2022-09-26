@@ -43,16 +43,19 @@
 struct mulle_allocator;
 
 
-enum {
-  MULLE_BUFFER_IS_FLEXIBLE    = 0,
-  MULLE_BUFFER_IS_INFLEXIBLE  = 1,
-  MULLE_BUFFER_IS_FLUSHABLE   = 2
+enum
+{
+  MULLE_BUFFER_IS_FLEXIBLE      = 0,
+  MULLE_BUFFER_IS_INFLEXIBLE    = 1,
+  MULLE_BUFFER_IS_FLUSHABLE     = 2
 };
 
 
 //
 // this is the base for MULLE_BUFFER, but it does not contain an allocator
 // and none of the functions check for NULL pointers
+// _size is there to keep "capacity" for initial allocation (could be
+// optimized away, if we don't need capacity)
 //
 #define MULLE__BUFFER_BASE            \
    unsigned char   *_storage;         \
@@ -73,7 +76,27 @@ struct mulle__buffer
    MULLE__BUFFER_BASE;
 };
 
-#define MULLE__BUFFER_INIT ((struct mulle__buffer){ 0, 0, 0, 0, 0, MULLE_BUFFER_IS_FLEXIBLE })
+#define MULLE__BUFFER_INIT_FLEXIBLE( data, len)    \
+   ((struct mulle__buffer)                         \
+   {                                               \
+      (unsigned char *) data,                      \
+      (unsigned char *) data,                      \
+      &((unsigned char *) data)[ (len)],           \
+      (unsigned char *) data,                      \
+      (len),                                       \
+      MULLE_BUFFER_IS_FLEXIBLE                     \
+   })
+
+#define MULLE__BUFFER_INIT_INFLEXIBLE( data, len)  \
+   ((struct mulle__buffer)                         \
+   {                                               \
+      (unsigned char *) data,                      \
+      (unsigned char *) data,                      \
+      &((unsigned char *) data)[ (len)],           \
+      (unsigned char *) data,                      \
+      (len),                                       \
+      MULLE_BUFFER_IS_FLEXIBLE                     \
+   })
 
 //
 // this is fairly conveniently, just like fwrite(  _storage, len, nElems, fp)
@@ -217,13 +240,20 @@ static inline void
 }
 
 
-void   _mulle__buffer_done( struct mulle__buffer *buffer,
-                            struct mulle_allocator *allocator);
+static inline void   _mulle__buffer_done( struct mulle__buffer *buffer,
+                                         struct mulle_allocator *allocator)
+{
+   if( buffer->_storage != buffer->_initial_storage)
+      _mulle_allocator_free( allocator, buffer->_storage);
+#ifdef DEBUG
+   memset( buffer, 0xFD, sizeof( struct mulle__buffer));
+#endif
+}
 
 
 // _initial_storage storage will be lost
 static inline void   _mulle__buffer_reset( struct mulle__buffer *buffer,
-                                          struct mulle_allocator *allocator)
+                                           struct mulle_allocator *allocator)
 {
    _mulle__buffer_done( buffer, allocator);
    _mulle__buffer_init( buffer);
@@ -407,7 +437,7 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 // it's a C-String and sizes to fit
 //
 MULLE_BUFFER_GLOBAL
-void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
+char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator);
 
 //
@@ -416,7 +446,7 @@ void   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
 // lop of the last character if the buffer is full
 //
 MULLE_BUFFER_GLOBAL
-void   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
+char   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
                                    struct mulle_allocator *allocator);
 
 
@@ -441,6 +471,7 @@ static inline size_t   _mulle__buffer_get_size( struct mulle__buffer *buffer)
 {
    return( buffer->_size);
 }
+
 
 #pragma mark - modification
 
@@ -475,6 +506,11 @@ static inline void    _mulle__buffer_remove_last_byte( struct mulle__buffer *buf
 
    --buffer->_curr;
 }
+
+
+void   _mulle__buffer_remove_in_range( struct mulle__buffer *buffer,
+                                       size_t offset,
+                                       size_t length);
 
 
 static inline void    _mulle__buffer_add_char( struct mulle__buffer *buffer,
