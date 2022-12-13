@@ -1,3 +1,8 @@
+## 3.3.0
+
+* convenience macros for mulle-buffer and flexbuffer support
+
+
 ## 3.2.0
 
 * add `mulle_buffer_hexdump_default` constant
