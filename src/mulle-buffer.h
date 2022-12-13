@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((3 << 20) | (2 << 8) | 0)
+#define MULLE_BUFFER_VERSION  ((3 << 20) | (3 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
