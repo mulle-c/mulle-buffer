@@ -8,7 +8,7 @@
    "license" : "BSD-3-Clause",
    "repository" : {
       "type" : "git",
-      "url" : "mulle-c/mulle-buffer"
+      "url" : "github:mulle-c/mulle-buffer"
    },
    "dependencies" : {
       "mulle-allocator" : "git://github.com/mulle-c/mulle-allocator",
