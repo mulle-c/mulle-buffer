@@ -1,0 +1,25 @@
+{
+   project =
+   {
+      description="↗️ A growable C char array and also a stream";
+      domain="github";
+      name="mulle-buffer";
+      user="mulle-c";
+      repo="mulle-buffer";
+      homepage="https://github.com/mulle-c/mulle-buffer";
+      license="BSD-3-Clause"
+   };
+   dependencies =
+   (
+      {
+         name="mulle-allocator";
+         url="https://github.com/mulle-c/mulle-allocator";
+         description="🔄 Flexible C memory allocation scheme";
+      },
+      {
+         name="mulle-data";
+         url="https://github.com/mulle-c/mulle-data";
+         description="#️⃣ A collection of hash functions";
+      }
+   )
+}

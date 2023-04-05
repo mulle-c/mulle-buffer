@@ -125,24 +125,28 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 {
    struct mulle_data   data;
 
-   data.bytes  = buffer->_storage;
+   data.bytes  = NULL;
    data.length = _mulle__buffer_get_length( buffer);
 
-   if( data.length && data.bytes == buffer->_initial_storage)
+   if( data.length)
    {
-      data.bytes = _mulle_allocator_malloc( allocator, data.length);
-      memcpy( data.bytes, buffer->_storage, data.length);
+      data.bytes = buffer->_storage;
+      if( data.bytes == buffer->_initial_storage)
+      {
+         data.bytes = _mulle_allocator_malloc( allocator, data.length);
+         memcpy( data.bytes, buffer->_storage, data.length);
 
-      buffer->_curr    =
-      buffer->_storage = buffer->_initial_storage;
+         buffer->_curr    =
+         buffer->_storage = buffer->_initial_storage;
 
-      return( data);
+         return( data);
+      }
    }
 
-   buffer->_storage          =
-   buffer->_curr             =
-   buffer->_sentinel         =
-   buffer->_initial_storage  = NULL;
+   buffer->_storage         =
+   buffer->_curr            =
+   buffer->_sentinel        =
+   buffer->_initial_storage = NULL;
 
    return( data);
 }
@@ -259,7 +263,10 @@ int   _mulle__buffer_grow( struct mulle__buffer *buffer,
    if( _mulle__buffer_is_inflexible( buffer))
    {
       if( _mulle__buffer_get_size( buffer) < min_amount)
+      {
+         buffer->_curr = buffer->_sentinel + 1; // mark as overflown
          return( -1);
+      }
 
       //
       // this may or may not work, depending on its's being
@@ -385,10 +392,7 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
 
    start    = &start[ offset];
    if( &start[ length] <= sentinel)
-      _mulle__buffer_add_bytes( buffer,
-                               start,
-                               length,
-                               allocator);
+      _mulle__buffer_add_bytes( buffer, start, length, allocator);
 }
 
 

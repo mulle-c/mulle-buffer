@@ -1,0 +1,16 @@
+## Add
+
+### Either: link library
+
+Use [mulle-sde](//github.com/mulle-sde) to add mulle-buffer to your project:
+
+``` sh
+mulle-sde dependency add --c --github mulle-c mulle-buffer
+```
+
+### Or: add Sources
+
+Alternatively you can read [STEAL.md](//github.com/mulle-c11/dox/STEAL.md) on
+how to add mulle-c source code into your own projects.
+
+
