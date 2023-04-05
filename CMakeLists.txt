@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.15)
+cmake_minimum_required( VERSION 3.14)
 
 project( mulle-buffer C)
 
@@ -18,8 +18,8 @@ include( Files)
 
 if( HEADERS_PHASE)
    install( FILES ${INSTALL_PUBLIC_HEADERS}  DESTINATION "include/mulle-buffer")
-   install( FILES ${INSTALL_PRIVATE_HEADERS} DESTINATION "include/mulle-buffer/private")
-   install( FILES ${CMAKE_INCLUDES}          DESTINATION "include/mulle-buffer/cmake")
+   install( FILES ${INSTALL_PRIVATE_HEADERS} DESTINATION "include/mulle-buffer")
+   install( FILES ${INSTALL_CMAKE_INCLUDES}          DESTINATION "include/mulle-buffer/cmake")
 
    # short cut out
    if( NOT COMPILE_PHASE AND NOT LINK_PHASE)

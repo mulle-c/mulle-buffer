@@ -18,7 +18,20 @@ endif()
 # Disable for a sdk: `mulle-sourcetree mark mulle-allocator no-cmake-sdk-<name>`
 #
 if( NOT MULLE_ALLOCATOR_LIBRARY)
-   find_library( MULLE_ALLOCATOR_LIBRARY NAMES ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-allocator${CMAKE_DEBUG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-allocator${CMAKE_STATIC_LIBRARY_SUFFIX} mulle-allocator NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+   if( DEPENDENCY_IGNORE_SYSTEM_LIBARIES)
+      find_library( MULLE_ALLOCATOR_LIBRARY NAMES
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-allocator${CMAKE_DEBUG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-allocator${CMAKE_STATIC_LIBRARY_SUFFIX}
+         mulle-allocator
+         NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH
+      )
+   else()
+      find_library( MULLE_ALLOCATOR_LIBRARY NAMES
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-allocator${CMAKE_DEBUG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-allocator${CMAKE_STATIC_LIBRARY_SUFFIX}
+         mulle-allocator
+      )
+   endif()
    message( STATUS "MULLE_ALLOCATOR_LIBRARY is ${MULLE_ALLOCATOR_LIBRARY}")
    #
    # The order looks ascending, but due to the way this file is read
@@ -29,11 +42,7 @@ if( NOT MULLE_ALLOCATOR_LIBRARY)
       # Add MULLE_ALLOCATOR_LIBRARY to DEPENDENCY_LIBRARIES list.
       # Disable with: `mulle-sourcetree mark mulle-allocator no-cmake-add`
       #
-      set( DEPENDENCY_LIBRARIES
-         ${DEPENDENCY_LIBRARIES}
-         ${MULLE_ALLOCATOR_LIBRARY}
-         CACHE INTERNAL "need to cache this"
-      )
+      list( APPEND DEPENDENCY_LIBRARIES ${MULLE_ALLOCATOR_LIBRARY})
       # intentionally left blank
    else()
       # Disable with: `mulle-sourcetree mark mulle-allocator no-require-link`
@@ -49,7 +58,20 @@ endif()
 # Disable for a sdk: `mulle-sourcetree mark mulle-data no-cmake-sdk-<name>`
 #
 if( NOT MULLE_DATA_LIBRARY)
-   find_library( MULLE_DATA_LIBRARY NAMES ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-data${CMAKE_DEBUG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-data${CMAKE_STATIC_LIBRARY_SUFFIX} mulle-data NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+   if( DEPENDENCY_IGNORE_SYSTEM_LIBARIES)
+      find_library( MULLE_DATA_LIBRARY NAMES
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-data${CMAKE_DEBUG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-data${CMAKE_STATIC_LIBRARY_SUFFIX}
+         mulle-data
+         NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH
+      )
+   else()
+      find_library( MULLE_DATA_LIBRARY NAMES
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-data${CMAKE_DEBUG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${CMAKE_STATIC_LIBRARY_PREFIX}mulle-data${CMAKE_STATIC_LIBRARY_SUFFIX}
+         mulle-data
+      )
+   endif()
    message( STATUS "MULLE_DATA_LIBRARY is ${MULLE_DATA_LIBRARY}")
    #
    # The order looks ascending, but due to the way this file is read
@@ -60,11 +82,7 @@ if( NOT MULLE_DATA_LIBRARY)
       # Add MULLE_DATA_LIBRARY to DEPENDENCY_LIBRARIES list.
       # Disable with: `mulle-sourcetree mark mulle-data no-cmake-add`
       #
-      set( DEPENDENCY_LIBRARIES
-         ${DEPENDENCY_LIBRARIES}
-         ${MULLE_DATA_LIBRARY}
-         CACHE INTERNAL "need to cache this"
-      )
+      list( APPEND DEPENDENCY_LIBRARIES ${MULLE_DATA_LIBRARY})
       # intentionally left blank
    else()
       # Disable with: `mulle-sourcetree mark mulle-data no-require-link`
