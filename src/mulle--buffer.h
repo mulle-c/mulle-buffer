@@ -419,6 +419,7 @@ static inline size_t   _mulle__buffer_get_staticlength( struct mulle__buffer *bu
 
 //
 // you only do this once!, because you now own the malloc block
+// if the length is zero, then buffer.bytes will also be NULL(!)
 //
 MULLE_BUFFER_GLOBAL
 struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
@@ -660,7 +661,6 @@ static inline size_t
    assert( ! _mulle__buffer_intersects_bytes( buffer,
                                               bytes,
                                               _mulle_char_strnlen( bytes, maxlength)));
-
    s        = bytes;
    sentinel = &s[ maxlength];
    while( s < sentinel)

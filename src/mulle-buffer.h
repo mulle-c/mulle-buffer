@@ -447,7 +447,7 @@ static inline char   *mulle_buffer_get_string( struct mulle_buffer *buffer)
 }
 
 
-static inline int    mulle_buffer_get_last_byte( struct mulle__buffer *buffer)
+static inline int    mulle_buffer_get_last_byte( struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( -1);
@@ -712,6 +712,14 @@ static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
    _mulle__buffer_add_string( (struct mulle__buffer *) buffer,
                               bytes,
                               mulle_buffer_get_allocator( buffer));
+}
+
+
+// just a synonym
+static inline void   mulle_buffer_strcpy( struct mulle_buffer *buffer,
+                                         char *bytes)
+{
+   mulle_buffer_add_string( buffer, bytes);
 }
 
 
@@ -1062,6 +1070,10 @@ MULLE_C_DEPRECATED static inline void
            name ## __j++)
 
 
+//
+// have a buffer inside the block, will self destruct when the block
+// is exited (properly)
+//
 #define mulle_buffer_do( name)                                            \
    for( struct mulle_buffer name ## __storage = MULLE_BUFFER_INIT( NULL), \
                             *name = &name ## __storage,                   \
@@ -1075,7 +1087,29 @@ MULLE_C_DEPRECATED static inline void
            name ## __j < 1;                                               \
            name ## __j++)
 
+//
+// As above but the buffer storage allocator can be changed from the
+// default allocator
+//
+#define mulle_buffer_do_allocator( name, allocator)                            \
+   for( struct mulle_buffer name ## __storage = MULLE_BUFFER_INIT( allocator), \
+                            *name = &name ## __storage,                        \
+                            name ## __i = { 0 };                               \
+        ! name ## __i._storage;                                                \
+        name ## __i._storage = ( mulle_buffer_done( &name ## __storage),       \
+                                 (void *) 0x1)                                 \
+      )                                                                        \
+                                                                               \
+      for( int  name ## __j = 0;    /* break protection */                     \
+           name ## __j < 1;                                                    \
+           name ## __j++)
 
+
+//
+// Create a buffer with some static/auto storage preset. If that is
+// exhausted the buffer will start mallocing. Nice to avoid an initial malloc
+// for small workloads.
+//
 #define mulle_buffer_do_flexible( name, data, len)                                            \
    for( struct mulle_buffer name ## __storage = MULLE_BUFFER_INIT_FLEXIBLE( data, len, NULL), \
                             *name = &name ## __storage,                                       \
@@ -1089,6 +1123,11 @@ MULLE_C_DEPRECATED static inline void
            name ## __j < 1;                                                                   \
            name ## __j++)
 
+
+//
+// Create a buffer with some static/auto storage preset. This storage already
+// contains bytes for the buffer. Otherwise as above.
+//
 #define mulle_buffer_do_flexible_filled( name, data, len)                                     \
    for( struct mulle_buffer name ## __storage = MULLE_BUFFER_INIT_FLEXIBLE_FILLED( data, len, NULL), \
                             *name = &name ## __storage,                                       \
@@ -1103,6 +1142,10 @@ MULLE_C_DEPRECATED static inline void
            name ## __j++)
 
 
+//
+// Like mulle_buffer_do_flexible but when the buffer is full, there won't be
+// a malloc.
+//
 #define mulle_buffer_do_inflexible( name, data, len)                                            \
    for( struct mulle_buffer name ## __storage = MULLE_BUFFER_INIT_INFLEXIBLE( data, len, NULL), \
                             *name = &name ## __storage,                                         \
@@ -1116,7 +1159,10 @@ MULLE_C_DEPRECATED static inline void
            name ## __j < 1;                                                                     \
            name ## __j++)
 
-
+//
+// Like above, but the buffer is already preset with data. So nothing can
+// be added (but it can be read).
+//
 #define mulle_buffer_do_inflexible_filled( name, data, len)                                            \
    for( struct mulle_buffer name ## __storage = MULLE_BUFFER_INIT_INFLEXIBLE_FILLED( data, len, NULL), \
                             *name = &name ## __storage,                                                \
