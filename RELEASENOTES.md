@@ -1,3 +1,10 @@
+## 3.4.0
+
+* remove package.json as it conflicts with clib.json
+* added `mulle_buffer_strcpy` synonym for `mulle_buffer_add_string`
+* added convenience `mulle_buffer_do_allocator`
+
+
 ## 3.3.0
 
 * convenience macros for mulle-buffer and flexbuffer support
