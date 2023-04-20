@@ -1,5 +1,6 @@
 ## 3.4.0
 
+* make string and zero functions to return int to detect truncation with the static bytes
 * remove package.json as it conflicts with clib.json
 * added `mulle_buffer_strcpy` synonym for `mulle_buffer_add_string`
 * added convenience `mulle_buffer_do_allocator`
