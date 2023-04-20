@@ -89,9 +89,9 @@ int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t se
 
 
 char   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
-                                    struct mulle_allocator *allocator)
+                                   struct mulle_allocator *allocator)
 {
-  _mulle__buffer_make_string( buffer, allocator);
+   _mulle__buffer_make_string( buffer, allocator);
    return( (char *) _mulle__buffer_get_bytes( buffer));
 }
 
@@ -152,14 +152,14 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 }
 
 
-void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
-                                   struct mulle_allocator *allocator)
+int   _mulle__buffer_make_string( struct mulle__buffer *buffer,
+                                  struct mulle_allocator *allocator)
 {
    if( _mulle__buffer_is_inflexible( buffer))
-      _mulle__buffer_zero_last_byte( buffer);
-   else
-      if( _mulle__buffer_is_empty( buffer) || _mulle__buffer_get_last_byte( buffer))
-         _mulle__buffer_add_byte( buffer, 0, allocator);
+      return( _mulle__buffer_zero_last_byte( buffer));
+   if( _mulle__buffer_is_empty( buffer) || _mulle__buffer_get_last_byte( buffer))
+      _mulle__buffer_add_byte( buffer, 0, allocator);
+   return( 0);
 }
 
 

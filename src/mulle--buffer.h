@@ -706,18 +706,24 @@ static inline int   _mulle__buffer_memcmp( struct mulle__buffer *buffer,
 // the strlen or print the contents. You can then easily just append
 // another string.
 //
-static inline void   _mulle__buffer_zero_last_byte( struct mulle__buffer *buffer)
+static inline int   _mulle__buffer_zero_last_byte( struct mulle__buffer *buffer)
 {
    if( ! _mulle__buffer_is_void( buffer))
    {
       if( _mulle__buffer_has_overflown( buffer))
+      {
          buffer->_curr[ -2] = 0;
-      else
-         if( _mulle__buffer_is_full( buffer))
-            buffer->_curr[ -1] = 0;
-         else
-            buffer->_curr[ 0] = 0;
+         return( 2);
+      }
+
+      if( _mulle__buffer_is_full( buffer))
+      {
+         buffer->_curr[ -1] = 0;
+         return( 1);
+      }
+      buffer->_curr[ 0] = 0;
    }
+   return( 0);
 }
 
 
@@ -743,9 +749,10 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
 
 
 // zeroes if inflexible, otherwise adds
+// returns number of bytes inflexible buffer truncated 
 MULLE_BUFFER_GLOBAL
-void   _mulle__buffer_make_string( struct mulle__buffer *buffer,
-                                   struct mulle_allocator *allocator);
+int   _mulle__buffer_make_string( struct mulle__buffer *buffer,
+                                  struct mulle_allocator *allocator);
 
 MULLE_BUFFER_GLOBAL
 int  _mulle__buffer_flush( struct mulle__buffer *buffer);

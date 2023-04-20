@@ -790,22 +790,22 @@ static inline int   mulle_buffer_memcmp( struct mulle_buffer *buffer,
 }
 
 
-static inline void   mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
 {
    if( ! buffer)
-      return;
+      return( -1);
 
-   _mulle__buffer_zero_last_byte( (struct mulle__buffer *) buffer);
+   return( _mulle__buffer_zero_last_byte( (struct mulle__buffer *) buffer));
 }
 
 
-static inline void   mulle_buffer_make_string( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_make_string( struct mulle_buffer *buffer)
 {
    if( ! buffer)
-      return;
+      return( 0);
 
-   _mulle__buffer_make_string( (struct mulle__buffer *) buffer,
-                               mulle_buffer_get_allocator( buffer));
+   return( _mulle__buffer_make_string( (struct mulle__buffer *) buffer,
+                                        mulle_buffer_get_allocator( buffer)));
 }
 
 
