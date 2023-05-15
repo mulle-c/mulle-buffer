@@ -1,8 +1,9 @@
 ## API
 
-File                                 | Description
------------------------------------- | ----------------------------------------
-[`mulle_buffer`](dox/API_BUFFER.md)  | The array data structure.
+| Data Structure                               | Description
+| ---------------------------------------------| ----------------------------------------
+| [`mulle-buffer`](dox/API_BUFFER.md)          | A resizable byte buffer that can grow dynamically as needed
+| [`mulle-flexbuffer`](dox/API_FLEXBUFFER.md)  | A portable replacement for [alloca](https://www.man7.org/linux/man-pages/man3/alloca.3.html)
 
 
 
