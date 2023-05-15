@@ -1,3 +1,4 @@
-A growable array of C `unsigned char`. This can be used to construct arbitrary
-long binary data. It can be used to implement NSMutableData. But it can also be
-used as a stream.
+mulle-buffer can construct arbitrary long binary data dynamically or in static
+storage. You don't have to worry about calculating the necessary buffer size.
+It's easy, fast and safe. It can also be used as a stream and it is used to
+implement NSMutableData.

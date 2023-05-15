@@ -44,7 +44,7 @@
 
 // A mulle-flexbuffer is useful in functions, when you prefer to do the work
 // in a stack based (auto) buffer, but must remain flexible to use malloc
-// for heavier workloads
+// for heavier workloads. Use mulle_flexarray if you need aligned memory!
 //
 // e.g. conventional code:
 //
@@ -86,53 +86,48 @@
 // }
 
 #define mulle_flexbuffer( name, stackcount)                                 \
-   unsigned char          name ## __storage[ (stackcount)];                 \
+   unsigned char          name ## __storage[ (stackcount)], *name;          \
    struct mulle__buffer   name ## __buffer =                                \
                             MULLE__BUFFER_INIT_FLEXIBLE( name ## __storage, \
                                                          (stackcount))
 
 #define mulle_flexbuffer_alloc( name, actualcount)                          \
-      _mulle__buffer_guarantee( &name ## __buffer,                          \
-                                (actualcount),                              \
-                                &mulle_default_allocator)
+      name = _mulle__buffer_guarantee( &name ## __buffer,                   \
+                                       (actualcount),                       \
+                                       &mulle_default_allocator)
 
 #define mulle_flexbuffer_realloc( name, count)                              \
-   (                                                                        \
-      _mulle__buffer_sizeto_length(                                         \
-         &name ## __buffer,                                                 \
-         (count) * sizeof( name ## __storage[ 0]),                          \
-         &mulle_default_allocator),                                         \
-      name ## __buffer.storage                                              \
-   )
+   name = (                                                                 \
+             _mulle__buffer_set_length(                                     \
+                &name ## __buffer,                                          \
+                (count) * sizeof( name ## __storage[ 0]),                   \
+                &mulle_default_allocator),                                  \
+             name ## __buffer._storage                                      \
+          )
 
-#define mulle_flexbuffer_done( name)                                       \
-   do                                                                      \
-   {                                                                       \
-      _mulle__buffer_done( &name ## __buffer, &mulle_default_allocator);   \
-      name = NULL;                                                         \
-   }                                                                       \
+#define mulle_flexbuffer_done( name)                                        \
+   do                                                                       \
+   {                                                                        \
+      _mulle__buffer_done( &name ## __buffer, &mulle_default_allocator);    \
+      name = NULL;                                                          \
+   }                                                                        \
    while( 0)
 
-#define mulle_flexbuffer_define( name, stackcount, count)                  \
-   mulle_flexbuffer( name, stackcount);                                    \
-   type *name = mulle_flexbuffer_alloc( name, count)
-
-
-#define mulle_flexbuffer_return( name, value)                              \
-   do                                                                      \
-   {                                                                       \
-      __typeof__( *name) name ## __tmp = (value);                          \
-      mulle_flexbuffer_done( name);                                        \
-      return( name ## __tmp);                                              \
-   }                                                                       \
+#define mulle_flexbuffer_return( name, value)                               \
+   do                                                                       \
+   {                                                                        \
+      __typeof__( *name) name ## __tmp = (value);                           \
+      mulle_flexbuffer_done( name);                                         \
+      return( name ## __tmp);                                               \
+   }                                                                        \
    while( 0)
 
-#define mulle_flexbuffer_return_void( name)                                \
-   do                                                                      \
-   {                                                                       \
-      mulle_flexbuffer_done( name);                                        \
-      return;                                                              \
-   }                                                                       \
+#define mulle_flexbuffer_return_void( name)                                 \
+   do                                                                       \
+   {                                                                        \
+      mulle_flexbuffer_done( name);                                         \
+      return;                                                               \
+   }                                                                        \
    while( 0)
 
 //
