@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE_BUFFER_VERSION  ((3 << 20) | (4 << 8) | 0)
+#define MULLE__BUFFER_VERSION  ((3 << 20) | (4 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -159,7 +159,7 @@ MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
 
 # pragma mark - initialization and destruction
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator);
 
 
@@ -928,7 +928,7 @@ enum mulle_buffer_hexdump_options
 
 
 // dumps only for n >= 1 && n <= 16
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
                                  void *bytes,
                                  unsigned int n,
@@ -936,7 +936,7 @@ void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
                                  unsigned int options);
 
 // dumps all, does not append a \0
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
                             void *bytes,
                             size_t length,
@@ -945,9 +945,8 @@ void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
 
 #pragma mark - mulle_flushablebuffer
 
-#define MULLE_FLUSHABLEBUFFER_BASE    \
-MULLE__FLUSHABLEBUFFER_BASE;          \
-struct mulle_allocator  *_allocator
+// its already got the allocator (but it isn't used by '__')
+#define MULLE_FLUSHABLEBUFFER_BASE  MULLE__FLUSHABLEBUFFER_BASE
 
 struct mulle_flushablebuffer
 {
@@ -957,6 +956,28 @@ struct mulle_flushablebuffer
 typedef mulle__flushablebuffer_flusher   mulle_flushablebuffer_flusher;
 typedef mulle__flushablebuffer_flusher   *mulle_flushablebuffer_flusher_t;
 
+// the allocator will be used for buffer if destroy is called
+static inline void
+   mulle_flushablebuffer_init_with_static_bytes( struct mulle_flushablebuffer *buffer,
+                                                 void *storage,
+                                                 size_t length,
+                                                 mulle_flushablebuffer_flusher_t flusher,
+                                                 void *userinfo,
+                                                 struct mulle_allocator *allocator)
+{
+   if( ! buffer || ! storage || ! flusher)
+      return;
+
+   _mulle__flushablebuffer_init_with_static_bytes( (struct mulle__flushablebuffer *) buffer,
+                                                   storage,
+                                                   length,
+                                                   flusher,
+                                                   userinfo,
+                                                   allocator);
+}
+
+
+// backwards compatibility
 static inline void
    mulle_flushablebuffer_init( struct mulle_flushablebuffer *buffer,
                                void *storage,
@@ -964,14 +985,33 @@ static inline void
                                mulle_flushablebuffer_flusher_t flusher,
                                void *userinfo)
 {
+   mulle_flushablebuffer_init_with_static_bytes( buffer,
+                                                 storage,
+                                                 length,
+                                                 (mulle__flushablebuffer_flusher *) flusher,
+                                                 userinfo,
+                                                 NULL);
+}
+
+// the allocator will be used for 'buffer' if destroy is called
+// and for 'storage' if done or destroy is called
+static inline void
+   mulle_flushablebuffer_init_with_allocated_bytes( struct mulle_flushablebuffer *buffer,
+                                                    void *storage,
+                                                    size_t length,
+                                                    mulle_flushablebuffer_flusher_t flusher,
+                                                    void *userinfo,
+                                                    struct mulle_allocator *allocator)
+{
    if( ! buffer || ! storage || ! flusher)
       return;
 
-   _mulle__flushablebuffer_init( (struct mulle__flushablebuffer *) buffer,
-                                storage,
-                                length,
-                                flusher,
-                                userinfo);
+   _mulle__flushablebuffer_init_with_allocated_bytes( (struct mulle__flushablebuffer *) buffer,
+                                                       storage,
+                                                       length,
+                                                       (mulle__flushablebuffer_flusher *) flusher,
+                                                       userinfo,
+                                                       allocator);
 }
 
 
@@ -983,10 +1023,24 @@ static inline int
    return( _mulle__flushablebuffer_flush( (struct mulle__flushablebuffer *) buffer));
 }
 
-MULLE_BUFFER_GLOBAL
-int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer);
 
-MULLE_BUFFER_GLOBAL
+static inline int
+   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
+{
+   if( ! buffer)
+      return( 0);
+   return( _mulle__flushablebuffer_done( (struct mulle__flushablebuffer *) buffer));
+}
+
+
+MULLE__BUFFER_GLOBAL
+struct mulle_flushablebuffer   *
+   mulle_flushablebuffer_create( size_t length,
+                                 mulle_flushablebuffer_flusher_t flusher,
+                                 void *userinfo,
+                                 struct mulle_allocator *allocator);
+
+MULLE__BUFFER_GLOBAL
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 
 
