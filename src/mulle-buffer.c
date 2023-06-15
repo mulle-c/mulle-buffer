@@ -54,6 +54,46 @@ struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator)
 }
 
 
+struct mulle_flushablebuffer   *
+   mulle_flushablebuffer_create( size_t length,
+                                 mulle_flushablebuffer_flusher_t flusher,
+                                 void *userinfo,
+                                 struct mulle_allocator *allocator)
+{
+   struct mulle_flushablebuffer  *buffer;
+   void                          *storage;
+
+   if( ! allocator)
+      allocator = &mulle_default_allocator;
+
+   buffer  = mulle_allocator_malloc( allocator, sizeof( struct mulle_flushablebuffer));
+   storage = mulle_allocator_malloc( allocator, length);
+   mulle_flushablebuffer_init_with_allocated_bytes( buffer,
+                                                    storage,
+                                                    length,
+                                                    flusher,
+                                                    userinfo,
+                                                    allocator);
+   return( buffer);
+}
+
+
+
+int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
+{
+   int   rval;
+
+   if( ! buffer)
+      return( 0);
+
+   rval = mulle_flushablebuffer_done( buffer);
+   if( ! rval)
+      mulle_allocator_free( buffer->_allocator, buffer);
+   return( 0);
+}
+
+
+
 static inline unsigned int   hex( unsigned int c)
 {
    assert( c >= 0 && c <= 0xf);
@@ -200,7 +240,7 @@ void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
       mulle_buffer_hexdump_line( buffer, p, 16, counter, options);
       mulle_buffer_add_byte( buffer, '\n');
       counter += 16;
-      p   += 16;
+      p       += 16;
    }
 
    if( i < lines)
@@ -209,33 +249,5 @@ void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
       mulle_buffer_hexdump_line( buffer, p, (unsigned int) remainder, counter, options);
       mulle_buffer_add_byte( buffer, '\n');
    }
-}
-
-
-int   mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
-{
-   int   rval;
-
-   rval = _mulle__flushablebuffer_flush( (struct mulle__flushablebuffer *) buffer);
-   if( rval)
-      return( rval);
-
-   _mulle__buffer_done( (struct mulle__buffer *) buffer,
-                      mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
-   return( 0);
-}
-
-
-int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
-{
-   int   rval;
-
-   rval = _mulle__flushablebuffer_flush( (struct mulle__flushablebuffer *) buffer);
-   if( rval)
-      return( rval);
-
-   _mulle__buffer_destroy( (struct mulle__buffer *) buffer,
-                      mulle_buffer_get_allocator( (struct mulle_buffer *) buffer));
-   return( 0);
 }
 

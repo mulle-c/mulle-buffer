@@ -86,7 +86,7 @@
 // }
 
 #define mulle_flexbuffer( name, stackcount)                                 \
-   unsigned char          name ## __storage[ (stackcount)], *name;          \
+   char                   name ## __storage[ (stackcount)], *name;          \
    struct mulle__buffer   name ## __buffer =                                \
                             MULLE__BUFFER_INIT_FLEXIBLE( name ## __storage, \
                                                          (stackcount))
@@ -141,7 +141,7 @@
               MULLE__BUFFER_INIT_FLEXIBLE( name ## __storage, stackcount),    \
            name ## __i =                                                      \
            {                                                                  \
-              ( name = mulle_flexbuffer_alloc( name, count), (void *) 0 )     \
+              ( mulle_flexbuffer_alloc( name, count), (void *) 0 )            \
            };                                                                 \
         ! name ## __i._storage;                                               \
         name = NULL,                                                          \
