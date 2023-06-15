@@ -29,6 +29,7 @@ static void   example()
    mulle_flushablebuffer_done( &_buf);
 }
 
+
 static void   example2()
 {
    struct mulle_flushablebuffer   _buf;

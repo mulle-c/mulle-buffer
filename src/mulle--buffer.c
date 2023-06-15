@@ -389,7 +389,6 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
 
    start    = _mulle__buffer_get_bytes( other);
    sentinel = &start[ _mulle__buffer_get_length( other)];
-
    start    = &start[ offset];
    if( &start[ length] <= sentinel)
       _mulle__buffer_add_bytes( buffer, start, length, allocator);
@@ -450,3 +449,22 @@ void   _mulle__buffer_add_string_if_not_empty( struct mulle__buffer *buffer,
    if( _mulle__buffer_get_length( buffer))
       _mulle__buffer_add_string( buffer, bytes, allocator);
 }
+
+
+
+int   _mulle__flushablebuffer_done( struct mulle__flushablebuffer *buffer)
+{
+   int   rval;
+
+   rval = _mulle__flushablebuffer_flush( buffer);
+   if( rval)
+      return( rval);
+
+   if( ! buffer->_initial_storage)
+      mulle_allocator_free( buffer->_allocator, buffer->_storage);
+#ifdef DEBUG
+   memset( buffer, 0xFD, sizeof( *buffer));
+#endif
+   return( 0);
+}
+

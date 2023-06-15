@@ -109,11 +109,14 @@ typedef size_t   mulle__flushablebuffer_flusher( void *buf,
 
 // _size will be -2 for a flushable buffer (always inflexible)
 
-
-#define MULLE__FLUSHABLEBUFFER_BASE             \
-   MULLE__BUFFER_BASE;                          \
-   mulle__flushablebuffer_flusher   *_flusher;  \
-   size_t                           _flushed;   \
+// since we want to cast this to mulle_buffer eventually, the allocator
+// must be in here (argh). It's not used by mulle--buffer code though
+// and it's initialized to the default allocator
+#define MULLE__FLUSHABLEBUFFER_BASE                         \
+   MULLE__BUFFER_BASE;                                      \
+   struct mulle_allocator           *_allocator;            \
+   mulle__flushablebuffer_flusher   *_flusher;              \
+   size_t                           _flushed;               \
    void                             *_userinfo
 
 /*
@@ -135,23 +138,27 @@ static inline struct mulle__buffer   *
 
 #pragma mark - creation destruction
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 struct mulle__buffer   *_mulle__buffer_create( struct mulle_allocator *allocator);
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void                   _mulle__buffer_destroy( struct mulle__buffer *buffer,
-                                                 struct mulle_allocator *allocator);
+                                               struct mulle_allocator *allocator);
 
 
 #pragma mark - initialization
 
-static inline void   _mulle__flushablebuffer_init( struct mulle__flushablebuffer *buffer,
-                                                   void *storage,
-                                                   size_t length,
-                                                   mulle__flushablebuffer_flusher *flusher,
-                                                   void *userinfo)
+// the storage is
+static inline void   _mulle__flushablebuffer_init_with_static_bytes( struct mulle__flushablebuffer *buffer,
+                                                                     void *storage,
+                                                                     size_t length,
+                                                                     mulle__flushablebuffer_flusher *flusher,
+                                                                     void *userinfo,
+                                                                     struct mulle_allocator *allocator)
 {
    assert( storage && length && flusher);
+
+   memset( buffer, 0, sizeof( *buffer));
 
    buffer->_initial_storage =
    buffer->_curr            =
@@ -161,9 +168,36 @@ static inline void   _mulle__flushablebuffer_init( struct mulle__flushablebuffer
    buffer->_type            = MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE;
 
    buffer->_flusher         = flusher;
-   buffer->_flushed         = 0;
    buffer->_userinfo        = userinfo;
+   buffer->_allocator       = allocator ? allocator : &mulle_default_allocator;
 }
+
+
+static inline void   _mulle__flushablebuffer_init_with_allocated_bytes( struct mulle__flushablebuffer *buffer,
+                                                                        void *storage,
+                                                                        size_t length,
+                                                                        mulle__flushablebuffer_flusher *flusher,
+                                                                        void *userinfo,
+                                                                        struct mulle_allocator *allocator)
+{
+   assert( storage && length && flusher);
+
+   memset( buffer, 0, sizeof( *buffer));
+
+   buffer->_curr            =
+   buffer->_storage         = storage;
+   buffer->_sentinel        = &buffer->_storage[ length];
+   buffer->_size            = length;
+   buffer->_type            = MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE;
+
+   buffer->_flusher         = flusher;
+   buffer->_userinfo        = userinfo;
+   buffer->_allocator       = allocator ? allocator : &mulle_default_allocator;
+}
+
+// if != 0, the flush didn't succeed and the buffer is still alive!
+MULLE__BUFFER_GLOBAL
+int   _mulle__flushablebuffer_done( struct mulle__flushablebuffer *buffer);
 
 
 static inline void   _mulle__buffer_init_with_allocated_bytes( struct mulle__buffer *buffer,
@@ -241,7 +275,7 @@ static inline void
 
 
 static inline void   _mulle__buffer_done( struct mulle__buffer *buffer,
-                                         struct mulle_allocator *allocator)
+                                          struct mulle_allocator *allocator)
 {
    if( buffer->_storage != buffer->_initial_storage)
       _mulle_allocator_free( allocator, buffer->_storage);
@@ -262,7 +296,7 @@ static inline void   _mulle__buffer_reset( struct mulle__buffer *buffer,
 
 #pragma mark - change buffer type
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
                                       void *storage,
                                       size_t length,
@@ -270,24 +304,24 @@ void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
 
 #pragma mark - resize
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 int    _mulle__buffer_grow( struct mulle__buffer *buffer,
                             size_t min_amount,
                             struct mulle_allocator *allocator);
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_size_to_fit( struct mulle__buffer *buffer,
                                    struct mulle_allocator *allocator);
 
 // this zeroes, when advancing, shrinks otherwise
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
                                       size_t length,
                                       struct mulle_allocator *allocator);
 
 
 // this zeroes, when advancing, shrinks otherwise
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
                                     size_t length,
                                     struct mulle_allocator *allocator);
@@ -400,10 +434,10 @@ enum
    MULLE_BUFFER_SEEK_END = 2
 };
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 size_t   _mulle__buffer_get_seek( struct mulle__buffer *buffer);
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 int      _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t seek);
 
 
@@ -421,7 +455,7 @@ static inline size_t   _mulle__buffer_get_staticlength( struct mulle__buffer *bu
 // you only do this once!, because you now own the malloc block
 // if the length is zero, then buffer.bytes will also be NULL(!)
 //
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
                                                  struct mulle_allocator *allocator);
 
@@ -437,7 +471,7 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 // Like _mulle__buffer_extract_data but guarantees
 // it's a C-String and sizes to fit
 //
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator);
 
@@ -446,7 +480,7 @@ char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
 // byte is a zero or append one if necessary. For a static buffer it may
 // lop of the last character if the buffer is full
 //
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 char   *_mulle__buffer_get_string( struct mulle__buffer *buffer,
                                    struct mulle_allocator *allocator);
 
@@ -616,12 +650,12 @@ static inline void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
 }
 
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_add_string_if_empty( struct mulle__buffer *buffer,
                                            char *bytes,
                                            struct mulle_allocator *allocator);
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_add_string_if_not_empty( struct mulle__buffer *buffer,
                                                char *bytes,
                                                struct mulle_allocator *allocator);
@@ -740,7 +774,7 @@ static inline void    _mulle__buffer_add_buffer( struct mulle__buffer *buffer,
 }
 
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
                                         struct mulle__buffer *other,
                                         size_t offset,
@@ -750,14 +784,14 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
 
 // zeroes if inflexible, otherwise adds
 // returns number of bytes inflexible buffer truncated 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 int   _mulle__buffer_make_string( struct mulle__buffer *buffer,
                                   struct mulle_allocator *allocator);
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 int  _mulle__buffer_flush( struct mulle__buffer *buffer);
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 int  _mulle__flushablebuffer_flush( struct mulle__flushablebuffer *ibuffer);
 
 
@@ -836,7 +870,7 @@ static inline int   _mulle__buffer_find_byte( struct mulle__buffer *buffer,
 
 #pragma mark - copy out
 
-MULLE_BUFFER_GLOBAL
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
                                   size_t offset,
                                   size_t length,

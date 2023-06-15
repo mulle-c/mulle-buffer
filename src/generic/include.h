@@ -22,13 +22,13 @@
 #include "_mulle-buffer-include.h"
 
 
-#ifdef MULLE_BUFFER_BUILD
-# define MULLE_BUFFER_GLOBAL    MULLE_C_GLOBAL
+#ifdef MULLE__BUFFER_BUILD
+# define MULLE__BUFFER_GLOBAL    MULLE_C_GLOBAL
 #else
 # if defined( MULLE_BUFFER_INCLUDE_DYNAMIC) || (defined( MULLE_INCLUDE_DYNAMIC) && ! defined( MULLE_BUFFER_INCLUDE_STATIC))
-#  define MULLE_BUFFER_GLOBAL   MULLE_C_EXTERN_GLOBAL
+#  define MULLE__BUFFER_GLOBAL   MULLE_C_EXTERN_GLOBAL
 # else
-#  define MULLE_BUFFER_GLOBAL   extern
+#  define MULLE__BUFFER_GLOBAL   extern
 # endif
 #endif
 /* You can add some more include statements here */
