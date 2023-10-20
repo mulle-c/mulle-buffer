@@ -227,6 +227,8 @@ Install the requirements:
 | [mulle-allocator](https://github.com/mulle-c/mulle-allocator)             | 🔄 Flexible C memory allocation scheme
 | [mulle-data](https://github.com/mulle-c/mulle-data)             | #️⃣ A collection of hash functions
 
+Download the latest [tar](https://github.com/mulle-c/mulle-buffer/archive/refs/tags/latest.tar.gz) or [zip](https://github.com/mulle-c/mulle-buffer/archive/refs/tags/latest.zip) archive and unpack it.
+
 Install **mulle-buffer** into `/usr/local` with [cmake](https://cmake.org):
 
 ``` sh
