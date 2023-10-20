@@ -38,7 +38,7 @@
 #ifndef mulle_buffer__h__
 #define mulle_buffer__h__
 
-#define MULLE__BUFFER_VERSION  ((3 << 20) | (4 << 8) | 0)
+#define MULLE__BUFFER_VERSION  ((3 << 20) | (5 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -81,42 +81,42 @@ struct mulle_buffer
 //
 //
 //
-#define MULLE_BUFFER_INIT_FLEXIBLE( data, len, allocator)  \
-   ((struct mulle_buffer)                                  \
-   {                                                       \
-      (unsigned char *) data,                              \
-      (unsigned char *) data,                              \
-      &((unsigned char *) data)[ (len)],                   \
-      (unsigned char *) data,                              \
-      (len),                                               \
-      MULLE_BUFFER_IS_FLEXIBLE,                            \
-      allocator ? allocator : &mulle_default_allocator     \
+#define MULLE_BUFFER_INIT_FLEXIBLE( data, len, allocator)          \
+   ((struct mulle_buffer)                                          \
+   {                                                               \
+      (unsigned char *) data,                                      \
+      (unsigned char *) data,                                      \
+      &((unsigned char *) data)[ (len)],                           \
+      (unsigned char *) data,                                      \
+      (len),                                                       \
+      MULLE_BUFFER_IS_FLEXIBLE,                                    \
+      allocator ? allocator : &mulle_default_allocator             \
    })
 
 
-#define MULLE_BUFFER_INIT_FLEXIBLE_FILLED( data, len, allocator)  \
-   ((struct mulle_buffer)                                  \
-   {                                                       \
-      (unsigned char *) data,                              \
-      &((unsigned char *) data)[ (len)],                   \
-      &((unsigned char *) data)[ (len)],                   \
-      (unsigned char *) data,                              \
-      (len),                                               \
-      MULLE_BUFFER_IS_FLEXIBLE,                            \
-      allocator ? allocator : &mulle_default_allocator     \
+#define MULLE_BUFFER_INIT_FLEXIBLE_FILLED( data, len, allocator)   \
+   ((struct mulle_buffer)                                          \
+   {                                                               \
+      (unsigned char *) data,                                      \
+      &((unsigned char *) data)[ (len)],                           \
+      &((unsigned char *) data)[ (len)],                           \
+      (unsigned char *) data,                                      \
+      (len),                                                       \
+      MULLE_BUFFER_IS_FLEXIBLE,                                    \
+      allocator ? allocator : &mulle_default_allocator             \
    })
 
 
-#define MULLE_BUFFER_INIT_INFLEXIBLE( data, len, allocator) \
-   ((struct mulle_buffer)                                   \
-   {                                                        \
-      (unsigned char *) data,                               \
-      (unsigned char *) data,                               \
-      &((unsigned char *) data)[ (len)],                    \
-      (unsigned char *) data,                               \
-      (len),                                                \
-      MULLE_BUFFER_IS_INFLEXIBLE,                           \
-      allocator ? allocator : &mulle_default_allocator      \
+#define MULLE_BUFFER_INIT_INFLEXIBLE( data, len, allocator)        \
+   ((struct mulle_buffer)                                          \
+   {                                                               \
+      (unsigned char *) data,                                      \
+      (unsigned char *) data,                                      \
+      &((unsigned char *) data)[ (len)],                           \
+      (unsigned char *) data,                                      \
+      (len),                                                       \
+      MULLE_BUFFER_IS_INFLEXIBLE,                                  \
+      allocator ? allocator : &mulle_default_allocator             \
    })
 
 
