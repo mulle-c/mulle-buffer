@@ -54,46 +54,6 @@ struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator)
 }
 
 
-struct mulle_flushablebuffer   *
-   mulle_flushablebuffer_create( size_t length,
-                                 mulle_flushablebuffer_flusher_t flusher,
-                                 void *userinfo,
-                                 struct mulle_allocator *allocator)
-{
-   struct mulle_flushablebuffer  *buffer;
-   void                          *storage;
-
-   if( ! allocator)
-      allocator = &mulle_default_allocator;
-
-   buffer  = mulle_allocator_malloc( allocator, sizeof( struct mulle_flushablebuffer));
-   storage = mulle_allocator_malloc( allocator, length);
-   mulle_flushablebuffer_init_with_allocated_bytes( buffer,
-                                                    storage,
-                                                    length,
-                                                    flusher,
-                                                    userinfo,
-                                                    allocator);
-   return( buffer);
-}
-
-
-
-int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
-{
-   int   rval;
-
-   if( ! buffer)
-      return( 0);
-
-   rval = mulle_flushablebuffer_done( buffer);
-   if( ! rval)
-      mulle_allocator_free( buffer->_allocator, buffer);
-   return( 0);
-}
-
-
-
 static inline unsigned int   hex( unsigned int c)
 {
    assert( c >= 0 && c <= 0xf);
@@ -216,6 +176,14 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 
       mulle_buffer_add_byte( buffer, '|');
    }
+}
+
+
+void   mulle_buffer_add_bytes_callback( void *buffer,
+                                        void *bytes,
+                                        size_t length)
+{
+   mulle_buffer_add_bytes( buffer, bytes, length);
 }
 
 
