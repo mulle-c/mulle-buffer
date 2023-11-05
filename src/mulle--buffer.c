@@ -32,6 +32,10 @@
 
 #include "include-private.h"
 
+#include <ctype.h>
+
+#include "mulle-flushablebuffer.h"
+
 
 #if DEBUG
 # define MULLE_BUFFER_MIN_GROW_SIZE    4        // minimum realloc increment
@@ -39,17 +43,16 @@
 # define MULLE_BUFFER_MIN_GROW_SIZE    64
 #endif
 
-
 size_t  _mulle__buffer_get_seek( struct mulle__buffer *buffer)
 {
-   size_t                          len;
-   struct mulle__flushablebuffer   *flushable;
+   size_t                         len;
+   struct mulle_flushablebuffer   *flushable;
 
    len = _mulle__buffer_get_length( buffer);
    if( ! _mulle__buffer_is_flushable( buffer))
       return( len);
 
-   flushable = (struct mulle__flushablebuffer *) buffer;
+   flushable = (struct mulle_flushablebuffer *) buffer;
    return( flushable->_flushed + len);
 }
 
@@ -71,7 +74,7 @@ int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t se
       break;
 
    case MULLE_BUFFER_SEEK_END :
-      plan = &buffer->_sentinel[ -(long)seek];
+      plan = &buffer->_sentinel[ -(long) seek];
       break;
 
    default :
@@ -109,9 +112,9 @@ void    _mulle__buffer_size_to_fit( struct mulle__buffer *buffer,
       return;
 
    length = _mulle__buffer_get_length( buffer);
-   p      = _mulle_allocator_realloc_strict( allocator,
-                                             buffer->_storage,
-                                             sizeof( unsigned char) * length);
+   p      = mulle_allocator_realloc_strict( allocator,
+                                            buffer->_storage,
+                                            sizeof( unsigned char) * length);
 
    buffer->_storage  = p;
    buffer->_curr     = &buffer->_storage[ length];
@@ -133,7 +136,7 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
       data.bytes = buffer->_storage;
       if( data.bytes == buffer->_initial_storage)
       {
-         data.bytes = _mulle_allocator_malloc( allocator, data.length);
+         data.bytes = mulle_allocator_malloc( allocator, data.length);
          memcpy( data.bytes, buffer->_storage, data.length);
 
          buffer->_curr    =
@@ -172,49 +175,18 @@ char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
 }
 
 
-
-static inline void  _mulle_buffer_set_overflown( struct mulle__buffer *buffer)
-{
-   if( buffer->_curr <= buffer->_sentinel)
-      buffer->_curr = buffer->_sentinel + 1;  // set "overflowed"
-}
-
-
-int  _mulle__flushablebuffer_flush( struct mulle__flushablebuffer *ibuffer)
-{
-   size_t   len;
-
-   len = ibuffer->_curr - ibuffer->_storage;
-   if( ! len)
-      return( 0);
-
-   if( len != (*ibuffer->_flusher)( ibuffer->_storage, 1, len, ibuffer->_userinfo))
-   {
-      _mulle_buffer_set_overflown( (struct mulle__buffer *) ibuffer);
-
-      ibuffer->_curr = ibuffer->_sentinel + 1;  // set "overflowed"
-      return( -2);
-   }
-
-   ibuffer->_flushed += len;
-   ibuffer->_curr     = ibuffer->_storage;
-
-   return( 0);
-}
-
-
 int   _mulle__buffer_flush( struct mulle__buffer *buffer)
 {
-   struct mulle__flushablebuffer  *ibuffer;
+   struct mulle_flushablebuffer  *ibuffer;
 
    if( ! _mulle__buffer_is_flushable( buffer))
    {
-      _mulle_buffer_set_overflown( buffer);
+      _mulle__buffer_set_overflown( buffer);
       return( -1);
    }
 
-   ibuffer = (struct mulle__flushablebuffer *) buffer;
-   return( _mulle__flushablebuffer_flush( ibuffer));
+   ibuffer = (struct mulle_flushablebuffer *) buffer;
+   return( _mulle_flushablebuffer_flush( ibuffer));
 }
 
 
@@ -259,6 +231,9 @@ int   _mulle__buffer_grow( struct mulle__buffer *buffer,
    size_t   new_size;
    size_t   len;
 
+   if( _mulle__buffer_has_overflown( buffer))
+      return( -1);
+
    assert( min_amount);
    if( _mulle__buffer_is_inflexible( buffer))
    {
@@ -286,7 +261,7 @@ int   _mulle__buffer_grow( struct mulle__buffer *buffer,
 
    new_size          = _mulle__buffer_grow_size( buffer, min_amount);
    len               = buffer->_curr - buffer->_storage;
-   p                 = _mulle_allocator_realloc( allocator, malloc_block, new_size);
+   p                 = mulle_allocator_realloc( allocator, malloc_block, new_size);
 
    if( ! malloc_block)
       memcpy( p, buffer->_initial_storage, len);
@@ -312,7 +287,7 @@ void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
                                       struct mulle_allocator *allocator)
 {
    if( buffer->_storage != buffer->_initial_storage)
-      _mulle_allocator_free( allocator, buffer->_storage);
+      mulle_allocator_free( allocator, buffer->_storage);
 
    buffer->_storage         =
    buffer->_initial_storage = buf;
@@ -328,23 +303,23 @@ struct mulle__buffer   *_mulle__buffer_create( struct mulle_allocator *allocator
 {
    struct mulle__buffer  *buffer;
 
-   buffer = _mulle_allocator_malloc( allocator, sizeof( struct mulle__buffer));
+   buffer = mulle_allocator_malloc( allocator, sizeof( struct mulle__buffer));
    _mulle__buffer_init( buffer);
    return( buffer);
 }
 
 
 void   _mulle__buffer_destroy( struct mulle__buffer *buffer,
-                           struct mulle_allocator *allocator)
+                               struct mulle_allocator *allocator)
 {
    _mulle__buffer_done( buffer, allocator);
-   _mulle_allocator_free( allocator, buffer);
+   mulle_allocator_free( allocator, buffer);
 }
 
 
 size_t   _mulle__buffer_set_length( struct mulle__buffer *buffer,
-                                   size_t length,
-                                   struct mulle_allocator *allocator)
+                                    size_t length,
+                                    struct mulle_allocator *allocator)
 {
    long   diff;
 
@@ -378,57 +353,51 @@ void   _mulle__buffer_zero_to_length( struct mulle__buffer *buffer,
 
 void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
                                         struct mulle__buffer *other,
-                                        size_t offset,
-                                        size_t length,
+                                        struct mulle_range range,
                                         struct mulle_allocator *allocator)
 {
-   assert( buffer != other);
+   assert( buffer != other);  // you could do it though, but whats the point
 
    unsigned char   *start;
-   unsigned char   *sentinel;
 
-   start    = _mulle__buffer_get_bytes( other);
-   sentinel = &start[ _mulle__buffer_get_length( other)];
-   start    = &start[ offset];
-   if( &start[ length] <= sentinel)
-      _mulle__buffer_add_bytes( buffer, start, length, allocator);
+   range = mulle_range_validate_against_length( range, _mulle__buffer_get_length( other));
+   start = _mulle__buffer_get_bytes( other);
+   start = &start[ range.location];
+   _mulle__buffer_add_bytes( buffer, start, range.length, allocator);
 }
 
 
 void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
-                                 size_t offset,
-                                 size_t length,
-                                 unsigned char *dst)
+                                  struct mulle_range range,
+                                  unsigned char *dst)
 {
    unsigned char   *start;
-   unsigned char   *sentinel;
 
-   start    = _mulle__buffer_get_bytes( buffer);
-   sentinel = &start[ _mulle__buffer_get_length( buffer)];
-
-   start    = &start[ offset];
-   if( &start[ length] <= sentinel)
-      memmove( dst, start, length);
+   range = mulle_range_validate_against_length( range, _mulle__buffer_get_length( buffer));
+   start = _mulle__buffer_get_bytes( buffer);
+   start = &start[ range.location];
+   memmove( dst, start, range.length);
 }
 
 
 void   _mulle__buffer_remove_in_range( struct mulle__buffer *buffer,
-                                       size_t offset,
-                                       size_t length)
+                                       struct mulle_range range)
 {
    unsigned char   *start;
    unsigned char   *end;
 
-   start = &buffer->_storage[ offset];
-   end   = &start[ length];
-
-   if( end > buffer->_curr)
+   range = mulle_range_validate_against_length( range, _mulle__buffer_get_length( buffer));
+   if( ! range.length)
       return;
+
+   start = _mulle__buffer_get_bytes( buffer);
+   start = &start[ range.location];
+   end   = &start[ range.length];
 
    if( end != buffer->_curr)
       memmove( start, end, buffer->_sentinel - end);
 
-   buffer->_curr -= length;
+   buffer->_curr -= range.length;
 }
 
 
@@ -452,19 +421,71 @@ void   _mulle__buffer_add_string_if_not_empty( struct mulle__buffer *buffer,
 
 
 
-int   _mulle__flushablebuffer_done( struct mulle__flushablebuffer *buffer)
+
+
+static inline char   tooct( int v)
 {
-   int   rval;
+   return( '0' + v);
+}
 
-   rval = _mulle__flushablebuffer_flush( buffer);
-   if( rval)
-      return( rval);
 
-   if( ! buffer->_initial_storage)
-      mulle_allocator_free( buffer->_allocator, buffer->_storage);
-#ifdef DEBUG
-   memset( buffer, 0xFD, sizeof( *buffer));
-#endif
-   return( 0);
+//
+// everything a little more complicated, because I prefer hex code
+// but if you have 0xfe and then a hex char follows, the compiler sees this
+// as more hex code :( If this happens use octal instead.
+//
+static void  _mulle__buffer_add_octal( struct mulle__buffer *buffer,
+                                       char c,
+                                       struct mulle_allocator *allocator)
+{
+   _mulle__buffer_add_byte( buffer, '\\', allocator);
+   _mulle__buffer_add_byte( buffer, tooct( ((unsigned char) c >> 6) & 0x7), allocator);
+   _mulle__buffer_add_byte( buffer, tooct( ((unsigned char) c >> 3) & 0x7), allocator);
+   _mulle__buffer_add_byte( buffer, tooct( (unsigned char) c & 0x7), allocator);
+}
+
+
+static void   _mulle__buffer_add_escaped_byte( struct mulle__buffer *buffer,
+                                               char c,
+                                               struct mulle_allocator *allocator)
+{
+   _mulle__buffer_add_byte( buffer, '\\', allocator);
+   _mulle__buffer_add_byte( buffer, c, allocator);
+}
+
+
+void   _mulle__buffer_add_quoted_string( struct mulle__buffer *buffer,
+                                         char *bytes,
+                                         struct mulle_allocator *allocator)
+{
+   char   c;
+
+   assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, strlen( bytes)));
+
+   _mulle__buffer_add_byte( buffer, '"', allocator);
+   while( (c = *bytes++))
+   {
+      switch( c)
+      {
+      case '\r' : _mulle__buffer_add_escaped_byte( buffer, 'r', allocator); continue;
+      case '\n' : _mulle__buffer_add_escaped_byte( buffer, 'n', allocator); continue;
+      case '"'  : _mulle__buffer_add_escaped_byte( buffer, '"', allocator); continue;
+      case '?'  : _mulle__buffer_add_escaped_byte( buffer, '?', allocator); continue;
+      case '\\' : _mulle__buffer_add_escaped_byte( buffer, '\\', allocator); continue;
+      case '\a' : _mulle__buffer_add_escaped_byte( buffer, 'a', allocator); continue;
+      case '\b' : _mulle__buffer_add_escaped_byte( buffer, 'b', allocator); continue;
+      case '\e' : _mulle__buffer_add_escaped_byte( buffer, 'e', allocator); continue;
+      case '\f' : _mulle__buffer_add_escaped_byte( buffer, 'f', allocator); continue;
+      case '\t' : _mulle__buffer_add_escaped_byte( buffer, 'r', allocator); continue;
+      case '\v' : _mulle__buffer_add_escaped_byte( buffer, 'v', allocator); continue;
+      default   :
+         ;
+      }
+      if( isprint( c))
+         _mulle__buffer_add_byte( buffer, c, allocator);
+      else
+         _mulle__buffer_add_octal( buffer, c, allocator);
+   }
+   _mulle__buffer_add_byte( buffer, '"', allocator);
 }
 

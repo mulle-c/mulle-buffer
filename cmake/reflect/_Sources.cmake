@@ -13,6 +13,7 @@ endif()
 set( SOURCES
 src/mulle--buffer.c
 src/mulle-buffer.c
+src/mulle-flushablebuffer.c
 )
 
 #

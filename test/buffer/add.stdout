@@ -7,3 +7,4 @@ simple_static_test: 12
 simple_static_test: hello world
 simple_static_test: 12
 simple_fill_test: 0
+if_empty_test: BC
