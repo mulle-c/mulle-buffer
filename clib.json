@@ -1,7 +1,7 @@
 {
    "name" : "mulle-buffer",
    "version" : "3.5.0",
-   "description" : "↗️ A growable C char array and also a stream",
+   "description" : "A growable C char array and also a stream",
    "keywords" : [],
    "license" : "BSD-3-Clause",
    "repo" : "mulle-c/mulle-buffer",
@@ -14,6 +14,8 @@
       "src/mulle-buffer.c",
       "src/mulle-buffer.h",
       "src/mulle-flexbuffer.h",
+      "src/mulle-flushablebuffer.c",
+      "src/mulle-flushablebuffer.h",
       "src/reflect/_mulle-buffer-include-private.h",
       "src/reflect/_mulle-buffer-include.h",
       "src/reflect/_mulle-buffer-versioncheck.h"

@@ -65,12 +65,27 @@ static void   simple_static_test()
    mulle_buffer_done( &buffer);
 }
 
+static void   if_empty_test( void)
+{
+   mulle_buffer_do( buffer)
+   {
+      mulle_buffer_add_string_if_not_empty( buffer, "A");
+      mulle_buffer_add_string_if_empty( buffer, "B");
+      mulle_buffer_add_string_if_not_empty( buffer, "C");
+      mulle_buffer_add_string_if_empty( buffer, "D");
+      mulle_buffer_make_string( buffer);
+      printf( "if_empty_test: %s\n", (char *) mulle_buffer_get_bytes( buffer));
+   }
+}
+
+
 
 int  main()
 {
    simple_fill_test();
    mulle_testallocator_reset();
    simple_static_test();
+   if_empty_test();
 
    return( 0);
 }
