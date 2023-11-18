@@ -28,8 +28,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef mulle__buffer__h__
-#define mulle__buffer__h__
+#ifndef mulle__buffer_h__
+#define mulle__buffer_h__
 
 #include "include.h"
 
@@ -785,8 +785,8 @@ static inline int   _mulle__buffer_next_character( struct mulle__buffer *buffer)
 
 
 /* like a seek forwards, if something found */
-static inline int   _mulle__buffer_find_byte( struct mulle__buffer *buffer,
-                                             unsigned char byte)
+static inline ssize_t   _mulle__buffer_seek_byte( struct mulle__buffer *buffer,
+                                                 unsigned char byte)
 {
    unsigned char  *p;
 

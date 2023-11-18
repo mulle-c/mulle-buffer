@@ -34,8 +34,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef mulle_flexbuffer__h__
-#define mulle_flexbuffer__h__
+#ifndef mulle_flexbuffer_h__
+#define mulle_flexbuffer_h__
 
 #include "include.h"
 

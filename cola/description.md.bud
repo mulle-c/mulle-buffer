@@ -1,4 +1,8 @@
 mulle-buffer can construct arbitrary long binary data dynamically or in static
 storage. You don't have to worry about calculating the necessary buffer size.
 It's easy, fast and safe. It can also be used as a stream and it is used to
-implement NSMutableData.
+implement NSMutableData. mulle-buffer has functions to create hexdumps and
+quoted C string output.
+
+There is a sibling project [mulle-utf32buffer](//mulle-c/mulle-utf32buffer)
+to construct UTF32 strings.

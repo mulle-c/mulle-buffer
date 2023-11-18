@@ -1,5 +1,9 @@
 # mulle-flexbuffer
 
+The flexbuffer has been superseded by **mulle-alloca**, to be
+found in [mulle-allocator](//mulle-c/mulle-allocator).
+
+
 ##### flexbuffer, a replacement for alloca
 
 The `mulle_flexbuffer` can be used as an replacement for `alloca`. The problem

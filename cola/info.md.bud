@@ -114,34 +114,3 @@ You will have to `mulle_free` the constructed string "s".
 > print data with format strings a la `sprintf` into a mulle-buffer.
 >
 
-
-### flexbuffer, a replacement for alloca
-
-The `mulle_flexbuffer` can be used as an replacement for `alloca`. The problem
-with `alloca` is always two-fold. 1.) It's non-standard and not available on
-all platforms. 2.) The amount of memory to `alloca` may exceed the available
-stack space. The `mulle_flexbuffer` solves this problem by using a small amount
-of stack space for low memory scenarios and moving to `malloc`, when it's
-needed.
-
-Example:
-
-``` c
- void  foo( char *s)
-{
-   size_t   n;
-
-   n = strlen( s) + 1;
-   mulle_flexbuffer_do( copy, 32, n)
-   {
-      strcpy( copy, s); // guaranteed to not overflow
-   }
-}
-```
-
-A `char *` named "copy" is created. "copy" either points to stack memory or to
-a malloced area. `mulle_flexbuffer_do` defines the maximum amout of memory
-to be stored on the stack. In this case its `char[ 32]`. The actual amount
-used is determined by `n`. The flexbuffer will be valid in the scope of the
-`mulle_flexbuffer_do` block statement only.
-

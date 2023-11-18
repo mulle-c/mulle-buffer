@@ -1,0 +1,66 @@
+{
+    "branch_covered": 148,
+    "branch_percent": 82.2,
+    "branch_total": 180,
+    "files": [
+        {
+            "branch_covered": 70,
+            "branch_percent": 0.897,
+            "branch_total": 78,
+            "filename": "mulle--buffer.c",
+            "line_covered": 195,
+            "line_percent": 0.975,
+            "line_total": 200
+        },
+        {
+            "branch_covered": 22,
+            "branch_percent": 0.7859999999999999,
+            "branch_total": 28,
+            "filename": "mulle--buffer.h",
+            "line_covered": 64,
+            "line_percent": 0.9279999999999999,
+            "line_total": 69
+        },
+        {
+            "branch_covered": 31,
+            "branch_percent": 0.816,
+            "branch_total": 38,
+            "filename": "mulle-buffer.c",
+            "line_covered": 82,
+            "line_percent": 1.0,
+            "line_total": 82
+        },
+        {
+            "branch_covered": 8,
+            "branch_percent": 0.5,
+            "branch_total": 16,
+            "filename": "mulle-buffer.h",
+            "line_covered": 23,
+            "line_percent": 0.7929999999999999,
+            "line_total": 29
+        },
+        {
+            "branch_covered": 15,
+            "branch_percent": 0.938,
+            "branch_total": 16,
+            "filename": "mulle-flushablebuffer.c",
+            "line_covered": 35,
+            "line_percent": 1.0,
+            "line_total": 35
+        },
+        {
+            "branch_covered": 2,
+            "branch_percent": 0.5,
+            "branch_total": 4,
+            "filename": "mulle-flushablebuffer.h",
+            "line_covered": 17,
+            "line_percent": 0.895,
+            "line_total": 19
+        }
+    ],
+    "gcovr/summary_format_version": "0.2",
+    "line_covered": 416,
+    "line_percent": 95.9,
+    "line_total": 434,
+    "root": "../../src"
+}

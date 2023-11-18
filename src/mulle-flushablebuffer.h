@@ -78,7 +78,7 @@ struct mulle_flushablebuffer
       ._initial_storage = (xstorage),                                             \
       ._curr            = (xstorage),                                             \
       ._storage         = (xstorage),                                             \
-      ._sentinel        = &((char *)(xstorage))[ (xlength)],                      \
+      ._sentinel        = &((unsigned char *)(xstorage))[ (xlength)],             \
       ._size            = (xlength),                                              \
       ._type            = MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE, \
       ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),         \
@@ -251,7 +251,7 @@ static inline int
 MULLE__BUFFER_GLOBAL
 struct mulle_flushablebuffer   *
    mulle_flushablebuffer_create( size_t length,
-                                 mulle_flushablebuffer_flusher_t flusher,
+                                 mulle_flushablebuffer_flusher_t *flusher,
                                  void *userinfo,
                                  struct mulle_allocator *allocator);
 
@@ -263,7 +263,7 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 // Flush to FILE *
 //
 #define mulle_buffer_do_FILE( name, fp)                                                \
-   unsigned char   name ## __buf[ 64];                                                 \
+   unsigned char   name ## __buf[ 128];                                                \
    struct mulle_flushablebuffer                                                        \
       name ## __storage = MULLE_FLUSHABLEBUFFER_INIT_STATIC( name ## __buf,            \
                                                              sizeof( name ## __buf),   \
