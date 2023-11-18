@@ -35,10 +35,10 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef mulle_buffer__h__
-#define mulle_buffer__h__
+#ifndef mulle_buffer_h__
+#define mulle_buffer_h__
 
-#define MULLE__BUFFER_VERSION  ((3 << 20) | (5 << 8) | 0)
+#define MULLE__BUFFER_VERSION  ((3UL << 20) | (5 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -932,13 +932,13 @@ static inline int   mulle_buffer_next_character( struct mulle_buffer *buffer)
 }
 
 
-static inline int   mulle_buffer_find_byte( struct mulle_buffer *buffer,
-                                            unsigned char byte)
+static inline ssize_t   mulle_buffer_seek_byte( struct mulle_buffer *buffer,
+                                                unsigned char byte)
 {
    if( ! buffer)
       return( -1);
 
-   return( _mulle__buffer_find_byte( (struct mulle__buffer *) buffer, byte));
+   return( _mulle__buffer_seek_byte( (struct mulle__buffer *) buffer, byte));
 }
 
 

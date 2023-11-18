@@ -82,7 +82,7 @@ int   _mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
 
 struct mulle_flushablebuffer   *
    mulle_flushablebuffer_create( size_t length,
-                                 mulle_flushablebuffer_flusher_t flusher,
+                                 mulle_flushablebuffer_flusher_t *flusher,
                                  void *userinfo,
                                  struct mulle_allocator *allocator)
 {
