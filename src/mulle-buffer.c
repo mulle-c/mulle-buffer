@@ -56,7 +56,7 @@ struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator)
 
 static inline unsigned int   hex( unsigned int c)
 {
-   assert( c >= 0 && c <= 0xf);
+   assert( c <= 0xf);
    return( c >= 0xa ? c + 'a' - 0xa : c + '0');
 }
 
@@ -72,24 +72,26 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
    unsigned int   i;
    unsigned int   value;
    uint8_t        *p;
+   uint32_t       adr;     // limited to 32 bit currently
 
    memo = bytes;
    p    = bytes;
+   adr  = counter;
 
    if( ! (options & mulle_buffer_hexdump_no_offset))
    {
-      s     = mulle_buffer_advance( buffer, 10);
+      s = mulle_buffer_advance( buffer, 10);
       if( s)
       {
-         *s++ = (uint8_t) hex( counter >> 28 & 0xF);
-         *s++ = (uint8_t) hex( counter >> 24 & 0xF);
-         *s++ = (uint8_t) hex( counter >> 20 & 0xF);
-         *s++ = (uint8_t) hex( counter >> 16 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 28 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 24 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 20 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 16 & 0xF);
 
-         *s++ = (uint8_t) hex( counter >> 12 & 0xF);
-         *s++ = (uint8_t) hex( counter >> 8 & 0xF);
-         *s++ = (uint8_t) hex( counter >> 4 & 0xF);
-         *s++ = (uint8_t) hex( counter >> 0 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 12 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 8 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 4 & 0xF);
+         *s++ = (uint8_t) hex( adr >> 0 & 0xF);
 
          *s++ = ' ';
          *s++ = ' ';

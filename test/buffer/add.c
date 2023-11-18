@@ -27,7 +27,7 @@ static void   simple_fill_test()
 //   printf( "simple_fill_test: %lx\n", mulle_hash( mulle_buffer_get_bytes( buffer),
 //                                                  len));
 
-   mulle_buffer_add_string( buffer, "hello");
+   mulle_buffer_add_bytes( buffer, "hello", 5);
 
    printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( buffer));
 

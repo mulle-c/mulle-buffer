@@ -1,4 +1,10 @@
 {
+   config =
+   {
+      showButtons = YES;
+      showCoverage = YES;
+      showCodacy = NO;
+   };
    project =
    {
       description="↗️ A growable C char array and also a stream";
