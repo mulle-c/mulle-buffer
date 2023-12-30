@@ -11,9 +11,9 @@ static void   example( void)
 
    mulle_buffer_do_string( buffer, NULL, s)
    {
-      mulle_buffer_add_quoted_string( buffer, "VfL\n\"Bochum\"\n1848");
+      mulle_buffer_add_c_string( buffer, "VfL\n\"Bochum\"\n1848");
       mulle_buffer_add_string( buffer, "\n");
-      mulle_buffer_add_quoted_string( buffer, "\\\a\b\e\f\t\n\r\vWhat ???\017\322-");
+      mulle_buffer_add_c_string( buffer, "\\\a\b\e\f\t\n\r\vWhat ???\017\322-");
       break;
    }
 

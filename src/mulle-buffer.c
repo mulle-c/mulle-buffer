@@ -189,6 +189,16 @@ void   mulle_buffer_add_bytes_callback( void *buffer,
 }
 
 
+MULLE__BUFFER_GLOBAL
+void   mulle_buffer_add_c_chars_callback( void *buffer,
+                                          void *bytes,
+                                          size_t length)
+{
+   mulle_buffer_add_c_chars( buffer, bytes, length);
+}
+
+
+
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
                             void *bytes,
                             size_t length,

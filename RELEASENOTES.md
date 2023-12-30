@@ -1,3 +1,19 @@
+## 3.5.0
+
+* changed `..._quoted_string` to `_c_string,` because it fits better
+* fixes for 16bit scenarips
+* **BREAKING CHANGE** misnamed ``mulle_buffer_find_byte`` is now ``mulle_buffer_seek_byte``
+* **BREAKING CHANGE** ``mulle_flushablebuffer_flusher_t`` is now a function, not longer a function pointer to be in line with other mulle libraries
+* **BREAKING CHANGE** `mulle__flushablebuffer` is now gone and completely replaces by `mulle_flushablebuffer.` `mulle_flushablebuffer` is an improved version that supports `mulle_buffer_do_FILE`
+* added `_mulle__buffer_add_quoted_string` to output C double quoted strings with proper escape codes
+* **BREAKING CHANGE** functions that were dealing with ranges but used offset/length now use struct `mulle_range` with proper validation (you can now use -1, for implicit strlen)
+* the overflown condition is now better checked throughout the library
+* rework flushable buffer
+* fix explicit mulle-flexarray calls
+* **BREAKING CHANGE** `mulle_flexarray_define` no longer exists.
+* **BREAKING CHANGE** `mulle_flexarray()` now also defines the `<name>` pointer and alloc, realloc assign to it
+
+
 ## 3.4.0
 
 * make string and zero functions to return int to detect truncation with the static bytes
