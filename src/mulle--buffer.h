@@ -353,10 +353,10 @@ enum
 };
 
 MULLE__BUFFER_GLOBAL
-size_t   _mulle__buffer_get_seek( struct mulle__buffer *buffer);
+long   _mulle__buffer_get_seek( struct mulle__buffer *buffer);
 
 MULLE__BUFFER_GLOBAL
-int      _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t seek);
+int      _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, long seek);
 
 
 
@@ -576,13 +576,40 @@ static inline void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
 }
 
 
+
+//
+// produces C escape code but does not wrap in ""
+//
+MULLE__BUFFER_GLOBAL
+void   _mulle__buffer_add_c_char( struct mulle__buffer *buffer,
+                                  char c,
+                                  struct mulle_allocator *allocator);
+
+//
+// produces C escape codes but does not wrap in ""
+//
+static inline void   _mulle__buffer_add_c_chars( struct mulle__buffer *buffer,
+                                                 char *s,
+                                                 size_t length,
+                                                 struct mulle_allocator *allocator)
+{
+   char   *sentinel;
+
+   assert( ! _mulle__buffer_intersects_bytes( buffer, s, length));
+
+   sentinel = &s[ length];
+   while( s < sentinel)
+      _mulle__buffer_add_c_char( buffer, *s++, allocator);
+}
+
+
 //
 // produces C escape codes and wraps everything in ""
 //
 MULLE__BUFFER_GLOBAL
-void   _mulle__buffer_add_quoted_string( struct mulle__buffer *buffer,
-                                         char *bytes,
-                                         struct mulle_allocator *allocator);
+void   _mulle__buffer_add_c_string( struct mulle__buffer *buffer,
+                                    char *s,
+                                    struct mulle_allocator *allocator);
 
 MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_add_string_if_empty( struct mulle__buffer *buffer,
@@ -785,8 +812,8 @@ static inline int   _mulle__buffer_next_character( struct mulle__buffer *buffer)
 
 
 /* like a seek forwards, if something found */
-static inline ssize_t   _mulle__buffer_seek_byte( struct mulle__buffer *buffer,
-                                                 unsigned char byte)
+static inline long   _mulle__buffer_seek_byte( struct mulle__buffer *buffer,
+                                               unsigned char byte)
 {
    unsigned char  *p;
 

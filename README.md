@@ -5,7 +5,11 @@
 mulle-buffer can construct arbitrary long binary data dynamically or in static
 storage. You don't have to worry about calculating the necessary buffer size.
 It's easy, fast and safe. It can also be used as a stream and it is used to
-implement NSMutableData.
+implement NSMutableData. mulle-buffer has functions to create hexdumps and
+quoted C string output.
+
+There is a sibling project [mulle-utf32buffer](//mulle-c/mulle-utf32buffer)
+to construct UTF32 strings.
 
 
 
@@ -19,7 +23,6 @@ implement NSMutableData.
 | Data Structure                               | Description
 | ---------------------------------------------| ----------------------------------------
 | [`mulle-buffer`](dox/API_BUFFER.md)          | A resizable byte buffer that can grow dynamically as needed
-| [`mulle-flexbuffer`](dox/API_FLEXBUFFER.md)  | A portable replacement for [alloca](https://www.man7.org/linux/man-pages/man3/alloca.3.html)
 
 
 
@@ -143,37 +146,6 @@ You will have to `mulle_free` the constructed string "s".
 >
 
 
-### flexbuffer, a replacement for alloca
-
-The `mulle_flexbuffer` can be used as an replacement for `alloca`. The problem
-with `alloca` is always two-fold. 1.) It's non-standard and not available on
-all platforms. 2.) The amount of memory to `alloca` may exceed the available
-stack space. The `mulle_flexbuffer` solves this problem by using a small amount
-of stack space for low memory scenarios and moving to `malloc`, when it's
-needed.
-
-Example:
-
-``` c
- void  foo( char *s)
-{
-   size_t   n;
-
-   n = strlen( s) + 1;
-   mulle_flexbuffer_do( copy, 32, n)
-   {
-      strcpy( copy, s); // guaranteed to not overflow
-   }
-}
-```
-
-A `char *` named "copy" is created. "copy" either points to stack memory or to
-a malloced area. `mulle_flexbuffer_do` defines the maximum amout of memory
-to be stored on the stack. In this case its `char[ 32]`. The actual amount
-used is determined by `n`. The flexbuffer will be valid in the scope of the
-`mulle_flexbuffer_do` block statement only.
-
-
 ### You are here
 
 ![Overview](overview.dot.svg)
@@ -244,7 +216,7 @@ cmake --install build --config Release
 
 ## Author
 
-[Nat!](https://mulle-kybernetik.com/weblog) for Mulle kybernetiK
+[Nat!](https://mulle-kybernetik.com/weblog) for Mulle kybernetiK  
 
 
 

@@ -19,7 +19,7 @@ static void   coverage()
    _mulle__buffer_zero_to_length( other, 10, NULL);
    _mulle__buffer_add_string_if_empty( buffer, "", NULL);
    _mulle__buffer_add_string_if_not_empty( buffer, "", NULL);
-   _mulle__buffer_add_quoted_string( buffer, "x", NULL);
+   _mulle__buffer_add_c_string( buffer, "x", NULL);
    s = _mulle__buffer_extract_string( buffer, NULL);
    printf( "%s\n", s);
    mulle_free( s);

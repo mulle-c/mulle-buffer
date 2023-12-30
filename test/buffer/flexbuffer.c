@@ -37,7 +37,7 @@ static void   flex_return( int n)
 {
    mulle_flexbuffer_do( buffer, 4, n)
    {
-      mulle_flexbuffer_return_void( buffer);
+      _mulle_flexbuffer_return_void( buffer);
    }
 }
 
@@ -56,7 +56,7 @@ static void  flex_explicit( int unused)
    copy[ 0] = toupper( copy[ 0]);
    printf("Copied string: %s\n", copy);
    if( copy[ 0] == 'Q')
-      mulle_flexbuffer_return_void( copy);
+      _mulle_flexbuffer_return_void( copy);
 
    mulle_flexbuffer_realloc( copy, n + strlen( s2));
    strcat(copy, s2);

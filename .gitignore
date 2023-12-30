@@ -62,3 +62,4 @@ package.md
 coverage*.html
 *.gcda
 *.gcno
+cola/wilted/
