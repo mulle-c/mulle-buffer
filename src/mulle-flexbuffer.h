@@ -113,7 +113,13 @@
    }                                                                        \
    while( 0)
 
-#define mulle_flexbuffer_return( name, value)                               \
+
+
+//
+// these macros are only useful, if you are not nesting your flexbuffer_dos
+// I just might throw these two macros out again
+//
+#define _mulle_flexbuffer_return( name, value)                              \
    do                                                                       \
    {                                                                        \
       __typeof__( *name) name ## __tmp = (value);                           \
@@ -122,7 +128,7 @@
    }                                                                        \
    while( 0)
 
-#define mulle_flexbuffer_return_void( name)                                 \
+#define _mulle_flexbuffer_return_void( name)                                \
    do                                                                       \
    {                                                                        \
       mulle_flexbuffer_done( name);                                         \

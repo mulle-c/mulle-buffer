@@ -43,9 +43,9 @@
 # define MULLE_BUFFER_MIN_GROW_SIZE    64
 #endif
 
-size_t  _mulle__buffer_get_seek( struct mulle__buffer *buffer)
+long  _mulle__buffer_get_seek( struct mulle__buffer *buffer)
 {
-   size_t                         len;
+   long                           len;
    struct mulle_flushablebuffer   *flushable;
 
    len = _mulle__buffer_get_length( buffer);
@@ -57,7 +57,7 @@ size_t  _mulle__buffer_get_seek( struct mulle__buffer *buffer)
 }
 
 
-int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t seek)
+int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, long seek)
 {
    unsigned char   *plan;
 
@@ -74,7 +74,7 @@ int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, int mode, size_t se
       break;
 
    case MULLE_BUFFER_SEEK_END :
-      plan = &buffer->_sentinel[ -(long) seek];
+      plan = &buffer->_sentinel[ -seek];
       break;
 
    default :
@@ -445,7 +445,7 @@ static void  _mulle__buffer_add_octal( struct mulle__buffer *buffer,
 }
 
 
-static void   _mulle__buffer_add_escaped_byte( struct mulle__buffer *buffer,
+static void   _mulle__buffer_add_escaped_char( struct mulle__buffer *buffer,
                                                char c,
                                                struct mulle_allocator *allocator)
 {
@@ -454,9 +454,36 @@ static void   _mulle__buffer_add_escaped_byte( struct mulle__buffer *buffer,
 }
 
 
-void   _mulle__buffer_add_quoted_string( struct mulle__buffer *buffer,
-                                         char *bytes,
-                                         struct mulle_allocator *allocator)
+void   _mulle__buffer_add_c_char( struct mulle__buffer *buffer,
+                                  char c,
+                                  struct mulle_allocator *allocator)
+{
+   switch( c)
+   {
+   case '\r' : _mulle__buffer_add_escaped_char( buffer, 'r', allocator); return;
+   case '\n' : _mulle__buffer_add_escaped_char( buffer, 'n', allocator); return;
+   case '"'  : _mulle__buffer_add_escaped_char( buffer, '"', allocator); return;
+   case '?'  : _mulle__buffer_add_escaped_char( buffer, '?', allocator); return;
+   case '\\' : _mulle__buffer_add_escaped_char( buffer, '\\', allocator); return;
+   case '\a' : _mulle__buffer_add_escaped_char( buffer, 'a', allocator); return;
+   case '\b' : _mulle__buffer_add_escaped_char( buffer, 'b', allocator); return;
+   case '\e' : _mulle__buffer_add_escaped_char( buffer, 'e', allocator); return;
+   case '\f' : _mulle__buffer_add_escaped_char( buffer, 'f', allocator); return;
+   case '\t' : _mulle__buffer_add_escaped_char( buffer, 't', allocator); return;
+   case '\v' : _mulle__buffer_add_escaped_char( buffer, 'v', allocator); return;
+   default   :
+      ;
+   }
+   if( isprint( c))
+      _mulle__buffer_add_char( buffer, c, allocator);
+   else
+      _mulle__buffer_add_octal( buffer, c, allocator);
+}
+
+
+void   _mulle__buffer_add_c_string( struct mulle__buffer *buffer,
+                                    char *bytes,
+                                   struct mulle_allocator *allocator)
 {
    char   c;
 
@@ -464,28 +491,7 @@ void   _mulle__buffer_add_quoted_string( struct mulle__buffer *buffer,
 
    _mulle__buffer_add_byte( buffer, '"', allocator);
    while( (c = *bytes++))
-   {
-      switch( c)
-      {
-      case '\r' : _mulle__buffer_add_escaped_byte( buffer, 'r', allocator); continue;
-      case '\n' : _mulle__buffer_add_escaped_byte( buffer, 'n', allocator); continue;
-      case '"'  : _mulle__buffer_add_escaped_byte( buffer, '"', allocator); continue;
-      case '?'  : _mulle__buffer_add_escaped_byte( buffer, '?', allocator); continue;
-      case '\\' : _mulle__buffer_add_escaped_byte( buffer, '\\', allocator); continue;
-      case '\a' : _mulle__buffer_add_escaped_byte( buffer, 'a', allocator); continue;
-      case '\b' : _mulle__buffer_add_escaped_byte( buffer, 'b', allocator); continue;
-      case '\e' : _mulle__buffer_add_escaped_byte( buffer, 'e', allocator); continue;
-      case '\f' : _mulle__buffer_add_escaped_byte( buffer, 'f', allocator); continue;
-      case '\t' : _mulle__buffer_add_escaped_byte( buffer, 'r', allocator); continue;
-      case '\v' : _mulle__buffer_add_escaped_byte( buffer, 'v', allocator); continue;
-      default   :
-         ;
-      }
-      if( isprint( c))
-         _mulle__buffer_add_byte( buffer, c, allocator);
-      else
-         _mulle__buffer_add_octal( buffer, c, allocator);
-   }
+      _mulle__buffer_add_c_char( buffer, c, allocator);
    _mulle__buffer_add_byte( buffer, '"', allocator);
 }
 

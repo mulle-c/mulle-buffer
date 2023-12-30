@@ -36,7 +36,7 @@ static void   example2()
    struct mulle_flushablebuffer   *flush_buf;
    struct mulle_buffer            *buf;
    char                           storage[ 8];
-   size_t                         seek;
+   long                           seek;
 
    flush_buf = mulle_flushablebuffer_create( sizeof( storage),
                                              (mulle_flushablebuffer_flusher_t *) fwrite,

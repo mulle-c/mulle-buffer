@@ -1,7 +1,7 @@
 {
    "name" : "mulle-buffer",
    "version" : "3.5.0",
-   "description" : "A growable C char array and also a stream",
+   "description" : "↗️ A growable C char array and also a stream",
    "keywords" : [],
    "license" : "BSD-3-Clause",
    "repo" : "mulle-c/mulle-buffer",

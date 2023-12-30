@@ -484,7 +484,7 @@ static inline size_t
 
 
 static inline int
-    mulle_buffer_set_seek( struct mulle_buffer *buffer, int mode, size_t seek)
+    mulle_buffer_set_seek( struct mulle_buffer *buffer, int mode, long seek)
 {
    if( ! buffer)
       return( 0);
@@ -493,7 +493,7 @@ static inline int
 }
 
 
-static inline size_t   mulle_buffer_get_seek( struct mulle_buffer *buffer)
+static inline long   mulle_buffer_get_seek( struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 0);
@@ -729,18 +729,45 @@ static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
 }
 
 
-//
-// produces C escape codes and wraps everything in ""
-//
-static inline void   mulle_buffer_add_quoted_string( struct mulle_buffer *buffer,
-                                                     char *bytes)
+static inline void   mulle_buffer_add_c_char( struct mulle_buffer *buffer,
+                                              char c)
+{
+   if( buffer)
+      _mulle__buffer_add_c_char( (struct mulle__buffer *) buffer,
+                                 c,
+                                 mulle_buffer_get_allocator( buffer));
+}
+
+
+static inline void   mulle_buffer_add_c_chars( struct mulle_buffer *buffer,
+                                               char *s,
+                                               size_t length)
 {
    if( ! buffer)
       return;
 
-   _mulle__buffer_add_quoted_string( (struct mulle__buffer *) buffer,
-                                     bytes,
-                                      mulle_buffer_get_allocator( buffer));
+   _mulle__buffer_add_c_chars( (struct mulle__buffer *) buffer,
+                               s,
+                               length,
+                               mulle_buffer_get_allocator( buffer));
+}
+
+
+MULLE__BUFFER_GLOBAL
+void   mulle_buffer_add_c_chars_callback( void *buffer,
+                                          void *bytes,
+                                          size_t length);
+
+//
+// produces C escape codes and wraps everything in ""
+//
+static inline void   mulle_buffer_add_c_string( struct mulle_buffer *buffer,
+                                                char *s)
+{
+   if( buffer)
+      _mulle__buffer_add_c_string( (struct mulle__buffer *) buffer,
+                                    s,
+                                    mulle_buffer_get_allocator( buffer));
 }
 
 
@@ -932,8 +959,8 @@ static inline int   mulle_buffer_next_character( struct mulle_buffer *buffer)
 }
 
 
-static inline ssize_t   mulle_buffer_seek_byte( struct mulle_buffer *buffer,
-                                                unsigned char byte)
+static inline long   mulle_buffer_seek_byte( struct mulle_buffer *buffer,
+                                             unsigned char byte)
 {
    if( ! buffer)
       return( -1);
