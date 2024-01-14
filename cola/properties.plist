@@ -7,7 +7,7 @@
       user="mulle-c";
       repo="mulle-buffer";
       homepage="https://github.com/mulle-c/mulle-buffer";
-      license="BSD-3-Clause"
+      license="BSD-3-Clause";
    };
    dependencies =
    (
