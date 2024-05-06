@@ -158,10 +158,21 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 int   _mulle__buffer_make_string( struct mulle__buffer *buffer,
                                   struct mulle_allocator *allocator)
 {
+   int  c;
+
+   c = _mulle__buffer_get_last_byte( buffer);
+   if( ! c)
+      return( 0);
+
    if( _mulle__buffer_is_inflexible( buffer))
-      return( _mulle__buffer_zero_last_byte( buffer));
-   if( _mulle__buffer_is_empty( buffer) || _mulle__buffer_get_last_byte( buffer))
-      _mulle__buffer_add_byte( buffer, 0, allocator);
+   {
+      assert( ! _mulle__buffer_is_void( buffer));
+
+      if( _mulle__buffer_is_full( buffer))
+         return( _mulle__buffer_zero_last_byte( buffer));
+   }
+
+   _mulle__buffer_add_byte( buffer, 0, allocator);
    return( 0);
 }
 
@@ -169,9 +180,11 @@ int   _mulle__buffer_make_string( struct mulle__buffer *buffer,
 char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator)
 {
-  _mulle__buffer_make_string( buffer, allocator);
-  _mulle__buffer_size_to_fit( buffer, allocator);
-  return( (char *) _mulle__buffer_extract_data( buffer, allocator).bytes);
+   // afterwards the size of the string will include the zero
+   _mulle__buffer_make_string( buffer, allocator);
+   // this will do nothing for inflexible data
+   _mulle__buffer_size_to_fit( buffer, allocator);
+   return( (char *) _mulle__buffer_extract_data( buffer, allocator).bytes);
 }
 
 
