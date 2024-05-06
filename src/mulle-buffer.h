@@ -38,7 +38,7 @@
 #ifndef mulle_buffer_h__
 #define mulle_buffer_h__
 
-#define MULLE__BUFFER_VERSION  ((3UL << 20) | (5 << 8) | 0)
+#define MULLE__BUFFER_VERSION  ((3UL << 20) | (5 << 8) | 1)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -107,6 +107,9 @@ struct mulle_buffer
    })
 
 
+//
+// why does inflexible have an allocator ?
+//
 #define MULLE_BUFFER_INIT_INFLEXIBLE( data, len, allocator)        \
    ((struct mulle_buffer)                                          \
    {                                                               \
@@ -121,7 +124,7 @@ struct mulle_buffer
 
 
 //
-// we take a some static data, but we assume its already filled
+// we take some static data, but we assume its already filled
 // with data.
 //
 #define MULLE_BUFFER_INIT_INFLEXIBLE_FILLED( data, len, allocator) \
@@ -299,7 +302,7 @@ static inline void   mulle_buffer_size_to_fit( struct mulle_buffer *buffer)
       return;
 
    _mulle__buffer_size_to_fit( (struct mulle__buffer *) buffer,
-                              mulle_buffer_get_allocator( buffer));
+                               mulle_buffer_get_allocator( buffer));
 }
 
 
@@ -896,11 +899,11 @@ static inline void
 // _initial_storage storage will be lost
 static inline void   mulle_buffer_reset( struct mulle_buffer *buffer)
 {
-   if( ! buffer)
-      return;
+   struct mulle_allocator   *allocator;
 
-   _mulle__buffer_reset( (struct mulle__buffer *) buffer,
-                          mulle_buffer_get_allocator( buffer));
+   allocator = mulle_buffer_get_allocator( buffer);
+   mulle_buffer_done( buffer);
+   mulle_buffer_init( buffer, allocator);
 }
 
 
