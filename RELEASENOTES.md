@@ -1,3 +1,8 @@
+### 3.5.1
+
+* fix 32 bit problem for mulle-sprintf (special handling of `INT_MAX`)
+* fix inflexible buffer not properly adjusting length for added zero
+
 ## 3.5.0
 
 * changed `..._quoted_string` to `_c_string,` because it fits better

@@ -125,6 +125,8 @@ static inline void   _mulle__buffer_init_with_allocated_bytes( struct mulle__buf
    buffer->_sentinel        = &buffer->_storage[ length];
    buffer->_size            = length;
    buffer->_type            = MULLE_BUFFER_IS_FLEXIBLE;
+
+   assert( buffer->_sentinel >= buffer->_storage);
 }
 
 
@@ -140,6 +142,8 @@ static inline void   _mulle__buffer_init_with_static_bytes( struct mulle__buffer
    buffer->_sentinel        = &buffer->_storage[ length];
    buffer->_size            = length;
    buffer->_type            = MULLE_BUFFER_IS_FLEXIBLE;
+
+   assert( buffer->_sentinel >= buffer->_storage);
 }
 
 
@@ -182,8 +186,24 @@ static inline void
    buffer->_storage          =
    buffer->_curr             = storage;
    buffer->_sentinel         = &buffer->_storage[ length];
+
+   //
+   // this is for mulle_sprintf, where we have API that gets storage, where
+   // we don't know the size. We can't have buffer->_sentinel wrapping
+   // around though for our tests
+   //
+   if( length == INT_MAX)
+   {
+      while( buffer->_sentinel < buffer->_storage)
+      {
+         length >>= 1;
+         buffer->_sentinel = &buffer->_storage[ length];
+      }
+   }
    buffer->_size             = length;
    buffer->_type             = MULLE_BUFFER_IS_INFLEXIBLE;
+
+   assert( buffer->_sentinel >= buffer->_storage);
 }
 
 
@@ -452,12 +472,9 @@ static inline void    _mulle__buffer_add_byte( struct mulle__buffer *buffer,
 
 static inline int    _mulle__buffer_get_last_byte( struct mulle__buffer *buffer)
 {
-   assert( ! _mulle__buffer_is_empty( buffer));
-   assert( ! _mulle__buffer_has_overflown( buffer));
-
    if( buffer->_curr == buffer->_storage)
       return( -1);
-   return( buffer->_curr[ -1]);
+   return( buffer->_curr[ _mulle__buffer_has_overflown( buffer) ? -2 : -1]);
 }
 
 
@@ -696,7 +713,7 @@ static inline int   _mulle__buffer_memcmp( struct mulle__buffer *buffer,
 
 //
 // a bit weird, but it is used to truncate or a append a 0 string
-// but size is not adjusted, useful when retrieving the buffer and
+// but size is not adjusted. Useful when retrieving the buffer and
 // use it as cString, but the buffer is fixed size. You can then print
 // the strlen or print the contents. You can then easily just append
 // another string.
