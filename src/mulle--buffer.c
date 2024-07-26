@@ -382,7 +382,7 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
 
 void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
                                   struct mulle_range range,
-                                  unsigned char *dst)
+                                  void *dst)
 {
    unsigned char   *start;
 

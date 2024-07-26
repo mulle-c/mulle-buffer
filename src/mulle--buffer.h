@@ -849,7 +849,7 @@ static inline long   _mulle__buffer_seek_byte( struct mulle__buffer *buffer,
 MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
                                   struct mulle_range range,
-                                  unsigned char *dst);
+                                  void *dst);
 
 
 #pragma mark - backwards compatibility
