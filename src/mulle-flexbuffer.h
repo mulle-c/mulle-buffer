@@ -97,7 +97,7 @@
                                        &mulle_default_allocator)
 
 #define mulle_flexbuffer_realloc( name, count)                              \
-   name = (                                                                 \
+   name = (void *) (                                                        \
              _mulle__buffer_set_length(                                     \
                 &name ## __buffer,                                          \
                 (count) * sizeof( name ## __storage[ 0]),                   \
