@@ -38,7 +38,7 @@
 #ifndef mulle_buffer_h__
 #define mulle_buffer_h__
 
-#define MULLE__BUFFER_VERSION  ((3UL << 20) | (5 << 8) | 1)
+#define MULLE__BUFFER_VERSION  ((3UL << 20) | (5 << 8) | 2)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -521,7 +521,7 @@ static inline void   *mulle_buffer_advance( struct mulle_buffer *buffer,
 
 static inline void   mulle_buffer_copy_range( struct mulle_buffer *buffer,
                                               struct mulle_range range,
-                                              unsigned char *dst)
+                                              void *dst)
 {
    if( ! buffer || ! dst)
       return;
