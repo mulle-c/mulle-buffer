@@ -657,7 +657,25 @@ static inline void   mulle_buffer_add_byte( struct mulle_buffer *buffer,
 
 static inline void   mulle_buffer_remove_last_byte( struct mulle_buffer *buffer)
 {
-   _mulle__buffer_remove_last_byte( (struct mulle__buffer *) buffer);
+   if( buffer)
+      _mulle__buffer_remove_last_byte( (struct mulle__buffer *) buffer);
+}
+
+
+
+static inline int    _mulle_buffer_pop_byte( struct mulle_buffer *buffer)
+{
+   return( _mulle__buffer_pop_byte( (struct mulle__buffer *) buffer,
+                                    buffer->_allocator));
+}
+
+
+static inline int    mulle_buffer_pop_byte( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return( -1);
+   return( _mulle__buffer_pop_byte( (struct mulle__buffer *) buffer,
+                                    buffer->_allocator));
 }
 
 
@@ -774,11 +792,19 @@ static inline void   mulle_buffer_add_c_string( struct mulle_buffer *buffer,
 }
 
 
-
-// just a synonym
-static inline void   mulle_buffer_strcpy( struct mulle_buffer *buffer,
-                                         char *bytes)
+// just a synonym for add_string
+static inline void   mulle_buffer_strcat( struct mulle_buffer *buffer,
+                                          char *bytes)
 {
+   mulle_buffer_add_string( buffer, bytes);
+}
+
+
+// clears the buffer and adds the string
+static inline void   mulle_buffer_strcpy( struct mulle_buffer *buffer,
+                                          char *bytes)
+{
+   mulle_buffer_set_length( buffer, 0);
    mulle_buffer_add_string( buffer, bytes);
 }
 
@@ -804,7 +830,6 @@ static inline void   mulle_buffer_add_string_if_not_empty( struct mulle_buffer *
                                            bytes,
                                            mulle_buffer_get_allocator( buffer));
 }
-
 
 
 static inline size_t
@@ -893,7 +918,6 @@ static inline void
                                     range,
                                     mulle_buffer_get_allocator( buffer));
 }
-
 
 
 // _initial_storage storage will be lost
@@ -1056,6 +1080,7 @@ MULLE_C_DEPRECATED static inline void
    }                                                \
    while( 0)
 
+
 #define mulle_buffer_do_string( name, allocator, s)               \
    for( struct mulle_buffer                                       \
             name ## __storage = MULLE_BUFFER_INIT( allocator),    \
@@ -1108,7 +1133,6 @@ MULLE_C_DEPRECATED static inline void
       for( int  name ## __j = 0;    /* break protection */                    \
            name ## __j < 1;                                                   \
            name ## __j++)
-
 
 //
 // Create a buffer with some static/auto storage preset. If that is
@@ -1182,9 +1206,7 @@ MULLE_C_DEPRECATED static inline void
            name ## __j++)
 
 
-
 //
-
 // TODO:
 //#define mulle_buffer_do_FILE( name, FP)
 
