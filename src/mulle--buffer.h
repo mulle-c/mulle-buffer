@@ -487,6 +487,21 @@ static inline void    _mulle__buffer_remove_last_byte( struct mulle__buffer *buf
 }
 
 
+static inline int    _mulle__buffer_pop_byte( struct mulle__buffer *buffer,
+                                              struct mulle_allocator *allocator)
+{
+   MULLE_C_UNUSED( allocator); // future
+   // no longer overflown I guess
+   if( _mulle__buffer_has_overflown( buffer))
+      buffer->_curr = buffer->_sentinel;
+   if( _mulle__buffer_is_empty( buffer))
+      return( -1);
+
+   --buffer->_curr;
+   return( *buffer->_curr);
+}
+
+
 void   _mulle__buffer_remove_in_range( struct mulle__buffer *buffer,
                                        struct mulle_range range);
 
