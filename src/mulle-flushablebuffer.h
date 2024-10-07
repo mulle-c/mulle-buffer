@@ -71,7 +71,17 @@ struct mulle_flushablebuffer
 };
 
 
-#define MULLE_FLUSHABLEBUFFER_INIT_STATIC( xstorage, xlength,                     \
+/**
+ * Initializes a `mulle_flushablebuffer` struct with a static storage buffer.
+ *
+ * @param xstorage    The static storage buffer to use for the buffer.
+ * @param xlength     The length of the static storage buffer.
+ * @param xflusher    The flusher function to use for the buffer.
+ * @param xuserinfo   The user-provided information to pass to the flusher function.
+ *
+ * @return A `mulle_flushablebuffer` struct initialized with the provided parameters.
+ */
+#define MULLE_FLUSHABLEBUFFER_STATIC_DATA( xstorage, xlength,                     \
                                            xflusher, xuserinfo)                   \
    ((struct mulle_flushablebuffer)                                                \
    {                                                                              \
@@ -85,7 +95,18 @@ struct mulle_flushablebuffer
       ._userinfo        = (xuserinfo)                                             \
    })                                                                             \
 
-#define MULLE_FLUSHABLEBUFFER_INIT_ALLOCATED( xstorage, xlength, xflusher,        \
+/**
+ * Initializes a `mulle_flushablebuffer` struct with an allocated storage buffer.
+ *
+ * @param xstorage    The allocated storage buffer to use for the buffer.
+ * @param xlength     The length of the allocated storage buffer.
+ * @param xflusher    The flusher function to use for the buffer.
+ * @param xuserinfo   The user-provided information to pass to the flusher function.
+ * @param xallocator  The allocator to use for the buffer.
+ *
+ * @return A `mulle_flushablebuffer` struct initialized with the provided parameters.
+ */
+#define MULLE_FLUSHABLEBUFFER_ALLOCATED_DATA( xstorage, xlength, xflusher,        \
                                               xuserinfo, xallocator)              \
    ((struct mulle_flushablebuffer)                                                \
    {                                                                              \
@@ -100,6 +121,12 @@ struct mulle_flushablebuffer
    })
 
 
+/**
+ * Returns the `mulle_buffer` representation of a `mulle_flushablebuffer`.
+ *
+ * @param buffer The `mulle_flushablebuffer` to convert.
+ * @return The `mulle_buffer` representation of the provided `mulle_flushablebuffer`.
+ */
 static inline struct mulle_buffer   *
    mulle_flushablebuffer_as_buffer( struct mulle_flushablebuffer *buffer)
 {
@@ -108,6 +135,16 @@ static inline struct mulle_buffer   *
 
 
 
+/**
+ * Initializes a `mulle_flushablebuffer` struct with a static storage buffer.
+ *
+ * @param buffer     The `mulle_flushablebuffer` struct to initialize.
+ * @param storage    The static storage buffer to use for the buffer.
+ * @param length     The length of the static storage buffer.
+ * @param flusher    The flusher function to use for the buffer.
+ * @param userinfo   The user-provided information to pass to the flusher function.
+ * @param allocator  The allocator to use for the buffer.
+ */
 // the storage is
 static inline void
    _mulle_flushablebuffer_init_with_static_bytes( struct mulle_flushablebuffer *buffer,
@@ -134,6 +171,16 @@ static inline void
 }
 
 
+/**
+ * Initializes a `mulle_flushablebuffer` struct with an allocated storage buffer.
+ *
+ * @param buffer     The `mulle_flushablebuffer` struct to initialize.
+ * @param storage    The allocated storage buffer to use for the buffer.
+ * @param length     The length of the allocated storage buffer.
+ * @param flusher    The flusher function to use for the buffer.
+ * @param userinfo   The user-provided information to pass to the flusher function.
+ * @param allocator  The allocator to use for the buffer.
+ */
 static inline void
    _mulle_flushablebuffer_init_with_allocated_bytes( struct mulle_flushablebuffer *buffer,
                                                      void *storage,
@@ -158,6 +205,19 @@ static inline void
 }
 
 
+/**
+ * Initializes a `mulle_flushablebuffer` struct with a static storage buffer.
+ *
+ * This function is provided for backwards compatibility. It is recommended to use
+ * `mulle_flushablebuffer_init_with_static_bytes` instead, which provides more
+ * explicit parameter names.
+ *
+ * @param buffer     The `mulle_flushablebuffer` struct to initialize.
+ * @param storage    The static storage buffer to use for the buffer.
+ * @param length     The length of the static storage buffer.
+ * @param flusher    The flusher function to use for the buffer.
+ * @param userinfo   The user-provided information to pass to the flusher function.
+ */
 // backwards compatibility
 MULLE_C_NONNULL_SECOND_FOURTH
 static inline void
@@ -178,6 +238,20 @@ static inline void
 }
 
 
+/**
+ * Initializes a `mulle_flushablebuffer` struct with a static storage buffer.
+ *
+ * This function is provided for backwards compatibility. It is recommended to use
+ * `mulle_flushablebuffer_init_with_allocated_bytes` instead, which provides more
+ * explicit parameter names.
+ *
+ * @param buffer     The `mulle_flushablebuffer` struct to initialize.
+ * @param storage    The static storage buffer to use for the buffer.
+ * @param length     The length of the static storage buffer.
+ * @param flusher    The flusher function to use for the buffer.
+ * @param userinfo   The user-provided information to pass to the flusher function.
+ * @param allocator  The allocator to use for the buffer (can be NULL).
+ */
 MULLE_C_NONNULL_SECOND_FOURTH
 static inline void
    mulle_flushablebuffer_init_with_static_bytes( struct mulle_flushablebuffer *buffer,
@@ -199,6 +273,18 @@ static inline void
 }
 
 
+/**
+ * Initializes a `mulle_flushablebuffer` struct with an allocated storage buffer.
+ *
+ * This function is used to initialize a `mulle_flushablebuffer` struct with a dynamically allocated storage buffer. The buffer will be allocated using the provided `mulle_allocator` instance.
+ *
+ * @param buffer     The `mulle_flushablebuffer` struct to initialize.
+ * @param storage    The allocated storage buffer to use for the buffer.
+ * @param length     The length of the allocated storage buffer.
+ * @param flusher    The flusher function to use for the buffer.
+ * @param userinfo   The user-provided information to pass to the flusher function.
+ * @param allocator  The allocator to use for the buffer.
+ */
 MULLE_C_NONNULL_SECOND_FOURTH
 static inline void
    mulle_flushablebuffer_init_with_allocated_bytes( struct mulle_flushablebuffer *buffer,
@@ -239,6 +325,17 @@ MULLE_C_NONNULL_FIRST
 int   _mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer);
 
 
+/**
+ * Finalizes and destroys a `mulle_flushablebuffer` instance.
+ *
+ * This function will flush any remaining data in the buffer and then destroy the
+ * buffer instance. If the flush operation fails, the function will return a
+ * non-zero value to indicate that the buffer is still alive and valid.
+ *
+ * @param buffer The `mulle_flushablebuffer` instance to finalize and destroy.
+ * @return 0 if the buffer was successfully destroyed, non-zero if the flush
+ *         operation failed and the buffer is still alive.
+ */
 static inline int
    mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
 {
@@ -248,6 +345,20 @@ static inline int
 }
 
 
+/**
+ * Creates a new `mulle_flushablebuffer` instance.
+ *
+ * This function creates a new `mulle_flushablebuffer` instance with the specified
+ * length, flusher function, user information, and memory allocator. The created
+ * buffer can be used to efficiently write data and automatically flush it to the
+ * provided flusher function.
+ *
+ * @param length The initial length of the buffer.
+ * @param flusher The function to use for flushing the buffer contents.
+ * @param userinfo An opaque pointer that will be passed to the flusher function.
+ * @param allocator The memory allocator to use for the buffer.
+ * @return A new `mulle_flushablebuffer` instance, or `NULL` if the creation failed.
+ */
 MULLE__BUFFER_GLOBAL
 struct mulle_flushablebuffer   *
    mulle_flushablebuffer_create( size_t length,
@@ -259,13 +370,23 @@ MULLE__BUFFER_GLOBAL
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 
 
+/**
+ * Defines a macro that creates a `mulle_flushablebuffer` instance and a loop to use it.
+ *
+ * This macro creates a static `mulle_flushablebuffer` instance with a 128-byte internal
+ * buffer, and a `fwrite` flusher function that writes to the provided `FILE*`. It then
+ * defines a loop that uses this buffer, flushing it when the loop completes.
+ *
+ * @param name The name to use for the `mulle_flushablebuffer` instance and loop variables.
+ * @param fp The `FILE*` to write the buffer contents to.
+ */
 //
 // Flush to FILE *
 //
 #define mulle_buffer_do_FILE( name, fp)                                                \
    unsigned char   name ## __buf[ 128];                                                \
    struct mulle_flushablebuffer                                                        \
-      name ## __storage = MULLE_FLUSHABLEBUFFER_INIT_STATIC( name ## __buf,            \
+      name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DATA( name ## __buf,            \
                                                              sizeof( name ## __buf),   \
                                                              fwrite,                   \
                                                              (fp));                    \

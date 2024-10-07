@@ -76,7 +76,7 @@ struct mulle__buffer
    MULLE__BUFFER_BASE;
 };
 
-#define MULLE__BUFFER_INIT_FLEXIBLE( data, len)    \
+#define MULLE__BUFFER_FLEXIBLE_DATA( data, len)    \
    ((struct mulle__buffer)                         \
    {                                               \
       (unsigned char *) data,                      \
@@ -87,7 +87,7 @@ struct mulle__buffer
       MULLE_BUFFER_IS_FLEXIBLE                     \
    })
 
-#define MULLE__BUFFER_INIT_INFLEXIBLE( data, len)  \
+#define MULLE__BUFFER_INFLEXIBLE_DATA( data, len)  \
    ((struct mulle__buffer)                         \
    {                                               \
       (unsigned char *) data,                      \
@@ -467,6 +467,15 @@ static inline void    _mulle__buffer_add_byte( struct mulle__buffer *buffer,
 
    assert( buffer->_curr); // for the analyzer
    *buffer->_curr++ = c;
+}
+
+
+// returns -1 if not a byte
+static inline int   _mulle__buffer_get_byte( struct mulle__buffer *buffer, unsigned int index)
+{
+   if( &buffer->_storage[ index] >= buffer->_sentinel)
+      return( -1);
+   return( (uint8_t) buffer->_storage[ index]);
 }
 
 
