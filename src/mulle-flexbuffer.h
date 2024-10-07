@@ -38,6 +38,23 @@
 #define mulle_flexbuffer_h__
 
 #include "include.h"
+/**
+ * The `mulle_flexbuffer` macro defines a flexible buffer that can be used to
+ * store data. It takes two arguments:
+ *
+ * 1. `name`: The name of the buffer variable.
+ * 2. `stackcount`: The size of the stack-based buffer in bytes.
+ *
+ * The macro defines a stack-based buffer of the given size, and a pointer
+ * variable that can be used to access the buffer. The buffer is initially
+ * allocated on the stack, but can be dynamically resized using the
+ * `mulle_flexbuffer_alloc`, `mulle_flexbuffer_realloc`, and
+ * `mulle_flexbuffer_done` macros.
+ *
+ * The `mulle_flexbuffer` macro is useful when you need a buffer that can
+ * grow dynamically, but you want to avoid dynamic memory allocation for
+ * small buffers. This can improve performance and reduce memory usage.
+ */
 
 // use mulle-c11 for that
 //#include <stdalign.h>
@@ -88,14 +105,39 @@
 #define mulle_flexbuffer( name, stackcount)                                 \
    char                   name ## __storage[ (stackcount)], *name;          \
    struct mulle__buffer   name ## __buffer =                                \
-                            MULLE__BUFFER_INIT_FLEXIBLE( name ## __storage, \
+                            MULLE__BUFFER_FLEXIBLE_DATA( name ## __storage, \
                                                          (stackcount))
 
+/**
+ * Allocates memory for the `name` flexbuffer and returns a pointer to the
+ * allocated memory.
+ *
+ * This macro guarantees that the `name` flexbuffer has at least `actualcount`
+ * elements. If the current buffer is not large enough, it will be reallocated
+ * to the required size.
+ *
+ * @param name The name of the flexbuffer to allocate memory for.
+ * @param actualcount The minimum number of elements to allocate for the
+ *                    flexbuffer.
+ * @return A pointer to the allocated memory for the flexbuffer.
+ */
 #define mulle_flexbuffer_alloc( name, actualcount)                          \
       name = _mulle__buffer_guarantee( &name ## __buffer,                   \
                                        (actualcount),                       \
                                        &mulle_default_allocator)
 
+/**
+ * Reallocates the memory for the `name` flexbuffer to the specified `count`.
+ *
+ * This macro guarantees that the `name` flexbuffer has at least `count`
+ * elements. If the current buffer is not large enough, it will be reallocated
+ * to the required size.
+ *
+ * @param name The name of the flexbuffer to reallocate memory for.
+ * @param count The new minimum number of elements to allocate for the
+ *              flexbuffer.
+ * @return A pointer to the reallocated memory for the flexbuffer.
+ */
 #define mulle_flexbuffer_realloc( name, count)                              \
    name = (void *) (                                                        \
              _mulle__buffer_set_length(                                     \
@@ -105,6 +147,15 @@
              name ## __buffer._storage                                      \
           )
 
+/**
+ * Frees the memory allocated for the `name` flexbuffer and sets the pointer to
+ * `NULL`.
+ *
+ * This macro should be called when the flexbuffer is no longer needed to
+ * release the memory used by the buffer.
+ *
+ * @param name The name of the flexbuffer to free.
+ */
 #define mulle_flexbuffer_done( name)                                        \
    do                                                                       \
    {                                                                        \
@@ -115,6 +166,17 @@
 
 
 
+/**
+ * Frees the memory allocated for the `name` flexbuffer and returns the specified
+ * `value`.
+ *
+ * This macro should be called when the flexbuffer is no longer needed to
+ * release the memory used by the buffer and return a value.
+ *
+ * @param name The name of the flexbuffer to free.
+ * @param value The value to return.
+ * @return The specified `value`.
+ */
 //
 // these macros are only useful, if you are not nesting your flexbuffer_dos
 // I just might throw these two macros out again
@@ -128,6 +190,14 @@
    }                                                                        \
    while( 0)
 
+/**
+ * Frees the memory allocated for the `name` flexbuffer and returns.
+ *
+ * This macro should be called when the flexbuffer is no longer needed to
+ * release the memory used by the buffer and return.
+ *
+ * @param name The name of the flexbuffer to free.
+ */
 #define _mulle_flexbuffer_return_void( name)                                \
    do                                                                       \
    {                                                                        \
@@ -136,6 +206,27 @@
    }                                                                        \
    while( 0)
 
+/**
+ * Defines a flexible buffer that can be used to dynamically allocate and manage
+ * memory for a variable-sized data structure.
+ *
+ * This macro creates a flexible buffer with a fixed-size stack-allocated
+ * storage area, and a dynamically allocated heap-based storage area that can
+ * grow as needed. The `name` parameter is used to generate unique variable
+ * names for the buffer and its associated state.
+ *
+ * The macro defines a loop that allows you to use the flexible buffer within a
+ * block of code. The loop ensures that the buffer is properly initialized,
+ * used, and freed when the block is exited, either normally or via a `break`
+ * statement.
+ *
+ * @param name The name to use for the flexible buffer and its associated
+ *             variables.
+ * @param stackcount The size of the fixed-size stack-allocated storage area
+ *                   for the buffer.
+ * @param count The initial size of the dynamically allocated heap-based
+ *              storage area for the buffer.
+ */
 //
 // we have to keep storage out of the for loop, but we can zero the
 // pointer, so that a "too late" access is catchable
@@ -144,7 +235,7 @@
    char   name ## __storage[ stackcount], *name;                              \
    for( struct mulle__buffer                                                  \
            name ## __buffer =                                                 \
-              MULLE__BUFFER_INIT_FLEXIBLE( name ## __storage, stackcount),    \
+              MULLE__BUFFER_FLEXIBLE_DATA( name ## __storage, stackcount),    \
            name ## __i =                                                      \
            {                                                                  \
               ( mulle_flexbuffer_alloc( name, count), (void *) 0 )            \
