@@ -317,7 +317,7 @@ struct mulle__buffer   *_mulle__buffer_create( struct mulle_allocator *allocator
    struct mulle__buffer  *buffer;
 
    buffer = mulle_allocator_malloc( allocator, sizeof( struct mulle__buffer));
-   _mulle__buffer_init( buffer);
+   _mulle__buffer_init( buffer, 64);
    return( buffer);
 }
 

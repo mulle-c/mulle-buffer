@@ -15,7 +15,7 @@ int  main()
    mulle_flushablebuffer_init_with_allocated_bytes( NULL, (void *) 1, 0, flusher, NULL, NULL);
    mulle_flushablebuffer_done( NULL);
 
-   mulle_buffer_init( NULL, NULL);
+   mulle_buffer_init_default( NULL);
    mulle_buffer_add_byte( NULL, 0);
    mulle_buffer_add_bytes( NULL, NULL, 0);
    mulle_buffer_advance( NULL, 0);

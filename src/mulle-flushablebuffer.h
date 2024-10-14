@@ -39,6 +39,13 @@
 #include "mulle-buffer.h"
 
 
+// TODO: if we also defined a mulle_flushablebuffer_sucket_t we could
+//       also wedge fread (and possibly also fseek) into this datastructure.
+//       Then we could wrap FILE into mulle_buffer and use this to
+//       do file I/O. This would be nice for callbacks (like in mulle-utf)
+//       maybe ? Other idea. Base mulle_buffer on fmemopen, if we can
+//       ascertain thats available on all platforms ? but FILE is opaque
+//       hmm..
 //
 // this is fairly conveniently, just like fwrite(  _storage, len, nElems, fp)
 // though a non-buffering write could be better
@@ -386,19 +393,6 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 #define mulle_buffer_do_FILE( name, fp)                                                \
    unsigned char   name ## __buf[ 128];                                                \
    struct mulle_flushablebuffer                                                        \
-      name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DATA( name ## __buf,            \
-                                                             sizeof( name ## __buf),   \
-                                                             fwrite,                   \
-                                                             (fp));                    \
-   for( struct mulle_buffer                                                            \
-          *name = (struct mulle_buffer *) &name ## __storage,                          \
-          *name ## __i = NULL;                                                         \
-        ! name ## __i;                                                                 \
-        name ## __i = ( mulle_flushablebuffer_done( &name ## __storage), (void *) 0x1) \
-      )                                                                                \
-                                                                                       \
-      for( int  name ## __j = 0;    /* break protection */                             \
-           name ## __j < 1;                                                            \
-           name ## __j++)
+      name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DAT
 
 #endif
