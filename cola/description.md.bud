@@ -4,5 +4,6 @@ It's easy, fast and safe. It can also be used as a stream and it is used to
 implement NSMutableData. mulle-buffer has functions to create hexdumps and
 quoted C string output.
 
-There is a sibling project [mulle-utf32buffer](//mulle-c/mulle-utf32buffer)
-to construct UTF32 strings.
+With [mulle-fprintf](//github.com/mulle-core/mulle_fprintf), you can use
+`printf` style formatting and create string concatenations without
+having to worry about memory management.

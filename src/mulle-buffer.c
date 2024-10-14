@@ -46,7 +46,7 @@ struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator)
    struct mulle_buffer  *buffer;
 
    buffer = mulle_allocator_malloc( allocator, sizeof( struct mulle_buffer));
-   mulle_buffer_init( buffer, allocator);
+   mulle_buffer_init( buffer, 128, allocator);
    return( buffer);
 }
 
