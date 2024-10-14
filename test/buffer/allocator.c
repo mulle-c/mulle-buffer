@@ -20,7 +20,7 @@ int  main()
       return( 1);
 
    // some coverage stuff
-   mulle_buffer_init( NULL, NULL);
+   mulle_buffer_init( NULL, 0, NULL);
    mulle_buffer_add_bytes_callback( NULL, NULL, 0);
    mulle_buffer_done( NULL);
 

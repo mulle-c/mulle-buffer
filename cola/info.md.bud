@@ -107,6 +107,17 @@ void  test( void)
 
 You will have to `mulle_free` the constructed string "s".
 
+### Permanent mulle-buffer
+
+If the mulle-buffer should live longer than the current function, create
+and destroy a buffer manually:
+
+``` c
+buffer = mulle_buffer_create_default();
+...
+mulle_buffer_destroy( buffer);
+```
+
 
 > #### Tip
 >
