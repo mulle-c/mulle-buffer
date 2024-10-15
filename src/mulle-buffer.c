@@ -45,9 +45,73 @@ struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator)
 {
    struct mulle_buffer  *buffer;
 
-   buffer = mulle_allocator_malloc( allocator, sizeof( struct mulle_buffer));
-   mulle_buffer_init( buffer, 128, allocator);
+   buffer = mulle_buffer_alloc( allocator);
+   mulle_buffer_init( buffer, MULLE_BUFFER_DEFAULT_CAPACITY, allocator);
    return( buffer);
+}
+
+
+void   mulle_buffer_reset( struct mulle_buffer *buffer)
+{
+   struct mulle_allocator   *allocator;
+
+   allocator = mulle_buffer_get_allocator( buffer);
+   mulle_buffer_done( buffer);
+   mulle_buffer_init( buffer, 0, allocator);
+}
+
+int   _mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
+{
+   return( _mulle__buffer_zero_last_byte( (struct mulle__buffer *) buffer));
+}
+
+
+void    _mulle_buffer_add_buffer( struct mulle_buffer *buffer,
+                                  struct mulle_buffer *other)
+{
+   _mulle__buffer_add_buffer( (struct mulle__buffer *) buffer,
+                              (struct mulle__buffer *) other,
+                              mulle_buffer_get_allocator( buffer));
+}
+
+
+
+void
+  mulle_buffer_init_with_const_bytes( struct mulle_buffer *buffer,
+                                      const void *storage,
+                                      size_t length)
+{
+   assert( length != (size_t) -1);
+
+   buffer->_initial_storage  =
+   buffer->_storage          =
+   buffer->_curr             = (void *) storage;
+   buffer->_sentinel         = &buffer->_storage[ length];
+
+   // no special case for mulle_sprintf
+   assert( length != INT_MAX);
+
+   buffer->_size             = length;
+   buffer->_type             = MULLE_BUFFER_IS_INFLEXIBLE|MULLE_BUFFER_IS_READONLY;
+   buffer->_allocator        = NULL;
+
+   assert( buffer->_sentinel >= buffer->_storage);
+}
+
+
+void   mulle_buffer_add_bytes_callback( void *buffer,
+                                        void *bytes,
+                                        size_t length)
+{
+   mulle_buffer_add_bytes( buffer, bytes, length);
+}
+
+
+void   mulle_buffer_add_c_chars_callback( void *buffer,
+                                          void *bytes,
+                                          size_t length)
+{
+   mulle_buffer_add_c_chars( buffer, bytes, length);
 }
 
 
@@ -66,6 +130,9 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 {
    uint8_t        *memo;
    uint8_t        *s;
+#ifndef NDEBUG
+   uint8_t        *sentinel;
+#endif
    unsigned int   i;
    unsigned int   value;
    uint8_t        *p;
@@ -78,8 +145,12 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
    if( ! (options & mulle_buffer_hexdump_no_offset))
    {
       s = mulle_buffer_advance( buffer, 10);
+      assert( s);
       if( s)
       {
+#ifndef NDEBUG
+         sentinel = &s[ 10];
+#endif
          *s++ = (uint8_t) hex( adr >> 28 & 0xF);
          *s++ = (uint8_t) hex( adr >> 24 & 0xF);
          *s++ = (uint8_t) hex( adr >> 20 & 0xF);
@@ -92,6 +163,8 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 
          *s++ = ' ';
          *s++ = ' ';
+
+         assert( s == sentinel);
       }
    }
 
@@ -99,8 +172,12 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
    {
       i = 0;
       s = mulle_buffer_advance( buffer, 3 * 8);
+      assert( s);
       if( s)
       {
+#ifndef NDEBUG
+         sentinel = &s[ 24];
+#endif
          for( ; i < 8; i++)
          {
             if( i < n)
@@ -121,13 +198,19 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
             }
             *s++ = ' ';
          }
+
+         assert( s == sentinel);
       }
 
       mulle_buffer_add_byte( buffer, ' ');
 
       s = mulle_buffer_advance( buffer, 3 * 8);
+      assert( s);
       if( s)
       {
+#ifndef NDEBUG
+         sentinel = &s[ 24];
+#endif
          for( ; i < 16; i++)
          {
             if( i < n)
@@ -150,6 +233,8 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
             }
             *s++ = ' ';
          }
+
+         assert( s == sentinel);
       }
    }
 
@@ -176,24 +261,6 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
       mulle_buffer_add_byte( buffer, '|');
    }
 }
-
-
-void   mulle_buffer_add_bytes_callback( void *buffer,
-                                        void *bytes,
-                                        size_t length)
-{
-   mulle_buffer_add_bytes( buffer, bytes, length);
-}
-
-
-MULLE__BUFFER_GLOBAL
-void   mulle_buffer_add_c_chars_callback( void *buffer,
-                                          void *bytes,
-                                          size_t length)
-{
-   mulle_buffer_add_c_chars( buffer, bytes, length);
-}
-
 
 
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,

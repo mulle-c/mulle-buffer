@@ -15,10 +15,3 @@ src/mulle--buffer.c
 src/mulle-buffer.c
 src/mulle-flushablebuffer.c
 )
-
-#
-# contents selected with patternfile ??-source--standalone-sources
-#
-set( STANDALONE_SOURCES
-src/mulle-buffer-standalone.c
-)

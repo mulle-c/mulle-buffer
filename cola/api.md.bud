@@ -1,8 +1,7 @@
 ## API
 
-| Data Structure                               | Description
-| ---------------------------------------------| ----------------------------------------
-| [`mulle-buffer`](dox/API_BUFFER.md)          | A resizable byte buffer that can grow dynamically as needed
-
-
+| Data Structure                                        | Description
+| ------------------------------------------------------| ----------------------------------------
+| [`mulle-buffer`](dox/API_BUFFER.md)                   | A resizable alloca buffer that grows to the heaep if needed
+| [`mulle-flushablebuffer`](dox/API_FLUSHABLEBUFFER.md) | Useful for dumps and other longer output
 

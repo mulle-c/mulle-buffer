@@ -55,8 +55,6 @@ typedef size_t   mulle_flushablebuffer_flusher_t( void *buf,
                                                   size_t len,
                                                   void *userinfo);
 
-// _size will be -2 for a flushable buffer (always inflexible)
-
 // since we want to cast this to mulle_buffer eventually, the allocator
 // must be in here (argh). It's not used by mulle--buffer code though
 // and it's initialized to the default allocator
@@ -78,6 +76,11 @@ struct mulle_flushablebuffer
 };
 
 
+#define MULLE_FLUSHABLEBUFFER_DEFAULT_CAPACITY  256
+
+#define MULLE_FLUSHABLEBUFFER_TYPE  \
+   (MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE | MULLE_BUFFER_IS_WRITEONLY)
+
 /**
  * Initializes a `mulle_flushablebuffer` struct with a static storage buffer.
  *
@@ -88,19 +91,19 @@ struct mulle_flushablebuffer
  *
  * @return A `mulle_flushablebuffer` struct initialized with the provided parameters.
  */
-#define MULLE_FLUSHABLEBUFFER_STATIC_DATA( xstorage, xlength,                     \
-                                           xflusher, xuserinfo)                   \
-   ((struct mulle_flushablebuffer)                                                \
-   {                                                                              \
-      ._initial_storage = (xstorage),                                             \
-      ._curr            = (xstorage),                                             \
-      ._storage         = (xstorage),                                             \
-      ._sentinel        = &((unsigned char *)(xstorage))[ (xlength)],             \
-      ._size            = (xlength),                                              \
-      ._type            = MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE, \
-      ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),         \
-      ._userinfo        = (xuserinfo)                                             \
-   })                                                                             \
+#define MULLE_FLUSHABLEBUFFER_STATIC_DATA( xstorage, xlength,              \
+                                           xflusher, xuserinfo)            \
+   ((struct mulle_flushablebuffer)                                         \
+   {                                                                       \
+      ._initial_storage = (unsigned char *) (xstorage),                    \
+      ._curr            = (unsigned char *) (xstorage),                    \
+      ._storage         = (unsigned char *) (xstorage),                    \
+      ._sentinel        = &((unsigned char *)(xstorage))[ (xlength)],      \
+      ._size            = (xlength),                                       \
+      ._type            = MULLE_FLUSHABLEBUFFER_TYPE,                      \
+      ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),  \
+      ._userinfo        = (xuserinfo)                                      \
+   })                                                                      \
 
 /**
  * Initializes a `mulle_flushablebuffer` struct with an allocated storage buffer.
@@ -113,18 +116,18 @@ struct mulle_flushablebuffer
  *
  * @return A `mulle_flushablebuffer` struct initialized with the provided parameters.
  */
-#define MULLE_FLUSHABLEBUFFER_ALLOCATED_DATA( xstorage, xlength, xflusher,        \
-                                              xuserinfo, xallocator)              \
-   ((struct mulle_flushablebuffer)                                                \
-   {                                                                              \
-      ._curr            = (xstorage),                                             \
-      ._storage         = (xstorage),                                             \
-      ._sentinel        = &((char *)(xstorage))[ (xlength)],                      \
-      ._size            = (xlength),                                              \
-      ._type            = MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE, \
-      ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),         \
-      ._userinfo        = (xuserinfo),                                            \
-      ._allocator       = (xallocator)                                            \
+#define MULLE_FLUSHABLEBUFFER_ALLOCATED_DATA( xstorage, xlength, xflusher, \
+                                              xuserinfo, xallocator)       \
+   ((struct mulle_flushablebuffer)                                         \
+   {                                                                       \
+      ._curr            = (unsigned char *) (xstorage),                    \
+      ._storage         = (unsigned char *) (xstorage),                    \
+      ._sentinel        = &((unsigned char *)(xstorage))[ (xlength)],      \
+      ._size            = (xlength),                                       \
+      ._type            = MULLE_FLUSHABLEBUFFER_TYPE,                      \
+      ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),  \
+      ._userinfo        = (xuserinfo),                                     \
+      ._allocator       = (xallocator)                                     \
    })
 
 
@@ -170,7 +173,7 @@ static inline void
    buffer->_storage         = storage;
    buffer->_sentinel        = &buffer->_storage[ length];
    buffer->_size            = length;
-   buffer->_type            = MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE;
+   buffer->_type            = MULLE_FLUSHABLEBUFFER_TYPE;
 
    buffer->_flusher         = flusher;
    buffer->_userinfo        = userinfo;
@@ -204,7 +207,7 @@ static inline void
    buffer->_storage         = storage;
    buffer->_sentinel        = &buffer->_storage[ length];
    buffer->_size            = length;
-   buffer->_type            = MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE;
+   buffer->_type            = MULLE_FLUSHABLEBUFFER_TYPE;
 
    buffer->_flusher         = flusher;
    buffer->_userinfo        = userinfo;
@@ -283,7 +286,9 @@ static inline void
 /**
  * Initializes a `mulle_flushablebuffer` struct with an allocated storage buffer.
  *
- * This function is used to initialize a `mulle_flushablebuffer` struct with a dynamically allocated storage buffer. The buffer will be allocated using the provided `mulle_allocator` instance.
+ * This function is used to initialize a `mulle_flushablebuffer` struct with a
+ * dynamically allocated storage buffer. The buffer will be allocated using the
+ * provided `mulle_allocator` instance.
  *
  * @param buffer     The `mulle_flushablebuffer` struct to initialize.
  * @param storage    The allocated storage buffer to use for the buffer.
@@ -390,9 +395,25 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 //
 // Flush to FILE *
 //
-#define mulle_buffer_do_FILE( name, fp)                                                \
-   unsigned char   name ## __buf[ 128];                                                \
-   struct mulle_flushablebuffer                                                        \
-      name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DAT
+#define _mulle_flushablebuffer_chars_to_struct( len) \
+   ((len + sizeof( struct mulle_flushablebuffer) - 1) / sizeof( struct mulle_flushablebuffer))
+
+#define mulle_buffer_do_FILE( name, fp)                                                                       \
+   for( struct mulle_flushablebuffer                                                                          \
+          name ## __alloca[ _mulle_flushablebuffer_chars_to_struct( MULLE_FLUSHABLEBUFFER_DEFAULT_CAPACITY)], \
+          name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DATA( name ## __alloca,                            \
+                                                                 sizeof( name ## __alloca),                   \
+                                                                 fwrite,                                      \
+                                                                 (fp)),                                       \
+          *name ## __i = NULL;                                                                                \
+        ! name ## __i;                                                                                        \
+        name ## __i = ( mulle_flushablebuffer_done( &name ## __storage), (void *) 0x1)                        \
+      )                                                                                                       \
+                                                                                                              \
+      for( struct mulle_buffer                                                                                \
+            *name = (struct mulle_buffer *) &name ## __storage,                                               \
+            *name ## __j = 0;    /* break protection */                                                       \
+            name ## __j < (struct mulle_buffer *) 1;                                                          \
+            name ## __j++)
 
 #endif

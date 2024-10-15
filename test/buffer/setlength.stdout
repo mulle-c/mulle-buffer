@@ -1,9 +1,7 @@
-test_normal: 0
-test_normal: 20
-test_normal: 8
 test_zero: 0
 test_zero: 20
 test_zero: 8
 test_inflexible: 0
-test_inflexible: 12
-test_inflexible: 12
+test_inflexible: 8
+test_inflexible: 8
+test_inflexible: 8

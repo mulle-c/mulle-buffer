@@ -8,8 +8,9 @@ It's easy, fast and safe. It can also be used as a stream and it is used to
 implement NSMutableData. mulle-buffer has functions to create hexdumps and
 quoted C string output.
 
-There is a sibling project [mulle-utf32buffer](//mulle-c/mulle-utf32buffer)
-to construct UTF32 strings.
+With [mulle-fprintf](//github.com/mulle-core/mulle_fprintf), you can use
+`printf` style formatting and create string concatenations without
+having to worry about memory management.
 
 
 
@@ -20,11 +21,10 @@ to construct UTF32 strings.
 
 ## API
 
-| Data Structure                               | Description
-| ---------------------------------------------| ----------------------------------------
-| [`mulle-buffer`](dox/API_BUFFER.md)          | A resizable byte buffer that can grow dynamically as needed
-
-
+| Data Structure                                        | Description
+| ------------------------------------------------------| ----------------------------------------
+| [`mulle-buffer`](dox/API_BUFFER.md)                   | A resizable alloca buffer that grows to the heaep if needed
+| [`mulle-flushablebuffer`](dox/API_FLUSHABLEBUFFER.md) | Useful for dumps and other longer output
 
 
 
@@ -59,11 +59,12 @@ As soon as the `mulle_buffer_do` block is exited, the buffer will be invalid.
 > A `break` outside of the block is OK and does not leak, but a return will
 
 
-### Use the stack for small strings
+### Use explict stack memory for small strings
 
-If you expect the string to be small in most circumstances, you can use
-`mulle_buffer_do_flexible` to keep character storage on the stack as long
-as possible. If the stack storage is exhausted, the string will be copied
+`mulle_buffer_do` will create a default sized `alloca` ca. 100 bytes.
+
+If you want to specify the amount of stack space yourself, you can use
+`mulle_buffer_do_flexible`. If the stack storage is exhausted, the string will be copied
 to dynamically allocated memory:
 
 
@@ -83,24 +84,30 @@ void  test( void)
 }
 ```
 
+![pix/mulle-buffer-alloca.svg]
+
+
 If you don't want the string to ever exceed the initial storage length
 you can use `mulle_buffer_do_inflexible`:
 
 ``` c
 void  test( void)
 {
-   char   tmp[ 4];
+   char   tmp[ 8];  // space for seven characters and trailing zero
 
    mulle_buffer_do_inflexible( buffer, tmp)
    {
-      mulle_buffer_add_string( buffer, "hello");
+      mulle_buffer_add_string( buffer, "VfL_");
+      mulle_buffer_add_string( buffer, "Bochum");
 
       printf( "%s\n", mulle_buffer_get_string( buffer));
    }
 }
 ```
 
-This should print "hel", as a trailing zero will be needed for the last
+![pix/mulle-buffer-alloca.svg]
+
+This should print "Vf_", as a trailing zero will be needed for the last
 character.
 
 
@@ -138,6 +145,24 @@ void  test( void)
 
 You will have to `mulle_free` the constructed string "s".
 
+### Permanent mulle-buffer
+
+If the mulle-buffer should live longer than the current function, create
+and destroy a buffer manually:
+
+``` c
+buffer = mulle_buffer_create_default();
+...
+mulle_buffer_destroy( buffer);
+```
+
+or
+
+``` c
+mulle_buffer_init_default( &buffer);
+...
+mulle_buffer_done( buffer);
+```
 
 > #### Tip
 >
