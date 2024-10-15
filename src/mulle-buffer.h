@@ -39,28 +39,45 @@
 #ifndef mulle_buffer_h__
 #define mulle_buffer_h__
 
-#define MULLE__BUFFER_VERSION  ((3UL << 20) | (5 << 8) | 2)
+#define MULLE__BUFFER_VERSION  ((4UL << 20) | (0 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
 
 
 // stupidities to fix:
-// non "_" prefixed functions should check for NULL buffer
+// all non "_" prefixed functions should check for NULL buffer
+// inline code from mulle--buffer that is too large should be called from
+// a mulle-buffer.c function (see: _mulle_buffer_zero_last_byte)
 //
+// 64 bit:
+// sizeof( struct mulle__buffer) = 48
+// sizeof( struct mulle_buffer) = 56
+// sizeof( struct mulle_flushablebuffer) = 80
+//
+// 32 bit:
+// sizeof( struct mulle__buffer) = 24
+// sizeof( struct mulle_buffer) = 28
+// sizeof( struct mulle_flushablebuffer) = 40
+
 #define MULLE_BUFFER_BASE              \
    MULLE__BUFFER_BASE;                 \
    struct mulle_allocator  *_allocator
 
 //
-// _size will be -1 for a non-growing buffer
-// this is like a possibly growing memory block (->NSData)
+// This is like a possibly growing memory block (->NSData)
 //
 struct mulle_buffer
 {
    MULLE_BUFFER_BASE;
 };
 
+
+//
+// This define is 2 * sizeof( mulle_buffer) in 64 bit, which is what
+// we use in mulle_buffer_do as default stack capacity
+//
+#define MULLE_BUFFER_DEFAULT_CAPACITY  96
 
 // value added by mulle-buffer
 // as we override assert for testing, these tests can only be done in the
@@ -81,6 +98,7 @@ enum
    assert( ! (buffer->_type & MULLE_BUFFER_IS_READONLY))
 #endif
 
+
 /**
  * Creates a new `mulle_buffer` instance with the specified allocator and
  * initializes it with default values.
@@ -98,7 +116,7 @@ enum
 ((struct mulle_buffer)                                              \
 {                                                                   \
    0, 0, 0, 0,                                                      \
-   64,                                                              \
+   MULLE_BUFFER_DEFAULT_CAPACITY / 2,                               \
    MULLE_BUFFER_IS_FLEXIBLE,                                        \
    allocator ? allocator : &mulle_default_allocator                 \
 })
@@ -185,13 +203,9 @@ enum
  * @param data The data buffer to initialize the `mulle_buffer` with.
  * @param len The length of the data buffer.
  * @param allocator The allocator to use for the `mulle_buffer` instance. If
- *                  `NULL`, the default allocator `mulle_default_allocator` will
- *                  be used.
+ *                  not `NULL`, the data will be freed on done.
  * @return A new `mulle_buffer` instance initialized with the provided data.
  */
-//
-// why does inflexible have an allocator ?
-//
 #define MULLE_BUFFER_INFLEXIBLE_DATA( data, len, allocator)        \
    ((struct mulle_buffer)                                          \
    {                                                               \
@@ -201,7 +215,7 @@ enum
       (unsigned char *) data,                                      \
       (len),                                                       \
       MULLE_BUFFER_IS_INFLEXIBLE,                                  \
-      allocator ? allocator : &mulle_default_allocator             \
+      allocator                                                    \
    })
 
 
@@ -217,8 +231,7 @@ enum
  * @param data The data buffer to initialize the `mulle_buffer` with.
  * @param len The length of the data buffer.
  * @param allocator The allocator to use for the `mulle_buffer` instance. If
- *                  `NULL`, the default allocator `mulle_default_allocator` will
- *                  be used.
+ *                  not `NULL`, the data will be freed on done.
  * @return A new `mulle_buffer` instance initialized with the provided data.
  */
 //
@@ -226,15 +239,15 @@ enum
 // with data.
 //
 #define MULLE_BUFFER_INFLEXIBLE_FILLED_DATA( data, len, allocator) \
-   ((struct mulle_buffer)                                          \
-   {                                                               \
-      (unsigned char *) data,                                      \
-      &((unsigned char *) data)[ (len)],                           \
-      &((unsigned char *) data)[ (len)],                           \
-      (unsigned char *) data,                                      \
-      (len),                                                       \
-      MULLE_BUFFER_IS_INFLEXIBLE,                                  \
-      allocator ? allocator : &mulle_default_allocator             \
+   ((struct mulle_buffer)                                           \
+   {                                                                \
+      (unsigned char *) data,                                       \
+      &((unsigned char *) data)[ (len)],                            \
+      &((unsigned char *) data)[ (len)],                            \
+      (unsigned char *) data,                                       \
+      (len),                                                        \
+      MULLE_BUFFER_IS_INFLEXIBLE,                                   \
+      allocator                                                     \
    })
 
 
@@ -279,6 +292,25 @@ MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
 
 
 # pragma mark - initialization and destruction
+
+/**
+ * Creates a new `mulle_buffer` instance with the specified allocator and
+ * the default capacity.
+ *
+ * This function creates a new `mulle_buffer` instance and initializes it with the
+ * provided `mulle_allocator`. If no allocator is provided, the default allocator
+ * `mulle_default_allocator` will be used.
+ *
+ * @param allocator The allocator to use for the buffer's storage, or NULL to use the default allocator.
+ * @return A new `mulle_buffer` instance.
+ */
+static inline struct mulle_buffer   *mulle_buffer_alloc( struct mulle_allocator *allocator)
+{
+   return( mulle_allocator_malloc( allocator, sizeof( struct mulle_buffer)));
+}
+
+#define mulle_buffer_alloc_default() \
+   mulle_buffer_alloc( NULL)
 
 /**
  * Creates a new `mulle_buffer` instance with the specified allocator and
@@ -454,6 +486,15 @@ static inline void   mulle_buffer_init( struct mulle_buffer *buffer,
 }
 
 
+MULLE_C_DEPRECATED
+static inline void   mulle_buffer_init_with_capacity( struct mulle_buffer *buffer,
+                                                      size_t capacity,
+                                                      struct mulle_allocator *allocator)
+{
+   mulle_buffer_init( buffer, capacity, allocator);
+}
+
+
 /**
  * Initializes a buffer with the default initial capacity and the default
  * allocator.
@@ -493,6 +534,23 @@ static inline void   mulle_buffer_init_inflexible_with_static_bytes( struct mull
    mulle_buffer_set_allocator( buffer, NULL);
 }
 
+
+/**
+ * Initializes a buffer with a fixed-size, non-growable storage region that
+ * can not be written too.
+ *
+ * This can be useful to parse compiled in data or strings.
+ * This function initializes a `mulle_buffer` with a fixed-size storage region
+ * that cannot be resized.
+ *
+ * @param buffer The buffer to initialize.
+ * @param storage The storage region to use for the buffer.
+ * @param length The length of the storage region.
+ */
+MULLE__BUFFER_GLOBAL
+void   mulle_buffer_init_with_const_bytes( struct mulle_buffer *buffer,
+                                           const void *storage,
+                                           size_t length);
 
 #pragma mark - sizing
 
@@ -572,43 +630,35 @@ static inline void   mulle_buffer_make_inflexible( struct mulle_buffer *buffer,
 }
 
 
-/**
- * Sets the buffer's contents to zero up to the given length.
- *
- * @param buffer The buffer to zero out.
- * @param length The new length to zero out the buffer to.
- */
-static inline void   mulle_buffer_zero_to_length( struct mulle_buffer *buffer,
-                                                  size_t length)
-{
-   if( ! buffer)
-      return;
-
-   mulle_buffer_assert_writeable( buffer);
-
-   _mulle__buffer_zero_to_length( (struct mulle__buffer *) buffer,
-                                  length,
-                                  mulle_buffer_get_allocator( buffer));
-}
-
+#define MULLE_BUFFER_SHRINK_OR_ZEROFILL      0
+#define MULLE_BUFFER_NO_SHRINK               1
+#define MULLE_BUFFER_NO_ZEROFILL             2
+#define MULLE_BUFFER_NO_SHRINK_OR_ZEROFILL   3
 
 /**
- * Sets the length of the buffer to the given length.
+ * Sets the length of the buffer to the given length. If the buffer is
+ * inflexible, then this can lead to an overflow condition if the new
+ * length can't be met. If the length is less than the current length,
+ * then the buffer will try to "size to fit". This will either
+ * "size to fit" for shrinking or "zero to length".
  *
  * @param buffer The buffer to set the length of.
  * @param length The new length of the buffer.
- * @return The new length of the buffer, or 0 if the buffer is NULL.
+ * @param options 0=shrink/zerofill,1=no shrink,2=no zerofill,3=neither
+ * @return -1 on failure, if the buffer is NULL or the buffer can't be resized
  */
-static inline size_t   mulle_buffer_set_length( struct mulle_buffer *buffer,
-                                                size_t length)
+static inline int   mulle_buffer_set_length( struct mulle_buffer *buffer,
+                                             size_t length,
+                                             unsigned int options)
 {
    if( ! buffer)
-      return( 0);
+      return( -1);
 
    mulle_buffer_assert_writeable( buffer);
 
    return( _mulle__buffer_set_length( (struct mulle__buffer *) buffer,
                                        length,
+                                       options,
                                        mulle_buffer_get_allocator( buffer)));
 }
 
@@ -810,18 +860,17 @@ static inline size_t
  * Sets the seek position of the buffer.
  *
  * @param buffer The buffer to set the seek position for.
- * @param mode The seek mode, one of SEEK_SET, SEEK_CUR, or SEEK_END.
  * @param seek The seek position, relative to the mode.
+ * @param mode The seek mode, one of SEEK_SET, SEEK_CUR, or SEEK_END.
  * @return The new seek position, or 0 if the buffer is invalid.
  */
-static inline int    mulle_buffer_set_seek( struct mulle_buffer *buffer, int mode, long seek)
+static inline int    mulle_buffer_set_seek( struct mulle_buffer *buffer, long seek, int mode)
 {
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_set_seek( (struct mulle__buffer *) buffer, mode, seek));
+   return( _mulle__buffer_set_seek( (struct mulle__buffer *) buffer, seek, mode));
 }
-
 
 
 /**
@@ -957,6 +1006,8 @@ static inline int   mulle_buffer_is_full( struct mulle_buffer *buffer)
    if( ! buffer)
       return( 1);
 
+   mulle_buffer_assert_writeable( buffer);
+
    return( _mulle__buffer_is_full( (struct mulle__buffer *) buffer));
 }
 
@@ -966,7 +1017,7 @@ static inline size_t   mulle_buffer_remaining_length( struct mulle_buffer *buffe
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_remaining_length( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_remaining_length( (struct mulle__buffer *) buffer));
 }
 
 
@@ -1445,7 +1496,7 @@ static inline void   mulle_buffer_strcat( struct mulle_buffer *buffer,
 static inline void   mulle_buffer_strcpy( struct mulle_buffer *buffer,
                                           char *bytes)
 {
-   mulle_buffer_set_length( buffer, 0);
+   mulle_buffer_set_length( buffer, 0, MULLE_BUFFER_NO_SHRINK_OR_ZEROFILL);
    mulle_buffer_add_string( buffer, bytes);
 }
 
@@ -1532,7 +1583,8 @@ static inline size_t
  *
  * This function sets the contents of the buffer to the given byte value `c` for
  * the first `length` bytes of the buffer. If the buffer is `NULL`, this function
- * does nothing.
+ * does nothing. If the buffer is inflexible, a too large memset with respect
+ * to remaining length will lead to an overflow.
  *
  * @param buffer The buffer to set the contents of.
  * @param c The byte value to set the contents of the buffer to.
@@ -1567,12 +1619,15 @@ static inline void   mulle_buffer_memset( struct mulle_buffer *buffer,
  */
 static inline int   mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
 {
+   MULLE__BUFFER_GLOBAL int
+      _mulle_buffer_zero_last_byte( struct mulle_buffer *buffer);
+
    if( ! buffer)
       return( -1);
 
    mulle_buffer_assert_writeable( buffer);
 
-   return( _mulle__buffer_zero_last_byte( (struct mulle__buffer *) buffer));
+   return( _mulle_buffer_zero_last_byte( buffer));
 }
 
 
@@ -1584,12 +1639,14 @@ static inline int   mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
  * length of the resulting string.
  *
  * @param buffer The buffer to convert to a string.
- * @return The length of the resulting string, or 0 if the buffer is `NULL`.
+ * @return 0 : no truncation
+ *         1 : truncated! (e.g. possibly UTF8 corruption
+ *         2 : buffer is void (NULL)
  */
 static inline int   mulle_buffer_make_string( struct mulle_buffer *buffer)
 {
    if( ! buffer)
-      return( 0);
+      return( 2);
 
    mulle_buffer_assert_writeable( buffer);
 
@@ -1610,14 +1667,15 @@ static inline int   mulle_buffer_make_string( struct mulle_buffer *buffer)
 static inline void    mulle_buffer_add_buffer( struct mulle_buffer *buffer,
                                                struct mulle_buffer *other)
 {
+   MULLE__BUFFER_GLOBAL void
+      _mulle_buffer_add_buffer( struct mulle_buffer *buffer,
+                                struct mulle_buffer *other);
    if( ! buffer || ! other)
       return;
 
    mulle_buffer_assert_writeable( buffer);
 
-   _mulle__buffer_add_buffer( (struct mulle__buffer *) buffer,
-                              (struct mulle__buffer *) other,
-                              mulle_buffer_get_allocator( buffer));
+   _mulle_buffer_add_buffer( buffer, other);
 }
 
 
@@ -1634,7 +1692,7 @@ static inline void    mulle_buffer_add_buffer( struct mulle_buffer *buffer,
  */
 static inline void
    mulle_buffer_add_buffer_range( struct mulle_buffer *buffer,
-                                  struct mulle__buffer *other,  // sic
+                                  struct mulle_buffer *other,  // sic
                                   struct mulle_range range)
 {
    if( ! buffer || ! other)
@@ -1643,7 +1701,7 @@ static inline void
    mulle_buffer_assert_writeable( buffer);
 
    _mulle__buffer_add_buffer_range( (struct mulle__buffer *) buffer,
-                                    other,
+                                    (struct mulle__buffer *) other,
                                     range,
                                     mulle_buffer_get_allocator( buffer));
 }
@@ -1658,19 +1716,10 @@ static inline void
  * @param buffer The buffer to reset.
  */
 // _initial_storage storage will be lost
-static inline void   mulle_buffer_reset( struct mulle_buffer *buffer)
-{
-   struct mulle_allocator   *allocator;
-
-   allocator = mulle_buffer_get_allocator( buffer);
-   mulle_buffer_done( buffer);
-   mulle_buffer_init( buffer, 0, allocator);
-}
+void   mulle_buffer_reset( struct mulle_buffer *buffer);
 
 
 #pragma mark - reading
-
-
 
 
 /**
@@ -2036,17 +2085,23 @@ MULLE_C_DEPRECATED static inline void
 // have a buffer inside the block, will self destruct when the block
 // is exited (properly)
 //
-#define mulle_buffer_do( name)                                                \
-   for( struct mulle_buffer                                                   \
-          name ## __storage = MULLE_BUFFER_DATA( NULL),                       \
-          *name = &name ## __storage,                                         \
-          *name ## __i = NULL;                                                \
-        ! name ## __i;                                                        \
-        name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1) \
-      )                                                                       \
-                                                                              \
-      for( int  name ## __j = 0;    /* break protection */                    \
-           name ## __j < 1;                                                   \
+#define _mulle_buffer_chars_to_struct( len) \
+   ((len + sizeof( struct mulle_buffer) - 1) / sizeof( struct mulle_buffer))
+
+#define mulle_buffer_do( name)                                                              \
+   for( struct mulle_buffer                                                                 \
+          name ## __alloca[ _mulle_buffer_chars_to_struct( MULLE_BUFFER_DEFAULT_CAPACITY)], \
+          name ## __storage = MULLE_BUFFER_FLEXIBLE_DATA( name ## __alloca,                 \
+                                                          sizeof( name ## __alloca),        \
+                                                          NULL),                            \
+          *name = &name ## __storage,                                                       \
+          *name ## __i = NULL;                                                              \
+        ! name ## __i;                                                                      \
+        name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)               \
+      )                                                                                     \
+                                                                                            \
+      for( int  name ## __j = 0;    /* break protection */                                  \
+           name ## __j < 1;                                                                 \
            name ## __j++)
 
 /**
@@ -2064,17 +2119,20 @@ MULLE_C_DEPRECATED static inline void
 // As above but the buffer storage allocator can be changed from the
 // default allocator
 //
-#define mulle_buffer_do_allocator( name, allocator)                           \
-   for( struct mulle_buffer                                                   \
-          name ## __storage = MULLE_BUFFER_DATA( allocator),                  \
-          *name = &name ## __storage,                                         \
-          *name ## __i = NULL;                                                \
-        ! name ## __i;                                                        \
-        name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1) \
-      )                                                                       \
-                                                                              \
-      for( int  name ## __j = 0;    /* break protection */                    \
-           name ## __j < 1;                                                   \
+#define mulle_buffer_do_allocator( name, allocator)                                        \
+   for( struct mulle_buffer                                                                \
+          name ## __alloca[ _mulle_buffer_chars_to_struct(MULLE_BUFFER_DEFAULT_CAPACITY)], \
+          name ## __storage = MULLE_BUFFER_FLEXIBLE_DATA( name ## __alloca,                \
+                                                          sizeof( name ## __alloca),       \
+                                                          allocator),                      \
+          *name = &name ## __storage,                                                      \
+          *name ## __i = NULL;                                                             \
+        ! name ## __i;                                                                     \
+        name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)              \
+      )                                                                                    \
+                                                                                           \
+      for( int  name ## __j = 0;    /* break protection */                                 \
+           name ## __j < 1;                                                                \
            name ## __j++)
 
 /**
@@ -2226,7 +2284,6 @@ MULLE_C_DEPRECATED static inline void
 //#define mulle_buffer_do_FILE( name, FP)
 
 
-#include "mulle-flexbuffer.h"
 #include "mulle-flushablebuffer.h"
 
 

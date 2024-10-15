@@ -16,7 +16,7 @@ static void   coverage()
    _mulle__buffer_add_bytes( other, "Whatever", 8, NULL);
    _mulle__buffer_add_buffer_range( buffer, other, mulle_range_make_all(), NULL);
    _mulle__buffer_add_string_with_maxlength( buffer, "!", 200, NULL);
-   _mulle__buffer_zero_to_length( other, 10, NULL);
+   _mulle__buffer_set_length( other, 10, 0, NULL);
    _mulle__buffer_add_string_if_empty( buffer, "", NULL);
    _mulle__buffer_add_string_if_not_empty( buffer, "", NULL);
    _mulle__buffer_add_c_string( buffer, "x", NULL);

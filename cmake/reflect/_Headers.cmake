@@ -51,7 +51,6 @@ src/generic/include.h
 set( PUBLIC_HEADERS
 src/mulle--buffer.h
 src/mulle-buffer.h
-src/mulle-flexbuffer.h
 src/mulle-flushablebuffer.h
 )
 

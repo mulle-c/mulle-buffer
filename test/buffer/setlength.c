@@ -5,26 +5,6 @@
 
 static void   test_normal()
 {
-   struct mulle_buffer   *buffer;
-   unsigned int           i;
-   size_t                 len;
-
-   buffer = mulle_buffer_create( NULL);
-
-   printf( "test_normal: %d\n", (int) mulle_buffer_get_length( buffer));
-
-   mulle_buffer_set_length( buffer, 20);
-   printf( "test_normal: %d\n", (int) mulle_buffer_get_length( buffer));
-
-   mulle_buffer_set_length( buffer, 8);
-   printf( "test_normal: %d\n", (int) mulle_buffer_get_length( buffer));
-
-   mulle_buffer_destroy( buffer);
-}
-
-
-static void   test_zero()
-{
    struct mulle_buffer    *buffer;
    unsigned int           i;
    size_t                 len;
@@ -33,10 +13,10 @@ static void   test_zero()
 
    printf( "test_zero: %d\n", (int) mulle_buffer_get_length( buffer));
 
-   mulle_buffer_zero_to_length( buffer, 20);
+   mulle_buffer_set_length( buffer, 20, MULLE_BUFFER_SHRINK_OR_ZEROFILL);
    printf( "test_zero: %d\n", (int) mulle_buffer_get_length( buffer));
 
-   mulle_buffer_zero_to_length( buffer, 8);
+   mulle_buffer_set_length( buffer, 8, MULLE_BUFFER_SHRINK_OR_ZEROFILL);
    printf( "test_zero: %d\n", (int) mulle_buffer_get_length( buffer));
 
    mulle_buffer_destroy( buffer);
@@ -54,13 +34,18 @@ static void   test_inflexible()
    // 0, because nothing has been read yet
    printf( "test_inflexible: %d\n", (int) mulle_buffer_get_length( &buffer));
 
+   // this should be fine
+   mulle_buffer_set_length( &buffer, 8, MULLE_BUFFER_NO_ZEROFILL);
+   printf( "test_inflexible: %d\n", (int) mulle_buffer_get_length( &buffer));
+
    // can't be more than 12
-   mulle_buffer_set_length( &buffer, 20);
+   mulle_buffer_set_length( &buffer, 20, MULLE_BUFFER_NO_ZEROFILL);
    printf( "test_inflexible: %d\n", (int) mulle_buffer_get_length( &buffer));
 
    // has overflown will stick to 12
-   mulle_buffer_set_length( &buffer, 8);
+   mulle_buffer_set_length( &buffer, 8, MULLE_BUFFER_NO_ZEROFILL);
    printf( "test_inflexible: %d\n", (int) mulle_buffer_get_length( &buffer));
+
 
    mulle_buffer_done( &buffer);
 }
@@ -70,7 +55,6 @@ static void   test_inflexible()
 int  main()
 {
    test_normal();
-   test_zero();
    test_inflexible();
    return( 0);
 }
