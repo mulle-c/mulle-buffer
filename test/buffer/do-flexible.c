@@ -7,7 +7,7 @@
 
 static void   example( char *text, size_t i)
 {
-   char   tmp[ 8];
+   char   tmp[ 8]; // = { 0 }; // 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x' };
 
    mulle_buffer_do_flexible( buffer, tmp, sizeof( tmp))
    {

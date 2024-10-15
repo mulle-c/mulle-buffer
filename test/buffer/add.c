@@ -16,25 +16,25 @@ static void   simple_fill_test()
 
    for( i = 0; i < 100000; i++)
       mulle_buffer_add_byte( buffer, 'a' + i % 26);
-   printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( buffer));
+   printf( "simple_fill_test: %td\n", mulle_buffer_get_length( buffer));
 
    mulle_buffer_memset( buffer, 'z', 1000);
    mulle_buffer_zero_last_byte( buffer);
 
    len = strlen( mulle_buffer_get_bytes( buffer));
-   printf( "simple_fill_test: %ld\n", len);
+   printf( "simple_fill_test: %td\n", len);
 
 //   printf( "simple_fill_test: %lx\n", mulle_hash( mulle_buffer_get_bytes( buffer),
 //                                                  len));
 
    mulle_buffer_add_bytes( buffer, "hello", 5);
 
-   printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( buffer));
+   printf( "simple_fill_test: %td\n", mulle_buffer_get_length( buffer));
 
-   printf( "simple_fill_test: %ld\n", mulle_buffer_get_staticlength( buffer));
+   printf( "simple_fill_test: %td\n", mulle_buffer_get_staticlength( buffer));
 
    mulle_buffer_reset( buffer);
-   printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( buffer));
+   printf( "simple_fill_test: %td\n", mulle_buffer_get_length( buffer));
 
    mulle_buffer_destroy( buffer);
 }
@@ -55,12 +55,12 @@ static void   simple_static_test()
    mulle_buffer_add_byte( &buffer, 'x');
    mulle_buffer_memset( &buffer, 'y', 3);
 
-   printf( "simple_static_test: %ld\n", mulle_buffer_get_length( &buffer));
+   printf( "simple_static_test: %td\n", mulle_buffer_get_length( &buffer));
    printf( "simple_static_test: %s\n", (char *) mulle_buffer_get_bytes( &buffer));
-   printf( "simple_static_test: %ld\n", mulle_buffer_get_staticlength( &buffer));
+   printf( "simple_static_test: %td\n", mulle_buffer_get_staticlength( &buffer));
 
    mulle_buffer_reset( &buffer);
-   printf( "simple_fill_test: %ld\n", mulle_buffer_get_length( &buffer));
+   printf( "simple_fill_test: %td\n", mulle_buffer_get_length( &buffer));
 
    mulle_buffer_done( &buffer);
 }

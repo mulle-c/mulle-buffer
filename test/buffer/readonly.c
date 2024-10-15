@@ -55,7 +55,7 @@ void test_write_operations(struct mulle_buffer *buffer)
     mulle_buffer_make_string(buffer);
     mulle_buffer_remove_all(buffer);
     mulle_buffer_remove_in_range(buffer, mulle_range_make(0, 5));
-    mulle_buffer_set_length(buffer, 10);
+    mulle_buffer_set_length(buffer, 10, 0);
     mulle_buffer_advance(buffer, 5);
     mulle_buffer_add_buffer(buffer, NULL);
     mulle_buffer_add_buffer_range(buffer, NULL, mulle_range_make(0, 5));
@@ -97,7 +97,7 @@ void test_harmless_operations(struct mulle_buffer *buffer)
     mulle_buffer_get_capacity(buffer);
     mulle_buffer_get_allocator(buffer);
     mulle_buffer_get_seek(buffer);
-    mulle_buffer_set_seek(buffer, SEEK_SET, 0);
+    mulle_buffer_set_seek(buffer, 0, SEEK_SET);
     mulle_buffer_get_staticlength(buffer);
 }
 

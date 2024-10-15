@@ -45,6 +45,9 @@ static void   example2()
 
    buf = (struct mulle_buffer *) flush_buf;
    mulle_buffer_add_string( buf, "VfL Bochum 1848\n");
+
+   // the seek for a flushable buffer, remembers the bytes flushed
+   // its informational only
    seek = mulle_buffer_get_seek( buf);
    assert( seek == 16);
 

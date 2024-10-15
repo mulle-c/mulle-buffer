@@ -1,0 +1,41 @@
+digraph {
+   rankdir=LR;
+
+   // Add this new node for the legend
+   legend [shape=none, label="Stack", fontsize=20, fontcolor=gray, fontname="Arial Bold"];
+
+   subgraph cluster_main {
+
+   "mulle__pointerarray" [ label=<<TABLE BORDER="1">
+      <TR BORDER="0"><TD BGCOLOR="blue" COLSPAN="2"><FONT COLOR="white">mulle_buffer</FONT></TD></TR>
+      <TR BORDER="0"><TD BGCOLOR="black"><FONT COLOR="white">_storage</FONT></TD><TD PORT="pointer_storage"></TD></TR>
+      <TR BORDER="0"><TD BGCOLOR="black"><FONT COLOR="white">_curr</FONT></TD><TD PORT="pointer_curr"></TD></TR>
+      <TR BORDER="0"><TD BGCOLOR="black"><FONT COLOR="white">_sentinel</FONT></TD><TD PORT="pointer_sentinel"></TD></TR>
+      <TR BORDER="0"><TD BGCOLOR="black"><FONT COLOR="white">_initial_storage</FONT></TD><TD PORT="pointer_initial_storage"></TD></TR>
+      <TR BORDER="0"><TD BGCOLOR="black"><FONT COLOR="white">_type</FONT></TD><TD>MULLE_BUFFER_IS_FLEXIBLE</TD></TR>
+      <TR BORDER="0"><TD BGCOLOR="black"><FONT COLOR="white">_size</FONT></TD><TD>8</TD></TR>
+      <TR BORDER="0"><TD BGCOLOR="black"><FONT COLOR="white">_allocator</FONT></TD><TD>&amp;mulle_default_allocator</TD></TR>
+   </TABLE>>, shape="none" ];
+
+   graph [ pad="0.2", ranksep="0.3", nodesep="0.0"];
+
+   "alloca" [ label=<<TABLE BORDER="1">
+      <TR BORDER="0"><TD PORT="cell0" BGCOLOR="yellow"><FONT COLOR="black">V</FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="cell1" BGCOLOR="yellow"><FONT COLOR="black">f</FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="cell2" BGCOLOR="yellow"><FONT COLOR="black">L</FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="cell3" BGCOLOR="yellow"><FONT COLOR="black">_</FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="cell4" BGCOLOR="white"><FONT COLOR="black"> </FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="cell5" BGCOLOR="white"><FONT COLOR="black"> </FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="cell6" BGCOLOR="white"><FONT COLOR="black"> </FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="cell7" BGCOLOR="white"><FONT COLOR="black"> </FONT></TD></TR>
+      <TR BORDER="0"><TD PORT="sentinel" BGCOLOR="gray"><FONT COLOR="gray"> </FONT></TD></TR>
+   </TABLE>>, shape="none" ];
+
+
+   // center doesn't work :(
+   "mulle__pointerarray":"pointer_storage:_"          -> "alloca":"cell0"  [ arrowtail="dot", arrowhead="vee", dir="both" ]
+   "mulle__pointerarray":"pointer_initial_storage:_"  -> "alloca":"cell0"  [ arrowtail="dot", arrowhead="vee", dir="both" ]
+   "mulle__pointerarray":"pointer_curr:_"             -> "alloca":"cell4"  [ arrowtail="dot", arrowhead="vee",  dir="both" ]
+   "mulle__pointerarray":"pointer_sentinel:_"         -> "alloca":"sentinel" [ arrowtail="dot", arrowhead="vee",  dir="both" ]
+    }
+}
