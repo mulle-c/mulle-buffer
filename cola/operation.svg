@@ -1,0 +1,65 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    text { font-family: Arial, sans-serif; font-size: 12px; }
+    .title { font-size: 16px; font-weight: bold; }
+  </style>
+
+  <!-- Stack representation -->
+  <rect x="10" y="10" width="780" height="200" fill="#f0f0f0" stroke="#000" />
+  <text x="20" y="30" class="title">Stack</text>
+
+  <!-- mulle_buffer structure -->
+  <rect x="20" y="40" width="200" height="160" fill="#d0e0ff" stroke="#000" />
+  <text x="30" y="60">mulle_buffer</text>
+  <text x="30" y="80">_initial_storage: ----→</text>
+  <text x="30" y="100">_curr: ----→</text>
+  <text x="30" y="120">_sentinel: ----→</text>
+  <text x="30" y="140">_type: MULLE_BUFFER_IS_FLEXIBLE</text>
+  <text x="30" y="160">_allocator: &amp;mulle_default_allocator</text>
+  <text x="30" y="180">_size: 16</text>
+
+  <!-- Initial storage -->
+  <rect x="300" y="40" width="320" height="40" fill="#ffe0d0" stroke="#000" />
+  <text x="310" y="60">_initial_storage (16 bytes)</text>
+
+  <!-- Characters -->
+  <g transform="translate(300, 70)">
+    <rect width="20" height="20" fill="#fff" stroke="#000" />
+    <text x="5" y="15">V</text>
+  </g>
+  <!-- Repeat for each character -->
+
+  <!-- _curr and _sentinel pointers -->
+  <line x1="220" y1="95" x2="580" y2="95" stroke="#000" stroke-dasharray="5,5" />
+  <text x="585" y="100">_curr</text>
+  <line x1="220" y1="115" x2="600" y2="115" stroke="#000" stroke-dasharray="5,5" />
+  <text x="605" y="120">_sentinel</text>
+
+  <!-- Heap representation -->
+  <rect x="10" y="250" width="780" height="200" fill="#e0ffe0" stroke="#000" />
+  <text x="20" y="270" class="title">Heap</text>
+
+  <!-- Updated mulle_buffer structure -->
+  <rect x="20" y="280" width="200" height="160" fill="#d0e0ff" stroke="#000" />
+  <text x="30" y="300">mulle_buffer (updated)</text>
+  <text x="30" y="320">_storage: ----→</text>
+  <text x="30" y="340">_curr: ----→</text>
+  <text x="30" y="360">_sentinel: ----→</text>
+
+  <!-- Heap storage -->
+  <rect x="300" y="280" width="460" height="40" fill="#ffe0d0" stroke="#000" />
+  <text x="310" y="300">Heap storage</text>
+
+  <!-- Updated characters -->
+  <g transform="translate(300, 310)">
+    <rect width="20" height="20" fill="#fff" stroke="#000" />
+    <text x="5" y="15">V</text>
+  </g>
+  <!-- Repeat for each character, including "wins!" -->
+
+  <!-- Updated _curr and _sentinel pointers -->
+  <line x1="220" y1="335" x2="720" y2="335" stroke="#000" stroke-dasharray="5,5" />
+  <text x="725" y="340">_curr</text>
+  <line x1="220" y1="355" x2="740" y2="355" stroke="#000" stroke-dasharray="5,5" />
+  <text x="745" y="360">_sentinel</text>
+</svg>
