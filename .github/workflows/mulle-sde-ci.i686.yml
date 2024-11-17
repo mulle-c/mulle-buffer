@@ -28,11 +28,15 @@ jobs:
     - name: Add to path
       run:  echo "$HOME/bin" >> $GITHUB_PATH
 
+    - name: Figure out if sudo is needed
+      run: |
+        echo "SUDO=$(which sudo)" >> $GITHUB_ENV
+
     - name: Add 32 bit stuff
       run:  |
-        dpkg --add-architecture i386
-        apt-get update
-        apt-get install libc6:i386 gcc-multilib
+        ${SUDO} dpkg --add-architecture i386
+        ${SUDO} apt-get update
+        ${SUDO} apt-get install libc6:i386 gcc-multilib
 
     - uses: actions/checkout@v3
 
