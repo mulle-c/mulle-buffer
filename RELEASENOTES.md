@@ -1,3 +1,49 @@
+# 4.0.0
+
+
+
+feat: improve buffer flexibility and safety
+
+* Breaking changes to buffer length handling
+  - Save pre-overflow length for safer data extraction
+  - Integrate length control with zero filling via options
+  - Change seek parameter order to match standard C
+
+* Enhanced buffer initialization and creation
+  - Add capacity parameter to `mulle_init`
+  - Add `_default` variants for simpler allocator handling
+  - Remove deprecated mulle-flexbuffer functionality
+
+* Improved buffer access control
+  - Add readonly/writeonly buffer modes with assertions
+  - Add byte-level operations `(get_byte,` `pop_byte)`
+  - Fix buffer overflow edge cases
+
+* Build system improvements
+  - Add CMake package configuration support
+  - Improve 32-bit compatibility
+  - Update project version to 4.0.0
+
+* **BREAKING** ``mulle_buffer_zero_to_length`` is now done in ``mulle_buffer_set_length``
+* **BREAKING** the length of the buffer before the overflow happened is now saved, so string and data extraction will provide the date before the overflow happened
+* **BREAKING** ``mulle_buffer_set_seek`` has change parameter order to match `lseek` and `fseek`
+* **BREAKING** mulle-flexbuffer is dead, use mulle-c11 mulle-alloca instead
+* **BREAKING** ``mulle_init`` now has a capacity parameter just like the container init functions, maybe use ``mulle_init_default`` instead
+* **BREAKING** `mulle-buffer-set-length` now has an `options` argument, which determines zerofilling and size fitting
+* new ``_default`` functions like ``mulle_buffer_create_default`` allow the user to leave out an allocator argument, lessening the cognitive load
+* `mulle-buffer-do` gains a default `alloca` so you have to do even less work to get better performing code
+* mulle-buffer can now be set to readonly or writeonly (in addition to the default read/write)
+
+* mulle-buffer gained readonly and writeonly assertion checks. you can mark a buffer as readonly or writeonly. the default is read/write (no asserts)
+
+*** BREAKING ``_INIT_`` initializers are now called ``_DATA`` to comply with other mulle code
+* ``mulle_buffer_get_byte`` does now exist
+
+* added mulle-buffer-pop-byte function
+
+* changed signature type of `_mulle__buffer_copy_range` dst to void *
+
+
 ### 3.5.1
 
 * fix 32 bit problem for mulle-sprintf (special handling of `INT_MAX`)
