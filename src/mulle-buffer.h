@@ -86,6 +86,7 @@ enum
 {
   MULLE_BUFFER_IS_READONLY   = 0x40,
   MULLE_BUFFER_IS_WRITEONLY  = 0x80,
+  MULLE_BUFFER_IS_TEXT       = 0x100  // used in mulle_buffer_stdio only
 };
 
 #ifndef mulle_buffer_assert_readable

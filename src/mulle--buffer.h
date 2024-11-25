@@ -735,6 +735,29 @@ static inline int   _mulle__buffer_zero_last_byte( struct mulle__buffer *buffer)
 }
 
 
+static inline int   _mulle__buffer_zero_last_byte_no_truncate( struct mulle__buffer *buffer)
+{
+   unsigned char   *p;
+   int             rval;
+
+   if( _mulle__buffer_is_void( buffer))
+      return( 2); // NULL
+
+   rval = 0;
+   p    = buffer->_curr;
+
+   if( _mulle__buffer_has_overflown( buffer))
+      p = &buffer->_storage[ buffer->_size];
+
+   if( p == buffer->_sentinel)
+      return( 1);
+
+   *p = 0;
+   return( rval);
+}
+
+
+
 static inline void    _mulle__buffer_add_buffer( struct mulle__buffer *buffer,
                                                  struct mulle__buffer *other,
                                                  struct mulle_allocator *allocator)
