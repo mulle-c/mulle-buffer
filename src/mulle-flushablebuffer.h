@@ -39,7 +39,7 @@
 #include "mulle-buffer.h"
 
 
-// TODO: if we also defined a mulle_flushablebuffer_sucket_t we could
+// TODO: if we also defined a mulle_flushablebuffer_sucker_t we could
 //       also wedge fread (and possibly also fseek) into this datastructure.
 //       Then we could wrap FILE into mulle_buffer and use this to
 //       do file I/O. This would be nice for callbacks (like in mulle-utf)
