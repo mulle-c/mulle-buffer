@@ -514,7 +514,9 @@ void   _mulle__buffer_add_c_char( struct mulle__buffer *buffer,
    case '\\' : _mulle__buffer_add_escaped_char( buffer, '\\', allocator); return;
    case '\a' : _mulle__buffer_add_escaped_char( buffer, 'a', allocator); return;
    case '\b' : _mulle__buffer_add_escaped_char( buffer, 'b', allocator); return;
-   case '\e' : _mulle__buffer_add_escaped_char( buffer, 'e', allocator); return;
+//#ifndef __WIN32
+//   case '\e' : _mulle__buffer_add_escaped_char( buffer, 'e', allocator); return;
+//#endif
    case '\f' : _mulle__buffer_add_escaped_char( buffer, 'f', allocator); return;
    case '\t' : _mulle__buffer_add_escaped_char( buffer, 't', allocator); return;
    case '\v' : _mulle__buffer_add_escaped_char( buffer, 'v', allocator); return;
