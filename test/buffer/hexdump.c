@@ -14,7 +14,7 @@ static void   example( void)
       for( i = 0; i < 7; i++)
          mulle_buffer_add_byte( buffer, i);
 
-      mulle_buffer_do_FILE( output_small, stdout)
+      mulle_flushablebuffer_do_FILE( output_small, stdout)
       {
          mulle_buffer_hexdump( output_small,
                                mulle_buffer_get_bytes( buffer),
@@ -26,7 +26,7 @@ static void   example( void)
       for( ; i < 246; i++)
          mulle_buffer_add_byte( buffer, i);
 
-      mulle_buffer_do_FILE( output, stdout)
+      mulle_flushablebuffer_do_FILE( output, stdout)
       {
          mulle_buffer_hexdump( output,
                                mulle_buffer_get_bytes( buffer),

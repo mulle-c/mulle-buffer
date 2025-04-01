@@ -39,7 +39,7 @@
 #ifndef mulle_buffer_h__
 #define mulle_buffer_h__
 
-#define MULLE__BUFFER_VERSION  ((4UL << 20) | (0 << 8) | 2)
+#define MULLE__BUFFER_VERSION  ((5UL << 20) | (0 << 8) | 0)
 
 #include "include.h"
 #include "mulle--buffer.h"
@@ -86,7 +86,8 @@ enum
 {
   MULLE_BUFFER_IS_READONLY   = 0x40,
   MULLE_BUFFER_IS_WRITEONLY  = 0x80,
-  MULLE_BUFFER_IS_TEXT       = 0x100  // used in mulle_buffer_stdio only
+  MULLE_BUFFER_IS_TEXT       = 0x100, // used in mulle_buffer_stdio only
+  MULLE_BUFFER_IS_BINARY     = 0x0    // used in mulle_buffer_stdio only
 };
 
 #ifndef mulle_buffer_assert_readable
@@ -239,7 +240,7 @@ enum
 // we take some static data, but we assume its already filled
 // with data.
 //
-#define MULLE_BUFFER_INFLEXIBLE_FILLED_DATA( data, len, allocator) \
+#define MULLE_BUFFER_INFLEXIBLE_FILLED_DATA( data, len, allocator)  \
    ((struct mulle_buffer)                                           \
    {                                                                \
       (unsigned char *) data,                                       \
@@ -2010,6 +2011,7 @@ MULLE_C_DEPRECATED static inline void
 
 
 
+
 // convenience:
 // static void   example( void)
 // {
@@ -2017,15 +2019,13 @@ MULLE_C_DEPRECATED static inline void
 //
 //    mulle_buffer_do_string( buffer, NULL, s)
 //    {
-//       mulle_buffer_add_string( &buffer, "VfL Bochum 1848");
+//       mulle_buffer_add_string( buffer, "VfL Bochum 1848");
 //       break;
 //    }
 //
 //    printf( "%s\n", s);
 //    mulle_free( s);
 // }
-
-
 
 /**
  * Provides a convenience macro `mulle_buffer_do_string` that allows you to
@@ -2041,7 +2041,7 @@ MULLE_C_DEPRECATED static inline void
  *
  * char *s;
  * mulle_buffer_do_string(buffer, NULL, s) {
- *    mulle_buffer_add_string(&buffer, "VfL Bochum 1848");
+ *    mulle_buffer_add_string( buffer, "VfL Bochum 1848");
  *    break;
  * }
  * printf("%s\n", s);
@@ -2055,7 +2055,7 @@ MULLE_C_DEPRECATED static inline void
  */
 #define mulle_buffer_do_string( name, allocator, s)               \
    for( struct mulle_buffer                                       \
-            name ## __storage = MULLE_BUFFER_DATA( allocator),    \
+           name ## __storage = MULLE_BUFFER_DATA( allocator),     \
            *name = &name ## __storage,                            \
            *name ## __i = NULL;                                   \
                                                                   \

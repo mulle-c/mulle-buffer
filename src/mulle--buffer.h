@@ -184,7 +184,7 @@ static inline void   _mulle__buffer_done( struct mulle__buffer *buffer,
    if( buffer->_storage != buffer->_initial_storage)
       mulle_allocator_free( allocator, buffer->_storage);
 #ifdef DEBUG
-   memset( buffer, 0xFD, sizeof( struct mulle__buffer));
+   mulle_memset_uint32( buffer, 0xDEADDEAD, sizeof( struct mulle__buffer));
 #endif
 }
 

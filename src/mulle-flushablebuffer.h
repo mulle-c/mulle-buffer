@@ -398,7 +398,7 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 #define _mulle_flushablebuffer_chars_to_struct( len) \
    ((len + sizeof( struct mulle_flushablebuffer) - 1) / sizeof( struct mulle_flushablebuffer))
 
-#define mulle_buffer_do_FILE( name, fp)                                                                       \
+#define mulle_flushablebuffer_do_FILE( name, fp)                                                                       \
    for( struct mulle_flushablebuffer                                                                          \
           name ## __alloca[ _mulle_flushablebuffer_chars_to_struct( MULLE_FLUSHABLEBUFFER_DEFAULT_CAPACITY)], \
           name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DATA( name ## __alloca,                            \
