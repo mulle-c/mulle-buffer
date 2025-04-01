@@ -115,6 +115,11 @@ void   mulle_buffer_add_c_chars_callback( void *buffer,
 }
 
 
+
+//
+// hex dump
+//
+
 static inline unsigned int   hex( unsigned int c)
 {
    assert( c <= 0xf);

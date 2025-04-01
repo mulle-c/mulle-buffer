@@ -73,7 +73,7 @@ int   _mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
    if( ! buffer->_initial_storage)
       mulle_allocator_free( buffer->_allocator, buffer->_storage);
 #ifdef DEBUG
-   memset( buffer, 0xFD, sizeof( *buffer));
+   mulle_memset_uint32( buffer, 0xDEADDEAD,sizeof( *buffer));
 #endif
    return( 0);
 }

@@ -28,7 +28,7 @@ As soon as the `mulle_buffer_do` block is exited, the buffer will be invalid.
 > A `break` outside of the block is OK and does not leak, but a return will
 
 
-### Use explict stack memory for small strings
+### Use explicit stack memory for small strings
 
 `mulle_buffer_do` will create a default sized `alloca` ca. 100 bytes.
 
