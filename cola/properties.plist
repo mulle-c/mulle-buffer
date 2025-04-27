@@ -1,7 +1,7 @@
 {
    project =
    {
-      description="↗️ A growable C char array and also a stream";
+      description="↗️ A growable C char array and also a stream - on stack and heap";
       domain="github";
       name="mulle-buffer";
       user="mulle-c";
