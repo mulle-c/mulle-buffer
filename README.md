@@ -1,6 +1,6 @@
 # mulle-buffer
 
-#### ↗️ A growable C char array and also a stream
+#### ↗️ A growable C char array and also a stream - on stack and heap
 
 mulle-buffer can construct arbitrary long binary data dynamically or in static
 storage. You don't have to worry about calculating the necessary buffer size.
@@ -14,9 +14,9 @@ having to worry about memory management.
 
 
 
-| Release Version                                       | Release Notes
-|-------------------------------------------------------|--------------
-| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg) [![Build Status](https://github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg)](//github.com/mulle-c/mulle-buffer/actions) ![Coverage](https://img.shields.io/badge/coverage-95%25%C2%A0-seagreen) | [RELEASENOTES](RELEASENOTES.md) |
+| Release Version                                       | Release Notes  | AI Documentation
+|-------------------------------------------------------|----------------|---------------
+| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg) [![Build Status](https://github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg)](//github.com/mulle-c/mulle-buffer/actions) ![Coverage](https://img.shields.io/badge/coverage-95%25%C2%A0-seagreen) | [RELEASENOTES](RELEASENOTES.md) | [DeepWiki for mulle-buffer](https://deepwiki.com/mulle-c/mulle-buffer)
 
 
 ## API
@@ -59,7 +59,7 @@ As soon as the `mulle_buffer_do` block is exited, the buffer will be invalid.
 > A `break` outside of the block is OK and does not leak, but a return will
 
 
-### Use explict stack memory for small strings
+### Use explicit stack memory for small strings
 
 `mulle_buffer_do` will create a default sized `alloca` ca. 100 bytes.
 
