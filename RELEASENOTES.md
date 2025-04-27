@@ -1,3 +1,12 @@
+# 5.0.0
+
+
+* **BREAKING** `mulle_buffer_do_FILE` is now `mulle_flushablebuffer_do_FILE`
+* use 0xdeaddead some more for scribbles with `mulle_memset_uint32`
+
+* do not use \e escape code coz windows can't handle it
+
+
 ### 4.0.1
 
 Various small improvements
