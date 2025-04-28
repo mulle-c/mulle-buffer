@@ -1,3 +1,7 @@
+### 5.0.1
+
+* introduced `MULLE_BUFFER_IS_SPRINTF_INFLEXIBLE` for that sprintf use special case, to quiet a wrong assert
+
 # 5.0.0
 
 
