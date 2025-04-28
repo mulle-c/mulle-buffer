@@ -59,7 +59,8 @@ void
    //
    // this is for mulle_sprintf, where we have API that gets storage, where
    // we don't know the size. We can't have buffer->_sentinel wrapping
-   // around though for our tests
+   // around though for our tests. Of course the crazy sentinel value,
+   // can't protect us from overwrites (but thats sprintf)
    //
    if( length == INT_MAX)
    {
@@ -68,9 +69,11 @@ void
          length >>= 1;
          buffer->_sentinel = &buffer->_storage[ length];
       }
+      buffer->_type = MULLE_BUFFER_IS_SPRINTF_INFLEXIBLE;
    }
-   buffer->_size             = length;
-   buffer->_type             = MULLE_BUFFER_IS_INFLEXIBLE;
+   else
+      buffer->_type = MULLE_BUFFER_IS_INFLEXIBLE;
+   buffer->_size = length;
 
    assert( buffer->_sentinel >= buffer->_storage);
 }
