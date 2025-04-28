@@ -346,8 +346,8 @@ static inline int   _mulle__buffer_is_void( struct mulle__buffer *buffer)
 static inline size_t   _mulle__buffer_get_length( struct mulle__buffer *buffer)
 {
    return( _mulle__buffer_has_overflown( buffer)
-          ? buffer->_size
-          : buffer->_curr - buffer->_storage);
+           ? buffer->_size
+           : (size_t) (buffer->_curr - buffer->_storage));
 }
 
 
