@@ -1,6 +1,6 @@
 {
    "name" : "mulle-buffer",
-   "version" : "5.0.0",
+   "version" : "5.0.1",
    "description" : "↗️ A growable C char array and also a stream - on stack and heap",
    "keywords" : [],
    "license" : "BSD-3-Clause",
