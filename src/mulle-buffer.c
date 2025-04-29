@@ -145,7 +145,7 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 
    memo = bytes;
    p    = bytes;
-   adr  = counter;
+   adr  = (uint32_t) counter;
 
    if( ! (options & mulle_buffer_hexdump_no_offset))
    {
