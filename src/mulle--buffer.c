@@ -84,12 +84,12 @@ long  _mulle__buffer_get_seek( struct mulle__buffer *buffer)
    long                           len;
    struct mulle_flushablebuffer   *flushable;
 
-   len = _mulle__buffer_get_length( buffer);
+   len = (long) _mulle__buffer_get_length( buffer);
    if( ! _mulle__buffer_is_flushable( buffer))
       return( len);
 
    flushable = (struct mulle_flushablebuffer *) buffer;
-   return( flushable->_flushed + len);
+   return( (long) (flushable->_flushed + len));
 }
 
 
