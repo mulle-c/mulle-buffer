@@ -76,7 +76,10 @@ struct mulle_flushablebuffer
 };
 
 
-#define MULLE_FLUSHABLEBUFFER_DEFAULT_CAPACITY  256
+#define MULLE_FLUSHABLEBUFFER_DEFAULT_CAPACITY  (sizeof( void *) * 32) // 256 bytes on 64 bit
+
+// the min capacity is needed so a mulle_buffer can guarantee at least 8 bytes
+#define MULLE_FLUSHABLEBUFFER_MIN_CAPACITY      (sizeof( double))
 
 #define MULLE_FLUSHABLEBUFFER_TYPE  \
    (MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE | MULLE_BUFFER_IS_WRITEONLY)
@@ -147,7 +150,7 @@ static inline struct mulle_buffer   *
 
 /**
  * Initializes a `mulle_flushablebuffer` struct with a static storage buffer.
- *
+ * For technical reasons the storage must be at least
  * @param buffer     The `mulle_flushablebuffer` struct to initialize.
  * @param storage    The static storage buffer to use for the buffer.
  * @param length     The length of the static storage buffer.
@@ -165,6 +168,7 @@ static inline void
                                                   struct mulle_allocator *allocator)
 {
    assert( storage && length && flusher);
+   assert( length >= MULLE_FLUSHABLEBUFFER_MIN_CAPACITY);
 
    memset( buffer, 0, sizeof( *buffer));
 
@@ -200,6 +204,7 @@ static inline void
                                                      struct mulle_allocator *allocator)
 {
    assert( storage && length && flusher);
+   assert( length >= MULLE_FLUSHABLEBUFFER_MIN_CAPACITY);
 
    memset( buffer, 0, sizeof( *buffer));
 
@@ -239,6 +244,7 @@ static inline void
 {
    if( ! buffer)
       return;
+
    _mulle_flushablebuffer_init_with_static_bytes( buffer,
                                                   storage,
                                                   length,
@@ -398,7 +404,7 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 #define _mulle_flushablebuffer_chars_to_struct( len) \
    ((len + sizeof( struct mulle_flushablebuffer) - 1) / sizeof( struct mulle_flushablebuffer))
 
-#define mulle_flushablebuffer_do_FILE( name, fp)                                                                       \
+#define mulle_flushablebuffer_do_FILE( name, fp)                                                              \
    for( struct mulle_flushablebuffer                                                                          \
           name ## __alloca[ _mulle_flushablebuffer_chars_to_struct( MULLE_FLUSHABLEBUFFER_DEFAULT_CAPACITY)], \
           name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DATA( name ## __alloca,                            \

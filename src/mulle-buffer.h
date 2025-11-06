@@ -1107,8 +1107,8 @@ static inline int   mulle_buffer_intersects_bytes( struct mulle_buffer *buffer,
       return( length == 0);
 
    return( _mulle__buffer_intersects_bytes( (struct mulle__buffer *) buffer,
-                                           bytes,
-                                           length));
+                                             bytes,
+                                             length));
 }
 
 
@@ -1360,7 +1360,7 @@ void   mulle_buffer_add_bytes_callback( void *buffer,
  * @param bytes The C string to add to the buffer.
  */
 static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
-                                              char *bytes)
+                                              char *s)
 {
    if( ! buffer)
       return;
@@ -1368,10 +1368,17 @@ static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
    mulle_buffer_assert_writeable( buffer);
 
    _mulle__buffer_add_string( (struct mulle__buffer *) buffer,
-                              bytes,
+                              s,
                               mulle_buffer_get_allocator( buffer));
 }
 
+
+// just an alias the LLVMs prefer, so why not
+static inline void   mulle_buffer_append_string( struct mulle_buffer *buffer,
+                                                 char *s)
+{
+   mulle_buffer_add_string( buffer, s);
+}
 
 /**
  * Adds a single character to the buffer.

@@ -53,7 +53,8 @@ void  test( void)
 }
 ```
 
-![pix/mulle-buffer-alloca.svg]
+![alloca](pix/mulle-buffer-alloca.svg]
+
 
 
 If you don't want the string to ever exceed the initial storage length
@@ -74,7 +75,8 @@ void  test( void)
 }
 ```
 
-![pix/mulle-buffer-alloca.svg]
+![overflow](pix/mulle-buffer-overflow.svg]
+
 
 This should print "Vf_", as a trailing zero will be needed for the last
 character.
@@ -111,6 +113,8 @@ void  test( void)
    mulle_free( s);         // this time its allocated
 }
 ```
+
+
 
 You will have to `mulle_free` the constructed string "s".
 
