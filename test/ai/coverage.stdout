@@ -1,0 +1,23 @@
+null_buffer: pass
+flushable_seek_set: 0
+add_bytes_fallback: 27
+add_string_fallback: 40
+add_string_edge: 46
+seek_cur_flushable: 0
+seek_end_flushable: -1
+readonly: 0
+null_inlines: pass
+remove_all: 0
+buffer_capacity: 4
+intersects: 1
+setlength: 3
+static_with_static: 4
+overflow_detected: 1
+get_string_overflow: overflow=1 string=has_data
+get_string_void: not-null
+set_seek_invalid_mode: -1
+init_int_max: 24
+seek_cur_overflow: 6
+add_string_align_1: 9
+add_string_align_7: 15
+add_string_break: 7

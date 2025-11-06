@@ -224,12 +224,32 @@ char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
    return( (char *) _mulle__buffer_extract_data( buffer, allocator).bytes);
 }
 
+
 void  _mulle__buffer_set_overflown( struct mulle__buffer *buffer)
 {
    assert( ! _mulle__buffer_has_overflown( buffer));
 
    buffer->_size = _mulle__buffer_get_length( buffer);
-   buffer->_curr = buffer->_sentinel + 1;  // set "overflowed"
+   buffer->_curr = buffer->_sentinel + 1;  // set to "overflowed"
+}
+
+
+void   *_mulle__buffer_guarantee( struct mulle__buffer *buffer,
+                                  size_t length,
+                                  struct mulle_allocator *allocator)
+{
+   ptrdiff_t   missing;
+
+   if( _mulle__buffer_has_overflown( buffer))
+      return( NULL);
+
+   missing = &buffer->_curr[ length] - buffer->_sentinel;
+   if( missing > 0)
+      if( _mulle__buffer_grow( buffer, (size_t) missing, allocator))
+         return( NULL);
+
+   assert( ! missing || buffer->_curr); // for the analyzer
+   return( buffer->_curr);
 }
 
 
@@ -275,6 +295,7 @@ static size_t   _mulle__buffer_get_new_allocation_length( struct mulle__buffer *
 }
 
 
+// growth is on top of remaining length
 int   _mulle__buffer_grow( struct mulle__buffer *buffer,
                            size_t growth,
                            struct mulle_allocator *allocator)
@@ -297,12 +318,19 @@ int   _mulle__buffer_grow( struct mulle__buffer *buffer,
       desired = _mulle__buffer_get_remaining_length( buffer) + growth;
       //
       // this may or may not work, depending on its's being
-      // flushable
-      //
-      if( _mulle__buffer_flush( buffer))
-         return( -1);
+      if( _mulle__buffer_is_flushable( buffer))
+      {
+         // no way we can provide it
+         if( buffer->_size < desired)
+            return( -1);
 
-      return( buffer->_size >= desired ? 0 : -1);
+         if( _mulle__buffer_flush( buffer))
+            return( -1);
+         return( 0);
+      }
+
+      _mulle__buffer_set_overflown( buffer);
+      return( -1);
    }
 
    malloc_block = NULL;
@@ -383,7 +411,10 @@ int   _mulle__buffer_set_length( struct mulle__buffer *buffer,
    if( diff <= 0)
    {
       if( _mulle__buffer_has_overflown( buffer))
+      {
+         // do we count this i size ? no, people want the max size i bet
          return( -1);
+      }
       if( ! diff)
          return( -1);
 
@@ -402,6 +433,144 @@ int   _mulle__buffer_set_length( struct mulle__buffer *buffer,
       memset( reserved, 0, (size_t) diff);
    return( 0);
 }
+
+
+
+void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
+                                 void *bytes,
+                                 size_t length,
+                                 struct mulle_allocator *allocator)
+{
+   void   *space;
+   char   *s;
+   char   *sentinel;
+
+   assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, length));
+
+   space = _mulle__buffer_advance( buffer, length, allocator);
+   if( space)
+   {
+      memmove( space, bytes, length);
+      return;
+   }
+
+   // so for flushable we gotta go byte by byte
+   s        = bytes;
+   sentinel = &s[ length];
+   while( s < sentinel)
+      _mulle__buffer_add_byte( buffer, *s++, allocator);
+}
+
+
+
+void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
+                                  char *bytes,
+                                  struct mulle_allocator *allocator)
+{
+   char           c;
+   unsigned char  *s;
+
+   assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, strlen( bytes)));
+
+   s = buffer->_curr;
+   for(;;)
+   {
+      if( &s[ 8] > buffer->_sentinel)
+      {
+         buffer->_curr = s;
+
+         while( c = *bytes++)
+            _mulle__buffer_add_byte( buffer, c, allocator);
+         return;
+      }
+
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+   }
+
+   buffer->_curr = s;
+}
+
+
+size_t   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
+                                                   char *bytes,
+                                                   size_t maxlength,
+                                                   struct mulle_allocator *allocator)
+{
+   char             c;
+   unsigned char    *s;
+   char             *sentinel;
+   size_t           remain;
+   size_t           prev_length;
+
+   prev_length = _mulle__buffer_get_length( buffer);
+
+   assert( ! _mulle__buffer_intersects_bytes( buffer,
+                                              bytes,
+                                              _mulle_char_strnlen( bytes, maxlength)));
+   remain = maxlength;
+   s      = buffer->_curr;
+
+   for(;;)
+   {
+      if( remain < 8 || &s[ 8] > buffer->_sentinel)
+      {
+         buffer->_curr = s;
+
+         sentinel = &bytes[ remain];
+         while( bytes < sentinel)
+         {
+            c = *bytes++; if( ! c) break;
+
+            _mulle__buffer_add_byte( buffer, c, allocator);
+         }
+         return( _mulle__buffer_get_length( buffer) - prev_length);
+      }
+
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+      c = *bytes++; if( ! c) break; *s++ = c;
+
+      remain -= 8;
+   }
+
+   buffer->_curr = s;
+
+   return( _mulle__buffer_get_length( buffer) - prev_length);
+}
+
+
+//
+// produces C escape codes but does not wrap in ""
+//
+void   _mulle__buffer_add_c_chars( struct mulle__buffer *buffer,
+                                   char *s,
+                                   size_t length,
+                                   struct mulle_allocator *allocator)
+{
+   char   *sentinel;
+
+   assert( ! _mulle__buffer_intersects_bytes( buffer, s, length));
+
+   sentinel = &s[ length];
+   while( s < sentinel)
+      _mulle__buffer_add_c_char( buffer, *s++, allocator);
+}
+
+
 
 
 void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,

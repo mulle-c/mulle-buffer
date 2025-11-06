@@ -59,7 +59,8 @@ enum
 // _size is there to keep "capacity" for initial allocation (could be
 // optimized away, if we don't need capacity) or remember what the size of
 // _initial_storage is. It is never modified unless you run into the overflow
-// condition, then the length before the overflow is kept there.
+// condition, then the length before the overflow is kept there. Successive
+// add request will fail but increase the size.
 //
 #define MULLE__BUFFER_BASE            \
    unsigned char   *_storage;         \
@@ -219,7 +220,9 @@ static inline int   _mulle__buffer_has_overflown( struct mulle__buffer *buffer)
  *
  * This internal function is used to mark the buffer as overflown, indicating that
  * its capacity has been exceeded. It sets the current pointer to a position past
- * the sentinel, signaling that the buffer is in an overflown state.
+ * the sentinel, signaling that the buffer is in an overflown state. It will
+ * copy the old length to size and every further addition to the buffer will
+ * be counted in size.
  *
  * @param buffer The buffer to set as overflown.
  */
@@ -250,23 +253,10 @@ int   _mulle__buffer_set_length( struct mulle__buffer *buffer,
                                  struct mulle_allocator *allocator);
 
 
-static inline void   *_mulle__buffer_guarantee( struct mulle__buffer *buffer,
-                                                size_t length,
-                                                struct mulle_allocator *allocator)
-{
-   ptrdiff_t   missing;
-
-   if( _mulle__buffer_has_overflown( buffer))
-      return( NULL);
-
-   missing = &buffer->_curr[ length] - buffer->_sentinel;
-   if( missing > 0)
-      if( _mulle__buffer_grow( buffer, (size_t) missing, allocator))
-         return( NULL);
-
-   assert( ! missing || buffer->_curr); // for the analyzer
-   return( buffer->_curr);
-}
+MULLE__BUFFER_GLOBAL
+void   *_mulle__buffer_guarantee( struct mulle__buffer *buffer,
+                                  size_t length,
+                                  struct mulle_allocator *allocator);
 
 
 static inline void   *_mulle__buffer_advance( struct mulle__buffer *buffer,
@@ -371,7 +361,7 @@ MULLE__BUFFER_GLOBAL
 long   _mulle__buffer_get_seek( struct mulle__buffer *buffer);
 
 MULLE__BUFFER_GLOBAL
-int      _mulle__buffer_set_seek( struct mulle__buffer *buffer, long seek, int mode);
+int    _mulle__buffer_set_seek( struct mulle__buffer *buffer, long seek, int mode);
 
 
 
@@ -475,9 +465,12 @@ static inline int    _mulle__buffer_pop_byte( struct mulle__buffer *buffer,
                                               struct mulle_allocator *allocator)
 {
    MULLE_C_UNUSED( allocator); // future
-   // no longer overflown I guess
+   // no longer overflown I guess, nope still overflown
    if( _mulle__buffer_has_overflown( buffer))
-      buffer->_curr = buffer->_sentinel;
+      return( -1);
+//   {
+//      buffer->_curr = buffer->_sentinel;
+//   }
    if( _mulle__buffer_is_empty( buffer))
       return( -1);
 
@@ -555,47 +548,43 @@ static inline int   _mulle__buffer_intersects_bytes( struct mulle__buffer *buffe
    unsigned char   *start;
    unsigned char   *end;
 
+   if( ! length)
+      return( 0);
+
    // so if the buffer is MULLE_BUFFER_IS_SPRINTF_INFLEXIBLE (which it NEVER
    // should be except when we are doing actually a sprintf implementation)
    // the concept of intersection becomes meaningless, as the sentinel is
    // way off
-   if( ! length || (buffer->_type & MULLE_BUFFER_IS_SPRINTF_INFLEXIBLE) == MULLE_BUFFER_IS_SPRINTF_INFLEXIBLE)
+   if( (buffer->_type & MULLE_BUFFER_IS_SPRINTF_INFLEXIBLE) == MULLE_BUFFER_IS_SPRINTF_INFLEXIBLE)
       return( 0);
 
    start = bytes;
    end   = &start[ length];
 
-   return( end > buffer->_storage && start < buffer->_sentinel);
+   return( ! (start >= buffer->_sentinel || end <= buffer->_storage));
 }
 
 
-static inline void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
-                                               void *bytes,
-                                               size_t length,
-                                               struct mulle_allocator *allocator)
-{
-   void   *s;
+MULLE__BUFFER_GLOBAL
+void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
+                                 void *bytes,
+                                 size_t length,
+                                 struct mulle_allocator *allocator);
 
-   assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, length));
-
-   s = _mulle__buffer_advance( buffer, length, allocator);
-   if( s)
-      memmove( s, bytes, length);
-}
+MULLE__BUFFER_GLOBAL
+void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
+                                  char *bytes,
+                                  struct mulle_allocator *allocator);
 
 
-static inline void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
-                                                char *bytes,
-                                                struct mulle_allocator *allocator)
-{
-   char   c;
-
-   assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, strlen( bytes)));
-
-   while( (c = *bytes++))
-      _mulle__buffer_add_byte( buffer, c, allocator);
-}
-
+//
+// produces C escape codes but does not wrap in ""
+//
+MULLE__BUFFER_GLOBAL
+void   _mulle__buffer_add_c_chars( struct mulle__buffer *buffer,
+                                   char *s,
+                                   size_t length,
+                                   struct mulle_allocator *allocator);
 
 
 //
@@ -605,23 +594,6 @@ MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_add_c_char( struct mulle__buffer *buffer,
                                   char c,
                                   struct mulle_allocator *allocator);
-
-//
-// produces C escape codes but does not wrap in ""
-//
-static inline void   _mulle__buffer_add_c_chars( struct mulle__buffer *buffer,
-                                                 char *s,
-                                                 size_t length,
-                                                 struct mulle_allocator *allocator)
-{
-   char   *sentinel;
-
-   assert( ! _mulle__buffer_intersects_bytes( buffer, s, length));
-
-   sentinel = &s[ length];
-   while( s < sentinel)
-      _mulle__buffer_add_c_char( buffer, *s++, allocator);
-}
 
 
 //
@@ -664,31 +636,12 @@ static inline size_t   _mulle_char_strnlen( char *s, size_t len)
 }
 
 
-static inline size_t
-   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
-                                             char *bytes,
-                                             size_t maxlength,
-                                             struct mulle_allocator *allocator)
-{
-   char   c;
-   char   *s;
-   char   *sentinel;
-
-   assert( ! _mulle__buffer_intersects_bytes( buffer,
-                                              bytes,
-                                              _mulle_char_strnlen( bytes, maxlength)));
-   s        = bytes;
-   sentinel = &s[ maxlength];
-   while( s < sentinel)
-   {
-      if( ! (c = *s))
-         break;
-
-      _mulle__buffer_add_byte( buffer, c, allocator);
-      ++s;
-   }
-   return( s - bytes);
-}
+// used by mulle_sprintf
+MULLE__BUFFER_GLOBAL
+size_t   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
+                                                   char *bytes,
+                                                   size_t maxlength,
+                                                   struct mulle_allocator *allocator);
 
 
 static inline void   _mulle__buffer_memset( struct mulle__buffer *buffer,

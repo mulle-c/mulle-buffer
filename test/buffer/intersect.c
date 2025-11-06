@@ -4,7 +4,7 @@
 
 int  main()
 {
-   struct mulle_buffer   buffer;
+   struct mulle_buffer   buffer = { 0 };
 
    buffer._storage  = (void *) 0x10;
    buffer._sentinel = (void *) 0x20;
