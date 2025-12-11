@@ -81,26 +81,26 @@ struct mulle__buffer
    MULLE__BUFFER_BASE;
 };
 
-#define MULLE__BUFFER_FLEXIBLE_DATA( data, len)    \
-   ((struct mulle__buffer)                         \
-   {                                               \
-      (unsigned char *) data,                      \
-      (unsigned char *) data,                      \
-      &((unsigned char *) data)[ (len)],           \
-      (unsigned char *) data,                      \
-      (len),                                       \
-      MULLE_BUFFER_IS_FLEXIBLE                     \
+#define MULLE__BUFFER_FLEXIBLE_DATA( data, len)       \
+   ((struct mulle__buffer)                            \
+   {                                                  \
+      ._storage  = (unsigned char *) data,            \
+      ._curr     = (unsigned char *) data,            \
+      ._sentinel = &((unsigned char *) data)[ (len)], \
+      ._initial_storage = (unsigned char *) data,     \
+      ._size     = (len),                             \
+      ._type     = MULLE_BUFFER_IS_FLEXIBLE           \
    })
 
-#define MULLE__BUFFER_INFLEXIBLE_DATA( data, len)  \
-   ((struct mulle__buffer)                         \
-   {                                               \
-      (unsigned char *) data,                      \
-      (unsigned char *) data,                      \
-      &((unsigned char *) data)[ (len)],           \
-      (unsigned char *) data,                      \
-      (len),                                       \
-      MULLE_BUFFER_IS_INFLEXIBLE                   \
+#define MULLE__BUFFER_INFLEXIBLE_DATA( data, len)     \
+   ((struct mulle__buffer)                            \
+   {                                                  \
+      ._storage  = (unsigned char *) data,            \
+      ._curr     = (unsigned char *) data,            \
+      ._sentinel = &((unsigned char *) data)[ (len)], \
+      ._initial_storage = (unsigned char *) data,     \
+      ._size     = (len),                             \
+      ._type     = MULLE_BUFFER_IS_INFLEXIBLE         \
    })
 
 

@@ -25,10 +25,10 @@
 #endif
 #if defined( MULLE__DATA_VERSION)
 # ifndef MULLE__DATA_VERSION_MIN
-#  define MULLE__DATA_VERSION_MIN  ((0UL << 20) | (4 << 8) | 0)
+#  define MULLE__DATA_VERSION_MIN  ((0UL << 20) | (5 << 8) | 0)
 # endif
 # ifndef MULLE__DATA_VERSION_MAX
-#  define MULLE__DATA_VERSION_MAX  ((0UL << 20) | (5 << 8) | 0)
+#  define MULLE__DATA_VERSION_MAX  ((0UL << 20) | (6 << 8) | 0)
 # endif
 # if MULLE__DATA_VERSION < MULLE__DATA_VERSION_MIN || MULLE__DATA_VERSION >= MULLE__DATA_VERSION_MAX
 #  pragma message("MULLE__DATA_VERSION     is " MULLE_C_STRINGIFY_MACRO( MULLE__DATA_VERSION))

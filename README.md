@@ -1,6 +1,6 @@
 # mulle-buffer
 
-#### ↗️ A growable C char array and also a stream - on stack and heap
+#### ↗️  A growable C char array and also a stream - on stack and heap
 
 mulle-buffer can construct arbitrary long binary data dynamically or in static
 storage. You don't have to worry about calculating the necessary buffer size.
@@ -84,7 +84,8 @@ void  test( void)
 }
 ```
 
-![pix/mulle-buffer-alloca.svg]
+![alloca](pix/mulle-buffer-alloca.svg]
+
 
 
 If you don't want the string to ever exceed the initial storage length
@@ -105,7 +106,8 @@ void  test( void)
 }
 ```
 
-![pix/mulle-buffer-alloca.svg]
+![overflow](pix/mulle-buffer-overflow.svg]
+
 
 This should print "Vf_", as a trailing zero will be needed for the last
 character.
@@ -143,6 +145,8 @@ void  test( void)
 }
 ```
 
+
+
 You will have to `mulle_free` the constructed string "s".
 
 ### Permanent mulle-buffer
@@ -178,6 +182,18 @@ mulle_buffer_done( buffer);
 
 
 
+
+## Quickstart
+
+Install [mulle-core developer](https://github.com/MulleFoundation/foundation-developer?tab=readme-ov-file#install)
+then:
+
+
+``` sh
+mulle-sde init -d my-project -m mulle-core/c-developer executable
+cd my-project
+mulle-sde run
+```
 
 ## Add
 

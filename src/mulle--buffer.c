@@ -36,6 +36,7 @@
 
 #include "mulle-flushablebuffer.h"
 
+#pragma clang diagnostic ignored "-Wparentheses"
 
 #if DEBUG
 # define MULLE_BUFFER_MIN_GROW_SIZE    4        // minimum realloc increment
@@ -479,7 +480,7 @@ void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
       {
          buffer->_curr = s;
 
-         while( c = *bytes++)
+         while( (c = *bytes++))
             _mulle__buffer_add_byte( buffer, c, allocator);
          return;
       }

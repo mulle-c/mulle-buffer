@@ -92,7 +92,7 @@ void
    assert( length != INT_MAX);
 
    buffer->_size             = length;
-   buffer->_type             = MULLE_BUFFER_IS_INFLEXIBLE|MULLE_BUFFER_IS_READONLY;
+   buffer->_type             = (unsigned int) MULLE_BUFFER_IS_INFLEXIBLE | (unsigned int) MULLE_BUFFER_IS_READONLY; // windows cast...
    buffer->_allocator        = NULL;
 
    assert( buffer->_sentinel >= buffer->_storage);

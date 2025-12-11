@@ -1725,6 +1725,7 @@ static inline void
  * @param buffer The buffer to reset.
  */
 // _initial_storage storage will be lost
+MULLE__BUFFER_GLOBAL
 void   mulle_buffer_reset( struct mulle_buffer *buffer);
 
 

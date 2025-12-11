@@ -70,3 +70,9 @@ CMakeLists.txt.bak
 .idea/
 research/
 vgcore.*
+test*/**/*.test.*
+/*.md
+!/AGENTS.md
+!/README.md
+build-*/
+environment-user-*.sh
