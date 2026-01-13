@@ -8,6 +8,7 @@
       repo="mulle-buffer";
       homepage="https://github.com/mulle-c/mulle-buffer";
       license="BSD-3-Clause";
+      version="5.0.2";
    };
    dependencies =
    (
