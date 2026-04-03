@@ -479,6 +479,7 @@ static inline int    _mulle__buffer_pop_byte( struct mulle__buffer *buffer,
 }
 
 
+MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_remove_in_range( struct mulle__buffer *buffer,
                                        struct mulle_range range);
 
@@ -570,6 +571,19 @@ void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
                                  void *bytes,
                                  size_t length,
                                  struct mulle_allocator *allocator);
+
+
+
+// just as above just type differently
+static inline
+void   _mulle__buffer_add_chars( struct mulle__buffer *buffer,
+                                 char *s,
+                                 size_t length,
+                                 struct mulle_allocator *allocator)
+{
+   _mulle__buffer_add_bytes( buffer, s, length, allocator);
+}
+
 
 MULLE__BUFFER_GLOBAL
 void   _mulle__buffer_add_string( struct mulle__buffer *buffer,

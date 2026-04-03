@@ -1,4 +1,5 @@
 # mulle-buffer Library Documentation for AI
+<!-- Keywords: buffer, dynamic-growth -->
 
 ## 1. Introduction & Purpose
 

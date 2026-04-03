@@ -1328,6 +1328,16 @@ static inline void   mulle_buffer_add_bytes( struct mulle_buffer *buffer,
 }
 
 
+// just as above just type differently
+static inline
+void   mulle_buffer_add_chars( struct mulle_buffer *buffer,
+                               char *s,
+                               size_t length)
+{
+   mulle_buffer_add_bytes( buffer, s, length);
+}
+
+
 /**
  * Adds a byte array to the buffer using a callback function.
  *
@@ -2075,6 +2085,7 @@ MULLE_C_DEPRECATED static inline void
         name ## __i = (void *) 0x1                                \
       )                                                           \
                                                                   \
+      MULLE_C_CONFINED_LOOP                                       \
       for( int  name ## __j = 0;    /* break protection */        \
            name ## __j < 1;                                       \
            name ## __j++)
@@ -2109,6 +2120,7 @@ MULLE_C_DEPRECATED static inline void
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)               \
       )                                                                                     \
                                                                                             \
+      MULLE_C_CONFINED_LOOP                                                                 \
       for( int  name ## __j = 0;    /* break protection */                                  \
            name ## __j < 1;                                                                 \
            name ## __j++)
@@ -2140,6 +2152,7 @@ MULLE_C_DEPRECATED static inline void
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)              \
       )                                                                                    \
                                                                                            \
+      MULLE_C_CONFINED_LOOP                                                                \
       for( int  name ## __j = 0;    /* break protection */                                 \
            name ## __j < 1;                                                                \
            name ## __j++)
@@ -2170,6 +2183,7 @@ MULLE_C_DEPRECATED static inline void
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1) \
       )                                                                       \
                                                                               \
+      MULLE_C_CONFINED_LOOP                                                   \
       for( int  name ## __j = 0;    /* break protection */                    \
            name ## __j < 1;                                                   \
            name ## __j++)
@@ -2200,6 +2214,7 @@ MULLE_C_DEPRECATED static inline void
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)      \
       )                                                                            \
                                                                                    \
+      MULLE_C_CONFINED_LOOP                                                        \
       for( int  name ## __j = 0;    /* break protection */                         \
            name ## __j < 1;                                                        \
            name ## __j++)
@@ -2230,6 +2245,7 @@ MULLE_C_DEPRECATED static inline void
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1) \
       )                                                                       \
                                                                               \
+      MULLE_C_CONFINED_LOOP                                                   \
       for( int  name ## __j = 0;    /* break protection */                    \
            name ## __j < 1;                                                   \
            name ## __j++)
@@ -2259,6 +2275,7 @@ MULLE_C_DEPRECATED static inline void
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)        \
       )                                                                              \
                                                                                      \
+      MULLE_C_CONFINED_LOOP                                                          \
       for( int  name ## __j = 0;    /* break protection */                           \
            name ## __j < 1;                                                          \
            name ## __j++)
