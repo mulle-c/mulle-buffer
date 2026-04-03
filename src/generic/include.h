@@ -22,7 +22,7 @@
 #include "_mulle-buffer-include.h"
 
 
-#ifdef MULLE__BUFFER_BUILD
+#if defined( MULLE__BUFFER_BUILD) || defined( MULLE__CORE_BUILD)
 # define MULLE__BUFFER_GLOBAL    MULLE_C_GLOBAL
 #else
 # if defined( MULLE_BUFFER_INCLUDE_DYNAMIC) || (defined( MULLE_INCLUDE_DYNAMIC) && ! defined( MULLE_BUFFER_INCLUDE_STATIC))

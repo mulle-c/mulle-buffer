@@ -416,6 +416,7 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
         name ## __i = ( mulle_flushablebuffer_done( &name ## __storage), (void *) 0x1)                        \
       )                                                                                                       \
                                                                                                               \
+      MULLE_C_CONFINED_LOOP                                                                                   \
       for( struct mulle_buffer                                                                                \
             *name = (struct mulle_buffer *) &name ## __storage,                                               \
             *name ## __j = 0;    /* break protection */                                                       \
