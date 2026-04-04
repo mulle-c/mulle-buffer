@@ -3,12 +3,13 @@
    {
       description="↗️  A growable C char array and also a stream - on stack and heap";
       domain="github";
+      language="c";
+      dialect="c";
       name="mulle-buffer";
       user="mulle-c";
       repo="mulle-buffer";
       homepage="https://github.com/mulle-c/mulle-buffer";
       license="BSD-3-Clause";
-      version="5.0.2";
    };
    dependencies =
    (
@@ -21,7 +22,7 @@
          user="mulle-c";
       },
       {
-         description="#️⃣ A collection of hash functions";
+         description="#️⃣  A collection of hash functions";
          domain="github";
          name="mulle-data";
          repo="mulle-data";

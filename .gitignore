@@ -79,3 +79,4 @@ environment-user-*.sh
 dox.unreleased/
 .roam
 .graveyard
+*.tmp.*
