@@ -7,10 +7,10 @@
 
 #if defined( MULLE__ALLOCATOR_VERSION)
 # ifndef MULLE__ALLOCATOR_VERSION_MIN
-#  define MULLE__ALLOCATOR_VERSION_MIN  ((7UL << 20) | (1 << 8) | 1)
+#  define MULLE__ALLOCATOR_VERSION_MIN  ((8UL << 20) | (0 << 8) | 0)
 # endif
 # ifndef MULLE__ALLOCATOR_VERSION_MAX
-#  define MULLE__ALLOCATOR_VERSION_MAX  ((8UL << 20) | (0 << 8) | 0)
+#  define MULLE__ALLOCATOR_VERSION_MAX  ((9UL << 20) | (0 << 8) | 0)
 # endif
 # if MULLE__ALLOCATOR_VERSION < MULLE__ALLOCATOR_VERSION_MIN || MULLE__ALLOCATOR_VERSION >= MULLE__ALLOCATOR_VERSION_MAX
 #  pragma message("MULLE__ALLOCATOR_VERSION     is " MULLE_C_STRINGIFY_MACRO( MULLE__ALLOCATOR_VERSION))
@@ -25,7 +25,7 @@
 #endif
 #if defined( MULLE__DATA_VERSION)
 # ifndef MULLE__DATA_VERSION_MIN
-#  define MULLE__DATA_VERSION_MIN  ((0UL << 20) | (5 << 8) | 0)
+#  define MULLE__DATA_VERSION_MIN  ((0UL << 20) | (5 << 8) | 1)
 # endif
 # ifndef MULLE__DATA_VERSION_MAX
 #  define MULLE__DATA_VERSION_MAX  ((0UL << 20) | (6 << 8) | 0)
