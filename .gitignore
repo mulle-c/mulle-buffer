@@ -80,3 +80,5 @@ dox.unreleased/
 .roam
 .graveyard
 *.tmp.*
+*.test.*
+.idea
