@@ -28,6 +28,11 @@ having to worry about memory management.
 
 
 
+## Documentation & Guides
+
+* [API Summary](asset/dox/api/toc)
+
+
 
 ## Examples
 

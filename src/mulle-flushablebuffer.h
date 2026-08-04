@@ -1,5 +1,5 @@
 //
-//  mulle-flushablebuffer.c
+//  mulle-flushablebuffer.h
 //  mulle-buffer
 //
 //  Copyright (c) 2023 Nat! - Mulle kybernetiK.
