@@ -1,9 +1,8 @@
 //
-//  mulle_buffer.c
+//  mulle-buffer.c
 //  mulle-buffer
 //
-//  Created by Nat! on 04/11/15.
-//  Copyright (c) 2015 Nat! - Mulle kybernetiK.
+//  Copyright (c) 2018 Nat! - Mulle kybernetiK.
 //  Copyright (c) 2015 Codeon GmbH.
 //  All rights reserved.
 //
