@@ -15,7 +15,7 @@ This library is a foundational component of mulle-core and is used by NSMutableD
 
 ## 2. Key Concepts & Design Philosophy
 
-- **Flex point**: Buffers start on the stack (via `mulle_buffer_do` macro) with default capacity of 96 bytes; they automatically grow to the heap when exceeded
+- **Flex point**: Buffers start on the stack (via `mulle_buffer_do` macro) with a guaranteed minimum of 128 bytes backing; they automatically grow to the heap when exceeded
 - **Dual modes**: 
   - **Flexible**: Can grow dynamically (most common)
   - **Inflexible**: Fixed-size, won't grow (for static or preallocated storage)
@@ -35,7 +35,7 @@ This library is a foundational component of mulle-core and is used by NSMutableD
   - `unsigned char *_curr`: Current position for reading/writing (like file pointer)
   - `unsigned char *_sentinel`: One past the last valid byte (end marker)
   - `unsigned char *_initial_storage`: For inflexible buffers, the original storage pointer
-  - `size_t _size`: Total capacity in bytes (set to -1 for non-growing)
+  - `size_t _size`: Initial capacity hint (stored halved); after overflow it preserves the pre-overflow logical length. Not "total capacity" and never -1
   - `unsigned int _type`: Type flags (FLEXIBLE, INFLEXIBLE, FLUSHABLE, READONLY, WRITEONLY, etc.)
 
 ### 3.2. `mulle-buffer.h`
@@ -55,21 +55,21 @@ This library is a foundational component of mulle-core and is used by NSMutableD
 - `mulle_buffer_done(buffer)`: Finalize buffer (for stack-allocated buffers)
 
 **Initialization (for stack allocation):**
-- `mulle_buffer_init(buffer, allocator)`: Initialize stack-allocated buffer with default capacity
-- `mulle_buffer_init_with_capacity(buffer, allocator, capacity)`: Initialize with specific capacity
-- `mulle_buffer_init_inflexible_with_static_bytes(buffer, bytes, length)`: Initialize as read-only view of existing memory
+- `mulle_buffer_init(buffer, capacity, allocator)`: Initialize stack-allocated buffer with given capacity
+- `mulle_buffer_init_with_capacity(buffer, capacity, allocator)`: Initialize with specific capacity (deprecated)
+- `mulle_buffer_init_inflexible_with_static_bytes(buffer, storage, length)`: Initialize writable fixed-size buffer over caller storage
 - `mulle_buffer_init_with_const_bytes(buffer, bytes, length)`: Initialize from const data
 - `mulle_buffer_do { ... }` macro: Stack-allocated buffer with automatic cleanup (most common pattern)
 
 **Buffer Mode Management:**
-- `mulle_buffer_make_inflexible(buffer, size)`: Convert flexible buffer to fixed-size
+- `mulle_buffer_make_inflexible(buffer, storage, length)`: Convert flexible buffer to fixed-size over caller storage
 - `mulle_buffer_set_readonly(buffer)`: Prevent write operations
 - `mulle_buffer_set_writeonly(buffer)`: Prevent read operations
 
 #### Growth & Capacity Management
 - `mulle_buffer_grow(buffer, minimum_length)`: Force buffer to grow to at least `minimum_length` bytes
 - `mulle_buffer_size_to_fit(buffer)`: Trim capacity to exact current length (shrink allocation)
-- `mulle_buffer_set_length(buffer, length)`: Change logical length (can truncate or extend)
+- `mulle_buffer_set_length(buffer, length, options)`: Change logical length (can truncate or extend)
 - `mulle_buffer_guarantee(buffer, length)`: Ensure at least `length` bytes available after current position
 - `mulle_buffer_get_capacity(buffer)`: Current total capacity
 - `mulle_buffer_get_length(buffer)`: Current logical length (bytes used)
@@ -146,11 +146,11 @@ This library is a foundational component of mulle-core and is used by NSMutableD
 - `_mulle_buffer_pop_byte(buffer)`: Unsafe version (doesn't check bounds)
 
 #### Macros
-- `mulle_buffer_do(var_name) { ... }`: Create stack-allocated buffer with automatic cleanup (default capacity 96 bytes)
-- `mulle_buffer_do_flexible(var_name, capacity) { ... }`: Stack buffer with specified capacity
-- `mulle_buffer_do_inflexible(var_name, bytes, length) { ... }`: Stack buffer from existing memory (read-only view)
-- `mulle_buffer_do_string(var_name, string) { ... }`: Stack buffer from string
-- `MULLE_BUFFER_DEFAULT_CAPACITY`: 96 bytes (2x pointer size on 64-bit)
+- `mulle_buffer_do(var_name) { ... }`: Create stack-allocated buffer with automatic cleanup (guaranteed minimum 128 bytes backing)
+- `mulle_buffer_do_flexible(name, data, len) { ... }`: Stack buffer with caller storage
+- `mulle_buffer_do_inflexible(name, data, len) { ... }`: Stack buffer from existing memory (writable, fixed-size)
+- `mulle_buffer_do_string(name, allocator, s) { ... }`: Stack buffer from string
+- `MULLE_BUFFER_DEFAULT_CAPACITY`: 128 bytes
 
 ### 3.3. `mulle-flushablebuffer.h`
 
@@ -160,7 +160,7 @@ This library is a foundational component of mulle-core and is used by NSMutableD
 - Useful for generating output that needs to be written in chunks (files, network, logging)
 
 #### Key Functions
-- `mulle_flushablebuffer_create(allocator, flusher, flusher_context)`: Create with callback
+- `mulle_flushablebuffer_create(length, flusher, userinfo, allocator)`: Create with callback
 - `mulle_flushablebuffer_done(buffer)`: Cleanup (flushes any remaining data)
 - `mulle_flushablebuffer_flush(buffer)`: Manually flush buffered data
 - Uses `mulle_buffer_add_bytes_callback` and `mulle_buffer_add_c_chars_callback` for integration
@@ -168,7 +168,7 @@ This library is a foundational component of mulle-core and is used by NSMutableD
 ## 4. Performance Characteristics
 
 - **Memory model**: 
-  - Default 96 bytes on stack (MULLE_BUFFER_DEFAULT_CAPACITY)
+  - Guaranteed minimum 128 bytes on stack (MULLE_BUFFER_DEFAULT_CAPACITY)
   - Growth: Typically uses doubling strategy or allocator-determined strategy
   - No separate allocation overhead for small data
 
@@ -200,7 +200,7 @@ This library is a foundational component of mulle-core and is used by NSMutableD
 2. **Choose initialization based on use case**:
    - Dynamic: Use `mulle_buffer_do` (default flex mode)
    - Fixed size from start: Use `mulle_buffer_do_inflexible`
-   - Large preallocated: Use `mulle_buffer_do_flexible(buf, capacity)`
+   - Large preallocated: Use `mulle_buffer_do_flexible(buf, data, len)`
 
 3. **Prefer string functions over raw bytes**: `mulle_buffer_add_string` is safer than `mulle_buffer_add_bytes` with strlen
 
@@ -218,7 +218,7 @@ This library is a foundational component of mulle-core and is used by NSMutableD
 
 4. **Readonly/Writeonly flags**: Once set, operations in the other direction will assert; use carefully
 
-5. **Inflexible buffer overflow**: Writes beyond capacity in inflexible mode set `MULLE_BUFFER_HAS_OVERFLOWN` flag but don't necessarily fail; check with `mulle_buffer_has_overflown`
+5. **Inflexible buffer overflow**: Writes beyond capacity in inflexible mode set the `MULLE_BUFFER_IS_OVERFLOWN` flag but don't necessarily fail; check with `mulle_buffer_has_overflown`
 
 6. **Allocator lifecycle**: If custom allocator is used, it must outlive the buffer or be carefully managed
 
@@ -274,7 +274,7 @@ int main() {
     char static_data[20] = "hello";
     struct mulle_buffer buffer;
     
-    // Create read-only view of existing data
+    // Create writable fixed-size view of existing data
     mulle_buffer_init_inflexible_with_static_bytes(&buffer, static_data, 20);
     
     printf("Length: %zu\n", mulle_buffer_get_length(&buffer));

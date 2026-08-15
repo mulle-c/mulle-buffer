@@ -82,3 +82,8 @@ dox.unreleased/
 *.tmp.*
 *.test.*
 .idea
+
+# Fuzzing
+/fuzz/build/
+/fuzz/crashes/
+/fuzz/corpus/

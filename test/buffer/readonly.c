@@ -41,8 +41,6 @@ void test_write_operations(struct mulle_buffer *buffer)
     mulle_buffer_add_byte(buffer, 'A');
     mulle_buffer_add_string(buffer, "Test");
     mulle_buffer_add_char(buffer, 'B');
-    mulle_buffer_add_uint16(buffer, 1234);
-    mulle_buffer_add_uint32(buffer, 5678);
     mulle_buffer_memset(buffer, 'C', 5);
     mulle_buffer_zero_last_byte(buffer);
 

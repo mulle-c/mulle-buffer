@@ -50,6 +50,14 @@
 // this is fairly conveniently, just like fwrite(  _storage, len, nElems, fp)
 // though a non-buffering write could be better
 //
+// Like fwrite, the flusher is responsible for retrying partial writes
+// internally: it must keep writing until all `len` bytes are delivered
+// and then return `len`. A short return therefore signals a genuine
+// delivery failure, not a merely interrupted write. The buffer treats a
+// short return as fatal: it marks itself overflown and retains the
+// undelivered bytes only for inspection. Do not retry a flusher that
+// reported a short return, or the already-delivered prefix would be
+// duplicated.
 typedef size_t   mulle_flushablebuffer_flusher_t( void *buf,
                                                   size_t one,
                                                   size_t len,
@@ -69,6 +77,8 @@ typedef size_t   mulle_flushablebuffer_flusher_t( void *buf,
  * flushes out data to make room.
  * It's easy to stream data to stdout with a flushable
  * buffer.
+ *
+ * **NOT THREAD-SAFE**: All instances must be used from a single thread.
  */
 struct mulle_flushablebuffer
 {
@@ -82,7 +92,7 @@ struct mulle_flushablebuffer
 #define MULLE_FLUSHABLEBUFFER_MIN_CAPACITY      (sizeof( double))
 
 #define MULLE_FLUSHABLEBUFFER_TYPE  \
-   (MULLE_BUFFER_IS_INFLEXIBLE | MULLE_BUFFER_IS_FLUSHABLE | MULLE_BUFFER_IS_WRITEONLY)
+   (MULLE_BUFFER_IS_FLUSHABLE | MULLE_BUFFER_IS_WRITEONLY)
 
 /**
  * Initializes a `mulle_flushablebuffer` struct with a static storage buffer.
@@ -94,6 +104,16 @@ struct mulle_flushablebuffer
  *
  * @return A `mulle_flushablebuffer` struct initialized with the provided parameters.
  */
+// MULLE_FLUSHABLEBUFFER_STATIC_DATA is a compound literal initializer. It
+// exists for static/global data-section variables (and other constant-expression
+// contexts), where a function call is not allowed. It evaluates `xstorage`,
+// `xlength`, `xflusher` and `xuserinfo` more than once, so it accepts only
+// side-effect-free expressions.
+//
+// Inside actual code, use the single-evaluation initializers
+// `mulle_flushablebuffer_init_with_static_bytes` (on a stack struct) or
+// `mulle_flushablebuffer_init`, which evaluate their arguments exactly once.
+//
 #define MULLE_FLUSHABLEBUFFER_STATIC_DATA( xstorage, xlength,              \
                                            xflusher, xuserinfo)            \
    ((struct mulle_flushablebuffer)                                         \
@@ -101,7 +121,7 @@ struct mulle_flushablebuffer
       ._initial_storage = (unsigned char *) (xstorage),                    \
       ._curr            = (unsigned char *) (xstorage),                    \
       ._storage         = (unsigned char *) (xstorage),                    \
-      ._sentinel        = &((unsigned char *)(xstorage))[ (xlength)],      \
+      ._sentinel        = (xstorage) ? &((unsigned char *)(xstorage))[ (xlength)] : NULL, \
       ._size            = (xlength),                                       \
       ._type            = MULLE_FLUSHABLEBUFFER_TYPE,                      \
       ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),  \
@@ -119,13 +139,16 @@ struct mulle_flushablebuffer
  *
  * @return A `mulle_flushablebuffer` struct initialized with the provided parameters.
  */
+// Same caveat as `MULLE_FLUSHABLEBUFFER_STATIC_DATA`: for static data-section
+// initialization only; use `mulle_flushablebuffer_init_with_allocated_bytes`
+// in code.
 #define MULLE_FLUSHABLEBUFFER_ALLOCATED_DATA( xstorage, xlength, xflusher, \
                                               xuserinfo, xallocator)       \
    ((struct mulle_flushablebuffer)                                         \
    {                                                                       \
       ._curr            = (unsigned char *) (xstorage),                    \
       ._storage         = (unsigned char *) (xstorage),                    \
-      ._sentinel        = &((unsigned char *)(xstorage))[ (xlength)],      \
+      ._sentinel        = (xstorage) ? &((unsigned char *)(xstorage))[ (xlength)] : NULL, \
       ._size            = (xlength),                                       \
       ._type            = MULLE_FLUSHABLEBUFFER_TYPE,                      \
       ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),  \
@@ -236,7 +259,7 @@ static inline void
 // backwards compatibility
 MULLE_C_NONNULL_SECOND_FOURTH
 static inline void
-   mulle_flushablebuffer_init( struct mulle_flushablebuffer *buffer,
+mulle_flushablebuffer_init( struct mulle_flushablebuffer *buffer,
                                void *storage,
                                size_t length,
                                mulle_flushablebuffer_flusher_t *flusher,
@@ -246,11 +269,11 @@ static inline void
       return;
 
    _mulle_flushablebuffer_init_with_static_bytes( buffer,
-                                                  storage,
-                                                  length,
-                                                  (mulle_flushablebuffer_flusher_t *) flusher,
-                                                  userinfo,
-                                                  NULL);
+                                                   storage,
+                                                   length,
+                                                   (mulle_flushablebuffer_flusher_t *) flusher,
+                                                   userinfo,
+                                                   &mulle_default_allocator);
 }
 
 
@@ -387,40 +410,16 @@ struct mulle_flushablebuffer   *
 MULLE__BUFFER_GLOBAL
 int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer);
 
-
 /**
- * Defines a macro that creates a `mulle_flushablebuffer` instance and a loop to use it.
+ * Releases a `mulle_flushablebuffer` created by `mulle_flushablebuffer_create`.
  *
- * This macro creates a static `mulle_flushablebuffer` instance with a 128-byte internal
- * buffer, and a `fwrite` flusher function that writes to the provided `FILE*`. It then
- * defines a loop that uses this buffer, flushing it when the loop completes.
+ * This function flushes any remaining data and frees both the storage and the
+ * heap object. If the flush fails, the buffer and its retained undelivered
+ * bytes are still discarded; call `mulle_flushablebuffer_flush` manually
+ * first if the remaining data must be delivered before the buffer is freed.
  *
- * @param name The name to use for the `mulle_flushablebuffer` instance and loop variables.
- * @param fp The `FILE*` to write the buffer contents to.
+ * @param buffer The `mulle_flushablebuffer` instance to destroy.
+ * @return 0 on success, or the flush error if the final flush failed.
  */
-//
-// Flush to FILE *
-//
-#define _mulle_flushablebuffer_chars_to_struct( len) \
-   ((len + sizeof( struct mulle_flushablebuffer) - 1) / sizeof( struct mulle_flushablebuffer))
-
-#define mulle_flushablebuffer_do_FILE( name, fp)                                                              \
-   for( struct mulle_flushablebuffer                                                                          \
-          name ## __alloca[ _mulle_flushablebuffer_chars_to_struct( MULLE_FLUSHABLEBUFFER_DEFAULT_CAPACITY)], \
-          name ## __storage = MULLE_FLUSHABLEBUFFER_STATIC_DATA( name ## __alloca,                            \
-                                                                 sizeof( name ## __alloca),                   \
-                                                                 fwrite,                                      \
-                                                                 (fp)),                                       \
-          *name ## __i = NULL;                                                                                \
-        ! name ## __i;                                                                                        \
-        name ## __i = ( mulle_flushablebuffer_done( &name ## __storage), (void *) 0x1)                        \
-      )                                                                                                       \
-                                                                                                              \
-      MULLE_C_CONFINED_LOOP                                                                                   \
-      for( struct mulle_buffer                                                                                \
-            *name = (struct mulle_buffer *) &name ## __storage,                                               \
-            *name ## __j = 0;    /* break protection */                                                       \
-            name ## __j < (struct mulle_buffer *) 1;                                                          \
-            name ## __j++)
 
 #endif

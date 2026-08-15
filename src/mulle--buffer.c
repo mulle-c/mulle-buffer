@@ -59,7 +59,7 @@ void
    buffer->_initial_storage  =
    buffer->_storage          =
    buffer->_curr             = storage;
-   buffer->_sentinel         = &buffer->_storage[ length];
+   buffer->_sentinel         = storage ? &buffer->_storage[ length] : NULL;
 
    //
    // this is for mulle_sprintf, where we have API that gets storage, where
@@ -98,38 +98,89 @@ long  _mulle__buffer_get_seek( struct mulle__buffer *buffer)
 }
 
 
-int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, long seek, int mode)
+off_t  _mulle__buffer_get_lseek( struct mulle__buffer *buffer)
 {
-   unsigned char   *plan;
+   struct mulle_flushablebuffer   *flushable;
+
+   if( ! _mulle__buffer_is_flushable( buffer))
+      return( (off_t) _mulle__buffer_get_length( buffer));
+
+   flushable = (struct mulle_flushablebuffer *) buffer;
+   return( (off_t) (flushable->_flushed + _mulle__buffer_get_length( buffer)));
+}
+
+
+off_t  _mulle__buffer_lseek( struct mulle__buffer *buffer,
+                             off_t offset,
+                             int mode)
+{
+   size_t   back;
+   size_t   capacity;
+   size_t   curr;
+   size_t   target;
 
    if( _mulle__buffer_is_flushable( buffer))
-      return( -1);
+      return( (off_t) -1);
+
+   if( buffer->_storage)
+   {
+      capacity = (size_t) (buffer->_sentinel - buffer->_storage);
+      curr     = (size_t) (buffer->_curr - buffer->_storage);
+   }
+   else
+   {
+      capacity = 0;
+      curr     = 0;
+   }
 
    switch( mode)
    {
    case MULLE_BUFFER_SEEK_SET :
-      plan = &buffer->_storage[ seek];
+      if( offset < 0)
+         return( (off_t) -1);
+      target = (size_t) offset;
       break;
 
    case MULLE_BUFFER_SEEK_CUR :
-      if( _mulle__buffer_has_overflown( buffer))
-         seek -= 1;
-      plan = &buffer->_curr[ seek];
+      if( offset >= 0)
+      {
+         if( (size_t) offset > capacity - curr)
+            return( (off_t) -1);
+         target = curr + (size_t) offset;
+      }
+      else
+      {
+         back   = (size_t) (-(offset + 1)) + 1;
+         if( back > curr)
+            return( (off_t) -1);
+         target = curr - back;
+      }
       break;
 
    case MULLE_BUFFER_SEEK_END :
-      plan = &buffer->_sentinel[ -seek];
+      if( offset > 0)
+         return( (off_t) -1);
+      back   = (size_t) (-(offset + 1)) + 1;
+      if( back > capacity)
+         return( (off_t) -1);
+      target = capacity - back;
       break;
 
    default :
-      return( -1);
+      return( (off_t) -1);
    }
 
-   if( plan > buffer->_sentinel || plan < buffer->_storage)
-      return( -1);
+   if( target > capacity)
+      return( (off_t) -1);
 
-   buffer->_curr = plan;
-   return( 0);
+   buffer->_curr = buffer->_storage ? &buffer->_storage[ target] : NULL;
+   return( (off_t) target);
+}
+
+
+int   _mulle__buffer_set_seek( struct mulle__buffer *buffer, long seek, int mode)
+{
+   return( _mulle__buffer_lseek( buffer, seek, mode) == -1 ? -1 : 0);
 }
 
 
@@ -155,9 +206,26 @@ void    _mulle__buffer_size_to_fit( struct mulle__buffer *buffer,
       return;
 
    length = _mulle__buffer_get_length( buffer);
+   if( ! length)
+   {
+      // free the heap block and return to a consistent empty representation
+      // without forming &NULL[ 0]
+      if( buffer->_storage)
+         mulle_allocator_free( allocator, buffer->_storage);
+
+      buffer->_storage         =
+      buffer->_curr            =
+      buffer->_sentinel        =
+      buffer->_initial_storage = NULL;
+      buffer->_size            = 0;
+      return;
+   }
+
    p      = mulle_allocator_realloc_strict( allocator,
                                             buffer->_storage,
-                                            sizeof( unsigned char) * length);
+                                            mulle_allocator_size_multiply( allocator,
+                                                                           sizeof( unsigned char),
+                                                                           length));
 
    buffer->_storage  = p;
    buffer->_curr     = &buffer->_storage[ length];
@@ -186,6 +254,12 @@ struct mulle_data   _mulle__buffer_extract_data( struct mulle__buffer *buffer,
 
          return( data);
       }
+   }
+   else
+   {
+      // free heap storage even if length is 0
+      if( buffer->_storage && buffer->_storage != buffer->_initial_storage)
+         mulle_allocator_free( allocator, buffer->_storage);
    }
 
    buffer->_storage         =
@@ -222,6 +296,12 @@ int   _mulle__buffer_make_string( struct mulle__buffer *buffer,
 char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator)
 {
+   // An empty buffer yields NULL, matching `_mulle__buffer_extract_data`.
+   // `extract_data` also consumes the buffer (frees any backing, NULLs the
+   // pointers), which is what we want here as well.
+   if( ! _mulle__buffer_get_length( buffer))
+      return( (char *) _mulle__buffer_extract_data( buffer, allocator).bytes);
+
    // afterwards the size of the string will include the zero
    _mulle__buffer_make_string( buffer, allocator);
    // this will do nothing for inflexible data
@@ -234,8 +314,11 @@ void  _mulle__buffer_set_overflown( struct mulle__buffer *buffer)
 {
    assert( ! _mulle__buffer_has_overflown( buffer));
 
+   // keep the pre-overflow logical length; move the cursor to the last valid
+   // position and let the sticky flag in _type do the rest
    buffer->_size = _mulle__buffer_get_length( buffer);
-   buffer->_curr = buffer->_sentinel + 1;  // set to "overflowed"
+   buffer->_curr = buffer->_sentinel;
+   buffer->_type |= MULLE_BUFFER_IS_OVERFLOWN;
 }
 
 
@@ -248,7 +331,11 @@ void   *_mulle__buffer_guarantee( struct mulle__buffer *buffer,
    if( _mulle__buffer_has_overflown( buffer))
       return( NULL);
 
-   missing = &buffer->_curr[ length] - buffer->_sentinel;
+   // when _curr is NULL the buffer is freshly init'd with no storage yet;
+   // we need exactly `length` bytes.  avoid &NULL[length] which is UB.
+   missing = buffer->_curr
+             ? &buffer->_curr[ length] - buffer->_sentinel
+             : (ptrdiff_t) length;
    if( missing > 0)
       if( _mulle__buffer_grow( buffer, (size_t) missing, allocator))
          return( NULL);
@@ -274,7 +361,8 @@ int   _mulle__buffer_flush( struct mulle__buffer *buffer)
 
 
 static size_t   _mulle__buffer_get_new_allocation_length( struct mulle__buffer *buffer,
-                                                          size_t growth)
+                                                           size_t growth,
+                                                           struct mulle_allocator *allocator)
 {
    size_t   plus;
    size_t   new_size;
@@ -294,7 +382,9 @@ static size_t   _mulle__buffer_get_new_allocation_length( struct mulle__buffer *
    {
       new_size  = _mulle__buffer_get_allocation_length( buffer);
       // at least double buffer->size
-      new_size += plus < new_size ? new_size : plus;
+      new_size  = mulle_allocator_size_add( allocator,
+                                            new_size,
+                                            plus < new_size ? new_size : plus);
    }
    return( new_size);
 }
@@ -325,8 +415,9 @@ int   _mulle__buffer_grow( struct mulle__buffer *buffer,
       // this may or may not work, depending on its's being
       if( _mulle__buffer_is_flushable( buffer))
       {
-         // no way we can provide it
-         if( buffer->_size < desired)
+         // no way we can provide it (use pointer-derived capacity, not _size
+      // which may have been overwritten by set_overflown)
+         if( (size_t) (buffer->_sentinel - buffer->_storage) < desired)
             return( -1);
 
          if( _mulle__buffer_flush( buffer))
@@ -346,11 +437,13 @@ int   _mulle__buffer_grow( struct mulle__buffer *buffer,
    // assume realloc is slow enough, to warrant all this code :)
    //
 
-   new_size          = _mulle__buffer_get_new_allocation_length( buffer, growth);
-   len               = buffer->_curr - buffer->_storage;
+   new_size          = _mulle__buffer_get_new_allocation_length( buffer, growth, allocator);
+   len               = buffer->_curr
+                     ? (size_t) (buffer->_curr - buffer->_storage)
+                     : 0;
    p                 = mulle_allocator_realloc( allocator, malloc_block, new_size);
 
-   if( ! malloc_block)
+   if( ! malloc_block && len && buffer->_initial_storage)
       memcpy( p, buffer->_initial_storage, len);
 
    buffer->_storage  = p;
@@ -379,7 +472,7 @@ void   _mulle__buffer_make_inflexible( struct mulle__buffer *buffer,
    buffer->_initial_storage = buf;
 
    buffer->_curr            =
-   buffer->_sentinel        = &buffer->_storage[ length];
+   buffer->_sentinel        = buf ? &buffer->_storage[ length] : NULL;
    buffer->_size            = length;
    buffer->_type            = MULLE_BUFFER_IS_INFLEXIBLE;
 }
@@ -408,34 +501,35 @@ int   _mulle__buffer_set_length( struct mulle__buffer *buffer,
                                  unsigned int options,
                                  struct mulle_allocator *allocator)
 {
-   long   diff;
-   void   *reserved;
+   size_t   cur_length;
+   void     *reserved;
 
-   diff = (long) length - (long) _mulle__buffer_get_length( buffer);
+   cur_length = _mulle__buffer_get_length( buffer);
+
    // shrink ?
-   if( diff <= 0)
+   if( length <= cur_length)
    {
       if( _mulle__buffer_has_overflown( buffer))
       {
          // do we count this i size ? no, people want the max size i bet
          return( -1);
       }
-      if( ! diff)
-         return( -1);
+      if( length == cur_length)
+         return( 0);
 
-      buffer->_curr = &buffer->_curr[ diff];
+      buffer->_curr -= (cur_length - length);
       if( ! (options & 0x1))
          _mulle__buffer_size_to_fit( buffer, allocator);
       return( 0);
    }
 
    // grow
-   reserved = _mulle__buffer_advance( buffer, (size_t) diff, allocator);
+   reserved = _mulle__buffer_advance( buffer, length - cur_length, allocator);
    if( ! reserved)
       return( -1);
 
    if( ! (options & 0x2))
-      memset( reserved, 0, (size_t) diff);
+      memset( reserved, 0, length - cur_length);
    return( 0);
 }
 
@@ -450,7 +544,14 @@ void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
    char   *s;
    char   *sentinel;
 
+   assert( bytes || ! length);
+   // self-append (bytes pointing into the buffer's own storage) is not
+   // supported: growth may reallocate and move the storage, or a flush may
+   // deliver the bytes to the sink, before the copy happens.
    assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, length));
+
+   if( ! length)
+      return;
 
    space = _mulle__buffer_advance( buffer, length, allocator);
    if( space)
@@ -475,12 +576,14 @@ void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
    char           c;
    unsigned char  *s;
 
+   if( _mulle__buffer_self_referencing( buffer, bytes))
+      return;
    assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, strlen( bytes)));
 
    s = buffer->_curr;
    for(;;)
    {
-      if( &s[ 8] > buffer->_sentinel)
+      if( ! s || &s[ 8] > buffer->_sentinel)
       {
          buffer->_curr = s;
 
@@ -517,15 +620,22 @@ size_t   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
 
    prev_length = _mulle__buffer_get_length( buffer);
 
+   if( _mulle__buffer_self_referencing( buffer, bytes))
+      return( 0);
+   assert( bytes || ! maxlength);
    assert( ! _mulle__buffer_intersects_bytes( buffer,
                                               bytes,
                                               _mulle_char_strnlen( bytes, maxlength)));
+
+   if( ! maxlength)
+      return( 0);
+
    remain = maxlength;
    s      = buffer->_curr;
 
    for(;;)
    {
-      if( remain < 8 || &s[ 8] > buffer->_sentinel)
+      if( remain < 8 || ! s || &s[ 8] > buffer->_sentinel)
       {
          buffer->_curr = s;
 
@@ -568,7 +678,13 @@ void   _mulle__buffer_add_c_chars( struct mulle__buffer *buffer,
 {
    char   *sentinel;
 
+   if( _mulle__buffer_self_referencing( buffer, s))
+      return;
+   assert( s || ! length);
    assert( ! _mulle__buffer_intersects_bytes( buffer, s, length));
+
+   if( ! length)
+      return;
 
    sentinel = &s[ length];
    while( s < sentinel)
@@ -583,11 +699,13 @@ void   _mulle__buffer_add_buffer_range( struct mulle__buffer *buffer,
                                         struct mulle_range range,
                                         struct mulle_allocator *allocator)
 {
-   assert( buffer != other);  // you could do it though, but whats the point
-
+   // buffer == other is not supported: add_bytes rejects self-aliasing
    unsigned char   *start;
 
    range = mulle_range_validate_against_length( range, _mulle__buffer_get_length( other));
+   if( ! range.length)
+      return;
+
    start = _mulle__buffer_get_bytes( other);
    start = &start[ range.location];
    _mulle__buffer_add_bytes( buffer, start, range.length, allocator);
@@ -601,6 +719,9 @@ void   _mulle__buffer_copy_range( struct mulle__buffer *buffer,
    unsigned char   *start;
 
    range = mulle_range_validate_against_length( range, _mulle__buffer_get_length( buffer));
+   if( ! range.length)
+      return;
+
    start = _mulle__buffer_get_bytes( buffer);
    start = &start[ range.location];
    memmove( dst, start, range.length);
@@ -622,7 +743,7 @@ void   _mulle__buffer_remove_in_range( struct mulle__buffer *buffer,
    end   = &start[ range.length];
 
    if( end != buffer->_curr)
-      memmove( start, end, buffer->_sentinel - end);
+      memmove( start, end, buffer->_curr - end);
 
    buffer->_curr -= range.length;
 }
@@ -700,7 +821,7 @@ void   _mulle__buffer_add_c_char( struct mulle__buffer *buffer,
    default   :
       ;
    }
-   if( isprint( c))
+   if( isprint( (unsigned char) c))
       _mulle__buffer_add_char( buffer, c, allocator);
    else
       _mulle__buffer_add_octal( buffer, c, allocator);
@@ -713,6 +834,8 @@ void   _mulle__buffer_add_c_string( struct mulle__buffer *buffer,
 {
    char   c;
 
+   if( _mulle__buffer_self_referencing( buffer, bytes))
+      return;
    assert( ! _mulle__buffer_intersects_bytes( buffer, bytes, strlen( bytes)));
 
    _mulle__buffer_add_byte( buffer, '"', allocator);

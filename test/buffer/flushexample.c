@@ -5,6 +5,12 @@
 #include <stdio.h>
 
 
+static size_t   fwrite_stdout( void *buf, size_t one, size_t len, void *userinfo)
+{
+   return( fwrite( buf, one, len, (FILE *) userinfo));
+}
+
+
 static void   example()
 {
    struct mulle_flushablebuffer   _buf;
@@ -14,7 +20,7 @@ static void   example()
    mulle_flushablebuffer_init( &_buf,
                                storage,
                                sizeof( storage),
-                               (mulle_flushablebuffer_flusher_t *) fwrite,
+                               fwrite_stdout,
                                stdout);
 
 
@@ -39,7 +45,7 @@ static void   example2()
    long                           seek;
 
    flush_buf = mulle_flushablebuffer_create( sizeof( storage),
-                                             (mulle_flushablebuffer_flusher_t *) fwrite,
+                                             fwrite_stdout,
                                              stdout,
                                              NULL);
 
@@ -64,7 +70,7 @@ static void   coverage1()
    struct mulle_buffer            *buf;
 
    fbuf = mulle_flushablebuffer_create( 8,
-                                        (mulle_flushablebuffer_flusher_t *) fwrite,
+                                        fwrite_stdout,
                                         stdout,
                                         NULL);
 
@@ -82,9 +88,9 @@ static void   coverage1()
    mulle_buffer_add_string( buf, "1848");
    mulle_buffer_add_char( buf, '\n');
 
-   // as we have overflown this will not be happy
-   if( mulle_flushablebuffer_destroy( fbuf))
-      mulle_buffer_destroy( buf);
+   // as we have overflown this will not be happy, but destroy
+   // still discards the storage and object unconditionally
+   mulle_flushablebuffer_destroy( fbuf);
 }
 
 
