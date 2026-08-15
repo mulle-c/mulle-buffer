@@ -34,9 +34,49 @@ static void   coverage()
 }
 
 
+//
+// the initial capacity contract: `init`'s capacity argument is the first
+// allocation size, and get_capacity reports it before and after materialization
+//
+static int   test_capacity_contract()
+{
+   struct mulle_buffer         buffer;
+   struct mulle_allocator      *allocator;
+   size_t                      capacity;
+
+   allocator = &mulle_stdlib_allocator;
+
+   // reported capacity equals requested capacity before first write
+   mulle_buffer_init( &buffer, 128, allocator);
+   capacity = mulle_buffer_get_capacity( &buffer);
+   if( capacity != 128)
+      return( 1);
+   // first allocation is the requested capacity, so reported capacity
+   // stays 128 after materialization
+   mulle_buffer_add_byte( &buffer, 'V');
+   capacity = mulle_buffer_get_capacity( &buffer);
+   if( capacity != 128)
+      return( 2);
+   mulle_buffer_done( &buffer);
+
+   // default init uses MULLE_BUFFER_DEFAULT_CAPACITY as the first allocation
+   mulle_buffer_init_default( &buffer);
+   capacity = mulle_buffer_get_capacity( &buffer);
+   if( capacity != MULLE_BUFFER_DEFAULT_CAPACITY)
+      return( 3);
+   mulle_buffer_add_byte( &buffer, 'f');
+   capacity = mulle_buffer_get_capacity( &buffer);
+   if( capacity != MULLE_BUFFER_DEFAULT_CAPACITY)
+      return( 4);
+   mulle_buffer_done( &buffer);
+
+   return( 0);
+}
+
+
 int  main()
 {
    coverage();
-   return( 0);
+   return( test_capacity_contract());
 }
 

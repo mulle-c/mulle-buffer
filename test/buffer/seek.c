@@ -45,7 +45,7 @@ static void   test_seek()
       printf( "%.*s\n", (int) mulle_buffer_get_length( buffer),
                         (char *) mulle_buffer_get_bytes( buffer));
 
-      rc = mulle_buffer_set_seek( buffer, 1, MULLE_BUFFER_SEEK_END);
+      rc = mulle_buffer_set_seek( buffer, -1, MULLE_BUFFER_SEEK_END);
       assert( ! rc);
       mulle_buffer_add_string( buffer, "Z");
       printf( "%.*s\n", (int) mulle_buffer_get_length( buffer),

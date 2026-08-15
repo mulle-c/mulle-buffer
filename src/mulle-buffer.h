@@ -44,6 +44,30 @@
 #include "mulle--buffer.h"
 
 
+// ## Contract (read this first)
+//
+// `mulle_buffer` is an append-first byte builder, not a general file-like
+// stream. Everything below follows from that:
+//
+// - Writing is the primary operation; reading is a secondary convenience.
+// - The buffer has a single cursor used for writing, reading, and seeking.
+// - Seeking changes the logical length (`mulle_buffer_get_length` follows
+//   the cursor).
+// - `MULLE_BUFFER_SEEK_END` is relative to the allocation capacity, not the
+//   written length.
+// - Reads consume the same cursor used for writing.
+// - Allocation uses a mulle allocator under the no-fail allocator contract:
+//   it never returns `NULL`.
+// - Write functions are intentionally `void`; failure is reported through
+//   `mulle_buffer_has_overflown`.
+// - Callers must check `mulle_buffer_has_overflown` after writing to a
+//   fixed-size or flushable buffer.
+// - const/read-only buffers must not be written and write-only buffers must
+//   not be read; both are enforced by assertions in debug builds.
+// - Self-aliasing (appending a slice of the buffer's own storage) is not
+//   supported.
+
+
 // stupidities to fix:
 // all non "_" prefixed functions should check for NULL buffer
 // inline code from mulle--buffer that is too large should be called from
@@ -66,6 +90,8 @@
 //
 // This is like a possibly growing memory block (->NSData)
 //
+// **NOT THREAD-SAFE**: All instances must be used from a single thread.
+//
 struct mulle_buffer
 {
    MULLE_BUFFER_BASE;
@@ -73,10 +99,12 @@ struct mulle_buffer
 
 
 //
-// This define is 2 * sizeof( mulle_buffer) in 64 bit, which is what
-// we use in mulle_buffer_do as default stack capacity
+// Default capacity for heap-initialized buffers (mulle_buffer_init_default,
+// mulle_buffer_create_default) and the guaranteed minimum stack backing for
+// mulle_buffer_do. Chosen as a power of two, large enough for a line of text
+// and most small string operations without hitting the heap.
 //
-#define MULLE_BUFFER_DEFAULT_CAPACITY  96
+#define MULLE_BUFFER_DEFAULT_CAPACITY  128
 
 // value added by mulle-buffer
 // as we override assert for testing, these tests can only be done in the
@@ -123,6 +151,17 @@ enum
 })
 
 
+/**
+ * Single-evaluation variant of `MULLE_BUFFER_DATA` for use by the
+ * `mulle_buffer_do_*` macros. `allocator` is evaluated exactly once, so
+ * expressions with side effects are safe.
+ */
+static inline struct mulle_buffer   _mulle_buffer_data( struct mulle_allocator *allocator)
+{
+   return( MULLE_BUFFER_DATA( allocator));
+}
+
+
 //   unsigned char   *_storage;
 //   unsigned char   *_curr;
 //   unsigned char   *_sentinel;
@@ -150,17 +189,39 @@ enum
  *                  be used.
  * @return A new `mulle_buffer` instance initialized with the provided data.
  */
+// MULLE_BUFFER_FLEXIBLE_DATA is a compound literal initializer. It exists for
+// static/global data-section variables (and other constant-expression
+// contexts), where a function call is not allowed. It evaluates `data`, `len`
+// and `allocator` more than once, so it accepts only side-effect-free
+// expressions.
+//
+// Inside actual code, use the single-evaluation static inline wrapper
+// `_mulle_buffer_flexible_data` (or the `mulle_buffer_do_*` macros), which
+// evaluate their arguments exactly once.
 #define MULLE_BUFFER_FLEXIBLE_DATA( data, len, allocator)          \
    ((struct mulle_buffer)                                          \
    {                                                               \
       (unsigned char *) data,                                      \
       (unsigned char *) data,                                      \
-      &((unsigned char *) data)[ (len)],                           \
+      data ? &((unsigned char *) data)[ (len)] : NULL,             \
       (unsigned char *) data,                                      \
       (len),                                                       \
       MULLE_BUFFER_IS_FLEXIBLE,                                    \
       allocator ? allocator : &mulle_default_allocator             \
    })
+
+
+/**
+ * Single-evaluation variant of `MULLE_BUFFER_FLEXIBLE_DATA` for use by the
+ * `mulle_buffer_do_*` macros. `data`, `len` and `allocator` are evaluated
+ * exactly once, so expressions with side effects are safe.
+ */
+static inline struct mulle_buffer   _mulle_buffer_flexible_data( void *data,
+                                                                 size_t len,
+                                                                 struct mulle_allocator *allocator)
+{
+   return( MULLE_BUFFER_FLEXIBLE_DATA( data, len, allocator));
+}
 
 
 /**
@@ -179,17 +240,32 @@ enum
  *                  be used.
  * @return A new `mulle_buffer` instance initialized with the provided data.
  */
+// Same caveat as `MULLE_BUFFER_FLEXIBLE_DATA`: for static data-section
+// initialization only; use `_mulle_buffer_flexible_filled_data` in code.
 #define MULLE_BUFFER_FLEXIBLE_FILLED_DATA( data, len, allocator)   \
    ((struct mulle_buffer)                                          \
    {                                                               \
       (unsigned char *) data,                                      \
-      &((unsigned char *) data)[ (len)],                           \
-      &((unsigned char *) data)[ (len)],                           \
+      data ? &((unsigned char *) data)[ (len)] : NULL,             \
+      data ? &((unsigned char *) data)[ (len)] : NULL,             \
       (unsigned char *) data,                                      \
       (len),                                                       \
       MULLE_BUFFER_IS_FLEXIBLE,                                    \
       allocator ? allocator : &mulle_default_allocator             \
    })
+
+
+/**
+ * Single-evaluation variant of `MULLE_BUFFER_FLEXIBLE_FILLED_DATA` for use by
+ * the `mulle_buffer_do_*` macros. `data`, `len` and `allocator` are evaluated
+ * exactly once, so expressions with side effects are safe.
+ */
+static inline struct mulle_buffer   _mulle_buffer_flexible_filled_data( void *data,
+                                                                       size_t len,
+                                                                       struct mulle_allocator *allocator)
+{
+   return( MULLE_BUFFER_FLEXIBLE_FILLED_DATA( data, len, allocator));
+}
 
 
 /**
@@ -207,17 +283,32 @@ enum
  *                  not `NULL`, the data will be freed on done.
  * @return A new `mulle_buffer` instance initialized with the provided data.
  */
+// Same caveat as `MULLE_BUFFER_FLEXIBLE_DATA`: for static data-section
+// initialization only; use `_mulle_buffer_inflexible_data` in code.
 #define MULLE_BUFFER_INFLEXIBLE_DATA( data, len, allocator)        \
    ((struct mulle_buffer)                                          \
    {                                                               \
       (unsigned char *) data,                                      \
       (unsigned char *) data,                                      \
-      &((unsigned char *) data)[ (len)],                           \
+      data ? &((unsigned char *) data)[ (len)] : NULL,             \
       (unsigned char *) data,                                      \
       (len),                                                       \
       MULLE_BUFFER_IS_INFLEXIBLE,                                  \
       allocator                                                    \
    })
+
+
+/**
+ * Single-evaluation variant of `MULLE_BUFFER_INFLEXIBLE_DATA` for use by the
+ * `mulle_buffer_do_*` macros. `data`, `len` and `allocator` are evaluated
+ * exactly once, so expressions with side effects are safe.
+ */
+static inline struct mulle_buffer   _mulle_buffer_inflexible_data( void *data,
+                                                                  size_t len,
+                                                                  struct mulle_allocator *allocator)
+{
+   return( MULLE_BUFFER_INFLEXIBLE_DATA( data, len, allocator));
+}
 
 
 /**
@@ -239,17 +330,32 @@ enum
 // we take some static data, but we assume its already filled
 // with data.
 //
+// Same caveat as `MULLE_BUFFER_FLEXIBLE_DATA`: for static data-section
+// initialization only; use `_mulle_buffer_inflexible_filled_data` in code.
 #define MULLE_BUFFER_INFLEXIBLE_FILLED_DATA( data, len, allocator)  \
    ((struct mulle_buffer)                                           \
    {                                                                \
       (unsigned char *) data,                                       \
-      &((unsigned char *) data)[ (len)],                            \
-      &((unsigned char *) data)[ (len)],                            \
+      data ? &((unsigned char *) data)[ (len)] : NULL,            \
+      data ? &((unsigned char *) data)[ (len)] : NULL,            \
       (unsigned char *) data,                                       \
       (len),                                                        \
       MULLE_BUFFER_IS_INFLEXIBLE,                                   \
       allocator                                                     \
    })
+
+
+/**
+ * Single-evaluation variant of `MULLE_BUFFER_INFLEXIBLE_FILLED_DATA` for use by
+ * the `mulle_buffer_do_*` macros. `data`, `len` and `allocator` are evaluated
+ * exactly once, so expressions with side effects are safe.
+ */
+static inline struct mulle_buffer   _mulle_buffer_inflexible_filled_data( void *data,
+                                                                         size_t len,
+                                                                         struct mulle_allocator *allocator)
+{
+   return( MULLE_BUFFER_INFLEXIBLE_FILLED_DATA( data, len, allocator));
+}
 
 
 
@@ -277,10 +383,20 @@ static inline struct mulle__buffer   *
  * instance. If no allocator was provided when the buffer was created, the default
  * allocator `mulle_default_allocator` is returned.
  *
+ * A `NULL` return value is intentional: a buffer initialized over static or
+ * `const` storage (see `mulle_buffer_do_inflexible`) has no allocator, which
+ * means the buffer does not own its storage and must not free it.
+ *
+ * The returned allocator is subject to the no-fail allocator contract: it must
+ * never return `NULL` from an allocation. `mulle-buffer` is intentionally
+ * no-fail with respect to allocation; supplying a conforming mulle allocator
+ * is a precondition of the API.
+ *
  * @param buffer The `mulle_buffer` instance to get the allocator for.
- * @return The allocator associated with the `mulle_buffer` instance.
+ * @return The allocator associated with the `mulle_buffer` instance, or NULL if
+ *         the buffer was created over static storage and owns no allocator.
  */
-MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
+static inline struct mulle_allocator  *
    mulle_buffer_get_allocator( struct mulle_buffer *buffer)
 {
    if( ! buffer)
@@ -302,6 +418,11 @@ MULLE_C_NONNULL_RETURN static inline struct mulle_allocator  *
  * provided `mulle_allocator`. If no allocator is provided, the default allocator
  * `mulle_default_allocator` will be used.
  *
+ * The allocator is subject to the no-fail allocator contract: it must never
+ * return `NULL` from an allocation. `mulle-buffer` is intentionally no-fail
+ * with respect to allocation; supplying a conforming mulle allocator is a
+ * precondition of the API.
+ *
  * @param allocator The allocator to use for the buffer's storage, or NULL to use the default allocator.
  * @return A new `mulle_buffer` instance.
  */
@@ -320,6 +441,11 @@ static inline struct mulle_buffer   *mulle_buffer_alloc( struct mulle_allocator 
  * This function creates a new `mulle_buffer` instance and initializes it with the
  * provided `mulle_allocator`. If no allocator is provided, the default allocator
  * `mulle_default_allocator` will be used.
+ *
+ * The allocator is subject to the no-fail allocator contract: it must never
+ * return `NULL` from an allocation. `mulle-buffer` is intentionally no-fail
+ * with respect to allocation; supplying a conforming mulle allocator is a
+ * precondition of the API.
  *
  * @param allocator The allocator to use for the buffer's storage, or NULL to use the default allocator.
  * @return A new `mulle_buffer` instance.
@@ -340,8 +466,10 @@ struct mulle_buffer   *mulle_buffer_create( struct mulle_allocator *allocator);
  * Destroys a buffer and releases any resources it holds.
  *
  * This function destroys a `mulle_buffer` and releases any resources it holds,
- * such as the memory region used for its storage. It is safe to call this function
- * even if the buffer has not been initialized.
+ * such as the memory region used for its storage. It also frees the
+ * `struct mulle_buffer` object itself, so it must only be used on a buffer
+ * allocated by `mulle_buffer_create`. For an embedded or stack-allocated
+ * buffer, use `mulle_buffer_done` instead.
  *
  * @param buffer The buffer to destroy.
  */
@@ -359,8 +487,11 @@ static inline void   mulle_buffer_destroy( struct mulle_buffer *buffer)
  * Finalizes a buffer and releases any resources it holds.
  *
  * This function finalizes a `mulle_buffer` and releases any resources it holds,
- * such as the memory region used for its storage. It is safe to call this function
- * even if the buffer has not been initialized.
+ * such as the memory region used for its storage. It is safe to call this
+ * function on a buffer that was not initialized, as long as it is
+ * zero-initialized (a static/global variable, `calloc`ed memory, or an
+ * Objective-C ivar). An uninitialized automatic `struct mulle_buffer` has
+ * indeterminate field values and must be initialized first.
  *
  * @param buffer The buffer to finalize.
  */
@@ -415,8 +546,14 @@ static inline void
                                            size_t length,
                                            struct mulle_allocator *allocator)
 {
-   if( ! buffer || ! storage)
+   if( ! buffer)
       return;
+
+   // NULL storage with a non-zero length is invalid: in a debug build this
+   // is a hard precondition. In a release build the object is still
+   // initialized to a valid, empty flexible buffer, so a later `done` is
+   // always well-defined.
+   assert( storage || ! length);
 
    _mulle__buffer_init_with_allocated_bytes( (struct mulle__buffer *) buffer,
                                             storage,
@@ -449,8 +586,14 @@ static inline void
                                         size_t length,
                                         struct mulle_allocator *allocator)
 {
-   if( ! buffer || ! storage)
+   if( ! buffer)
       return;
+
+   // NULL storage with a non-zero length is invalid: in a debug build this
+   // is a hard precondition. In a release build the object is still
+   // initialized to a valid, empty flexible buffer, so a later `done` is
+   // always well-defined.
+   assert( storage || ! length);
 
    _mulle__buffer_init_with_static_bytes( (struct mulle__buffer *) buffer, storage, length);
    mulle_buffer_set_allocator( buffer, allocator);
@@ -464,6 +607,11 @@ static inline void
  * This function initializes a `mulle_buffer` with the desired initial capacity
  * that can be expanded as needed. The buffer will be allocated using the
  * provided `mulle_allocator` when the need arises.
+ *
+ * The allocator is subject to the no-fail allocator contract: it must never
+ * return `NULL` from an allocation. `mulle-buffer` is intentionally no-fail
+ * with respect to allocation; supplying a conforming mulle allocator is a
+ * precondition of the API.
  *
  * @param buffer The buffer to initialize.
  * @param capacity
@@ -503,7 +651,7 @@ static inline void   mulle_buffer_init_with_capacity( struct mulle_buffer *buffe
  * @param buffer The buffer to initialize.
  */
 #define mulle_buffer_init_default( buffer) \
-   mulle_buffer_init( buffer, 128, NULL)
+   mulle_buffer_init( buffer, MULLE_BUFFER_DEFAULT_CAPACITY, NULL)
 
 
 /**
@@ -529,10 +677,19 @@ static inline void   mulle_buffer_init_inflexible_with_static_bytes( struct mull
    if( ! buffer)
       return;
 
+   // NULL storage with a non-zero length is invalid: in a debug build this
+   // is a hard precondition. In a release build the underlying initializer
+   // still produces a safe, empty fixed-size buffer.
+   assert( storage || ! length);
+
    _mulle__buffer_init_inflexible_with_static_bytes( (struct mulle__buffer *) buffer,
                                                      storage,
                                                      length);
-   mulle_buffer_set_allocator( buffer, NULL);
+
+   // the storage belongs to the caller, so there is no allocator associated
+   // with this buffer (mulle_buffer_get_allocator will return NULL). this is
+   // consistent with mulle_buffer_do_inflexible and init_with_const_bytes.
+   buffer->_allocator = NULL;
 }
 
 
@@ -624,6 +781,11 @@ static inline void   mulle_buffer_make_inflexible( struct mulle_buffer *buffer,
    if( ! buffer)
       return;
 
+   // NULL storage with a non-zero length is invalid: in a debug build this
+   // is a hard precondition. In a release build the underlying code still
+   // produces a safe, empty fixed-size buffer.
+   assert( storage || ! length);
+
    _mulle__buffer_make_inflexible( (struct mulle__buffer *) buffer,
                                    storage,
                                    length,
@@ -679,8 +841,17 @@ static inline int   mulle_buffer_set_length( struct mulle_buffer *buffer,
 /**
  * Extracts the data from the buffer and returns it.
  *
+ * The caller takes ownership of the returned bytes and must free them with
+ * the same allocator the buffer used (`mulle_buffer_get_allocator`). The
+ * buffer is consumed: it is left empty with no backing storage and must be
+ * re-initialized (`mulle_buffer_reset` / `mulle_buffer_init_*`) before reuse.
+ *
+ * If the buffer is empty, the returned `mulle_data` has `bytes == NULL` and
+ * `length == 0`, and the buffer is still left empty with no backing storage.
+ *
  * @param buffer The buffer to extract the data from.
- * @return The data from the buffer, or an invalid mulle_data struct if the buffer is NULL.
+ * @return The data from the buffer, or an invalid mulle_data struct if the
+ *         buffer is NULL.
  */
 static inline struct mulle_data   mulle_buffer_extract_data( struct mulle_buffer *buffer)
 {
@@ -694,6 +865,15 @@ static inline struct mulle_data   mulle_buffer_extract_data( struct mulle_buffer
 
 /**
  * Extracts the string from the buffer and returns it.
+ *
+ * The buffer content is made a zero-terminated C string first, then handed to
+ * the caller. The caller owns the returned string and must free it with the
+ * same allocator the buffer used (`mulle_buffer_get_allocator`). The buffer
+ * is consumed: it is left empty with no backing storage and must be
+ * re-initialized before reuse.
+ *
+ * If the buffer is empty, `NULL` is returned and the buffer is still left
+ * empty with no backing storage.
  *
  * @param buffer The buffer to extract the string from.
  * @return The string from the buffer, or NULL if the buffer is NULL.
@@ -712,6 +892,11 @@ static inline void   *mulle_buffer_extract_string( struct mulle_buffer *buffer)
 
 /**
  * Extracts the bytes from the buffer and returns them.
+ *
+ * Same ownership and reuse contract as `mulle_buffer_extract_data`, returning
+ * only the bytes pointer. The caller owns the returned bytes and must free
+ * them with the same allocator the buffer used; the buffer is consumed and
+ * must be re-initialized before reuse. An empty buffer returns `NULL`.
  *
  * @param buffer The buffer to extract the bytes from.
  * @return The bytes from the buffer, or NULL if the buffer is NULL.
@@ -797,6 +982,11 @@ static inline void   *mulle_buffer_get_bytes( struct mulle_buffer *buffer)
 /**
  * Returns the buffer contents as a null-terminated string.
  *
+ * Despite the accessor-like name, this is a mutating operation: it appends a
+ * NUL terminator and may grow the buffer's storage to fit it. It is therefore
+ * only valid on writeable buffers and is not a read-only operation on a
+ * read-only buffer.
+ *
  * @param buffer The buffer to get the string from.
  * @return The buffer contents as a null-terminated string, or NULL if the buffer is invalid.
  */
@@ -860,15 +1050,25 @@ static inline size_t
 /**
  * Sets the seek position of the buffer.
  *
+ * `seek` is of type `long`, which is 32 bit on platforms with the LLP64 model
+ * (e.g. Windows). Seek positions ≥ 2 GB truncate on those platforms. Use
+ * `mulle_buffer_lseek` with `off_t` for large-buffer safety.
+ *
+ * `MULLE_BUFFER_SEEK_END` is relative to the end of the *allocation*, not the
+ * written length: offset `0` seeks to the end of the capacity and negative
+ * offsets seek towards the start. The new position is `capacity + offset`.
+ * This mirrors the POSIX `lseek` semantics used by `mulle_buffer_lseek`.
+ *
  * @param buffer The buffer to set the seek position for.
  * @param seek The seek position, relative to the mode.
  * @param mode The seek mode, one of SEEK_SET, SEEK_CUR, or SEEK_END.
- * @return The new seek position, or 0 if the buffer is invalid.
+ * @return 0 on success, or -1 on failure (invalid buffer, flushable, or
+ *         out-of-range). Use `mulle_buffer_lseek` to obtain the new position.
  */
 static inline int    mulle_buffer_set_seek( struct mulle_buffer *buffer, long seek, int mode)
 {
    if( ! buffer)
-      return( 0);
+      return( -1);
 
    return( _mulle__buffer_set_seek( (struct mulle__buffer *) buffer, seek, mode));
 }
@@ -876,6 +1076,10 @@ static inline int    mulle_buffer_set_seek( struct mulle_buffer *buffer, long se
 
 /**
  * Returns the current seek position of the buffer.
+ *
+ * The return type is `long`. On LLP64 platforms such as Windows, `long` is 32
+ * bit and positions ≥ 2 GB truncate. Use `mulle_buffer_get_lseek` for `off_t`
+ * positions.
  *
  * @param buffer The buffer to get the seek position from.
  * @return The current seek position of the buffer, or 0 if the buffer is invalid.
@@ -886,6 +1090,53 @@ static inline long   mulle_buffer_get_seek( struct mulle_buffer *buffer)
       return( 0);
 
    return( _mulle__buffer_get_seek( (struct mulle__buffer *) buffer));
+}
+
+
+/**
+ * Returns the current seek position of the buffer as an `off_t`.
+ *
+ * This is the `off_t` variant of `mulle_buffer_get_seek`. Its value does not
+ * truncate positions >= 2 GB on platforms where `long` is 32 bit (e.g. Windows).
+ *
+ * @param buffer The buffer to get the seek position from.
+ * @return The current seek position of the buffer, or -1 if the buffer is invalid.
+ */
+static inline off_t   mulle_buffer_get_lseek( struct mulle_buffer *buffer)
+{
+   if( ! buffer)
+      return( (off_t) -1);
+
+   return( _mulle__buffer_get_lseek( (struct mulle__buffer *) buffer));
+}
+
+
+/**
+ * Sets the seek position of the buffer, returning the new position.
+ *
+ * This is the `off_t` variant of `mulle_buffer_set_seek`, mirroring POSIX
+ * lseek(2). `MULLE_BUFFER_SEEK_END` is relative to the end of the buffer:
+ * offset `0` seeks to the end, negative offsets seek towards the beginning,
+ * and positive offsets would seek past the end (which fails). The new
+ * position is `length + offset` where `length` is the buffer capacity.
+ *
+ * @param buffer The buffer to set the seek position for.
+ * @param offset The seek offset, relative to the mode.
+ * @param mode The seek mode, one of MULLE_BUFFER_SEEK_SET, MULLE_BUFFER_SEEK_CUR,
+ *             or MULLE_BUFFER_SEEK_END.
+ * @return The new seek position, or -1 on failure (invalid buffer, flushable, or
+ *         out-of-range).
+ */
+static inline off_t   mulle_buffer_lseek( struct mulle_buffer *buffer,
+                                          off_t offset,
+                                          int mode)
+{
+   if( ! buffer)
+      return( (off_t) -1);
+
+   return( _mulle__buffer_lseek( (struct mulle__buffer *) buffer,
+                                 offset,
+                                 mode));
 }
 
 
@@ -956,7 +1207,7 @@ static inline void   mulle_buffer_copy_range( struct mulle_buffer *buffer,
    if( ! buffer || ! dst)
       return;
 
-   mulle_buffer_assert_writeable( buffer);
+   mulle_buffer_assert_readable( buffer);
 
    _mulle__buffer_copy_range( (struct mulle__buffer *) buffer,
                               range,
@@ -1072,18 +1323,55 @@ static inline int   mulle_buffer_is_void( struct mulle_buffer *buffer)
 
 
 /**
- * Checks if the buffer has overflown, i.e. its capacity has been exceeded.
+ * Checks if the buffer has overflown, i.e. an operation could not be
+ * completed.
+ *
+ * This is the official write contract of the library: write functions are
+ * `void`, so a failed operation reports itself by setting this sticky flag.
+ * The flag is set exactly when:
+ *
+ * - a fixed-size (inflexible) buffer runs out of capacity and has to
+ *   truncate content;
+ * - a flushable buffer's flusher reports a short write (failed flush);
+ * - a string add function (`mulle_buffer_add_string`, `add_string_with_maxlength`,
+ *   `add_c_chars`, `add_c_string`) is given a source that points into the
+ *   buffer's own storage (self-reference);
+ * - `mulle_buffer_flush` is called on a non-flushable buffer.
+ *
+ * In debug builds, violations of the read-only/write-only mode contract and
+ * self-aliasing in `mulle_buffer_add_bytes` additionally trip assertions, so
+ * invalid operations surface early during development.
+ *
+ * The overflow state is sticky: once set it can not be cleared with
+ * `mulle_buffer_remove_all`. The buffer keeps its pre-overflow content, and
+ * further write operations become no-ops. It can only be reused by
+ * re-initializing it with `mulle_buffer_reset` or `mulle_buffer_done` + init.
+ * Use `mulle_buffer_return_if_overflown` to apply the official check pattern.
  *
  * @param buffer The buffer to check.
- * @return 1 if the buffer has overflown, 0 otherwise.
+ * @return 1 if the buffer has overflown, 0 otherwise. A NULL buffer is
+ *         considered to have overflown and returns 1.
  */
 static inline int   mulle_buffer_has_overflown( struct mulle_buffer *buffer)
 {
    if( ! buffer)
-      return( 1);  // or 0 ?
+      return( 1);
 
    return( _mulle__buffer_has_overflown( (struct mulle__buffer *) buffer));
 }
+
+
+//
+// Convenience for the official write contract: after a series of `void`
+// writes, return `rval` as soon as the buffer has overflown.
+//
+#define mulle_buffer_return_if_overflown( buffer, rval)  \
+   do                                                    \
+   {                                                     \
+      if( mulle_buffer_has_overflown( buffer))           \
+         return( rval);                                  \
+   }                                                     \
+   while( 0)
 
 
 /**
@@ -1232,13 +1520,15 @@ static inline int    mulle_buffer_pop_byte( struct mulle_buffer *buffer)
  * Adds a single character to the buffer.
  *
  * This function adds the given character `c` to the end of the buffer. If the
- * buffer is `NULL`, this function does nothing.
+ * buffer is `NULL`, this function does nothing. `c` is expected to be within the
+ * range `CHAR_MIN`..`CHAR_MAX` (asserted in debug builds). Use
+ * `mulle_buffer_add_byte` to append arbitrary byte values.
  *
  * @param buffer The buffer to add the character to.
  * @param c The character to add to the buffer.
  */
 static inline void   mulle_buffer_add_char( struct mulle_buffer *buffer,
-                                                 int c)
+                                                  int c)
 {
    if( ! buffer)
       return;
@@ -1251,53 +1541,6 @@ static inline void   mulle_buffer_add_char( struct mulle_buffer *buffer,
 }
 
 
-/**
- * Adds a 16-bit unsigned integer to the buffer.
- *
- * This function adds the given 16-bit unsigned integer `c` to the end of the
- * buffer. If the buffer is `NULL`, this function does nothing.
- *
- * @param buffer The buffer to add the integer to.
- * @param c The 16-bit unsigned integer to add to the buffer.
- */
-static inline void   mulle_buffer_add_uint16( struct mulle_buffer *buffer,
-                                              uint16_t c)
-{
-   if( ! buffer)
-      return;
-
-   mulle_buffer_assert_writeable( buffer);
-
-
-   _mulle__buffer_add_uint16( (struct mulle__buffer *) buffer,
-                              c,
-                              mulle_buffer_get_allocator( buffer));
-}
-
-
-/**
- * Adds a 32-bit unsigned integer to the buffer.
- *
- * This function adds the given 32-bit unsigned integer `c` to the end of the
- * buffer. If the buffer is `NULL`, this function does nothing.
- *
- * @param buffer The buffer to add the integer to.
- * @param c The 32-bit unsigned integer to add to the buffer.
- */
-static inline void   mulle_buffer_add_uint32( struct mulle_buffer *buffer,
-                                              uint32_t c)
-{
-   if( ! buffer)
-      return;
-
-   mulle_buffer_assert_writeable( buffer);
-
-   _mulle__buffer_add_uint32( (struct mulle__buffer *) buffer,
-                              c,
-                              mulle_buffer_get_allocator( buffer));
-}
-
-
 #pragma mark - add memory ranges
 
 
@@ -1305,7 +1548,12 @@ static inline void   mulle_buffer_add_uint32( struct mulle_buffer *buffer,
  * Adds a byte array to the buffer.
  *
  * This function adds the given byte array `bytes` of length `length` to the end
- * of the buffer. If the buffer is `NULL`, this function does nothing.
+ * of the buffer. If the buffer is `NULL`, this function does nothing. `bytes`
+ * must not be `NULL`.
+ *
+ * `bytes` must not point into the buffer's own storage: self-append is not
+ * supported. The copy happens after the buffer may have grown (and moved)
+ * its storage or flushed it to a sink, so the source would be stale.
  *
  * @param buffer The buffer to add the byte array to.
  * @param bytes The byte array to add to the buffer.
@@ -1362,11 +1610,11 @@ void   mulle_buffer_add_bytes_callback( void *buffer,
 /**
  * Adds a C string to the buffer.
  *
- * This function adds the given C string `bytes` to the end of the buffer. If the
- * buffer is `NULL`, this function does nothing.
+* This function adds the given C string `s` to the end of the buffer. If the
+ * buffer is `NULL`, this function does nothing. `s` must not be `NULL`.
  *
- * @param buffer The buffer to add the C string to.
- * @param bytes The C string to add to the buffer.
+ * @param buffer The buffer to add the string to.
+ * @param s The C string to add to the buffer.
  */
 static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
                                               char *s)
@@ -1629,11 +1877,14 @@ static inline void   mulle_buffer_memset( struct mulle_buffer *buffer,
  * Zeros the last byte of the buffer.
  *
  * This function sets the last byte of the buffer to zero. If the buffer is `NULL`
- * or empty, this function returns -1, otherwise it returns 0.
+ * it returns -1. Note that on an empty (but allocated) buffer this writes a zero
+ * byte at the first position without advancing the length.
  *
  * @param buffer The buffer to zero the last byte of.
- * @return 0 if the last byte was zeroed successfully, -1 if the buffer is `NULL`
- *         or empty.
+ * @return -1 if the buffer is `NULL`, 0 if the last byte was zeroed without loss,
+ *         1 if the buffer was full and the last byte was overwritten with a zero
+ *         (lossy, potentially corrupting multi-byte UTF-8), 2 if the buffer is void
+ *         (no storage).
  */
 static inline int   mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
 {
@@ -1748,7 +1999,7 @@ void   mulle_buffer_reset( struct mulle_buffer *buffer);
  * @return The byte or -1, if the buffer or index is invalid.
  */
 static inline int   mulle_buffer_get_byte( struct mulle_buffer *buffer,
-                                           unsigned int index)
+                                           size_t index)
 {
    if( ! buffer)
       return( -1);
@@ -1881,14 +2132,15 @@ static inline int   mulle_buffer_next_character( struct mulle_buffer *buffer)
 /**
  * Seeks for the next occurrence of the specified byte in the buffer.
  *
- * This function searches the buffer for the next occurrence of the specified byte
- * and returns the position of the byte relative to the start of the buffer. If the
- * byte is not found, it returns -1.
+ * This function searches the buffer forward from the current seek position for
+ * the next occurrence of the specified byte. If found, it moves the seek
+ * position to the byte and returns 0. If the byte is not found (or the buffer
+ * has overflown), it returns -1 and leaves the seek position unchanged.
  *
  * @param buffer The buffer to search.
  * @param byte The byte to search for.
- * @return The position of the next occurrence of the byte in the buffer, or -1 if
- *         the byte is not found.
+ * @return 0 if the byte was found and the seek position advanced to it, or -1 if
+ *         the byte is not found, the buffer is invalid, or the buffer has overflown.
  */
 static inline long   mulle_buffer_seek_byte( struct mulle_buffer *buffer,
                                              unsigned char byte)
@@ -2072,7 +2324,7 @@ MULLE_C_DEPRECATED static inline void
  */
 #define mulle_buffer_do_string( name, allocator, s)               \
    for( struct mulle_buffer                                       \
-           name ## __storage = MULLE_BUFFER_DATA( allocator),     \
+           name ## __storage = _mulle_buffer_data( allocator),    \
            *name = &name ## __storage,                            \
            *name ## __i = NULL;                                   \
                                                                   \
@@ -2109,13 +2361,13 @@ MULLE_C_DEPRECATED static inline void
 
 #define mulle_buffer_do( name)                                                              \
    for( struct mulle_buffer                                                                 \
-          name ## __alloca[ _mulle_buffer_chars_to_struct( MULLE_BUFFER_DEFAULT_CAPACITY)], \
-          name ## __storage = MULLE_BUFFER_FLEXIBLE_DATA( name ## __alloca,                 \
-                                                          sizeof( name ## __alloca),        \
-                                                          NULL),                            \
-          *name = &name ## __storage,                                                       \
-          *name ## __i = NULL;                                                              \
-        ! name ## __i;                                                                      \
+           name ## __alloca[ _mulle_buffer_chars_to_struct( MULLE_BUFFER_DEFAULT_CAPACITY)], \
+           name ## __storage = _mulle_buffer_flexible_data( name ## __alloca,               \
+                                                           sizeof( name ## __alloca),       \
+                                                           NULL),                           \
+           *name = &name ## __storage,                                                       \
+           *name ## __i = NULL;                                                              \
+         ! name ## __i;                                                                      \
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)               \
       )                                                                                     \
                                                                                             \
@@ -2141,32 +2393,33 @@ MULLE_C_DEPRECATED static inline void
 //
 #define mulle_buffer_do_allocator( name, allocator)                                        \
    for( struct mulle_buffer                                                                \
-          name ## __alloca[ _mulle_buffer_chars_to_struct(MULLE_BUFFER_DEFAULT_CAPACITY)], \
-          name ## __storage = MULLE_BUFFER_FLEXIBLE_DATA( name ## __alloca,                \
-                                                          sizeof( name ## __alloca),       \
-                                                          allocator),                      \
-          *name = &name ## __storage,                                                      \
-          *name ## __i = NULL;                                                             \
-        ! name ## __i;                                                                     \
-        name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)              \
-      )                                                                                    \
-                                                                                           \
-      MULLE_C_CONFINED_LOOP                                                                \
-      for( int  name ## __j = 0;    /* break protection */                                 \
-           name ## __j < 1;                                                                \
-           name ## __j++)
+           name ## __alloca[ _mulle_buffer_chars_to_struct(MULLE_BUFFER_DEFAULT_CAPACITY)], \
+           name ## __storage = _mulle_buffer_flexible_data( name ## __alloca,              \
+                                                           sizeof( name ## __alloca),      \
+                                                           allocator),                     \
+           *name = &name ## __storage,                                                      \
+           *name ## __i = NULL;                                                             \
+         ! name ## __i;                                                                     \
+         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)              \
+       )                                                                                    \
+                                                                                            \
+       MULLE_C_CONFINED_LOOP                                                                \
+       for( int  name ## __j = 0;    /* break protection */                                 \
+            name ## __j < 1;                                                                \
+            name ## __j++)
 
 /**
- * Safely creates and uses a `mulle_buffer` that is already filled with a fixed amount of data.
+ * Safely creates and uses a `mulle_buffer` backed by user-provided storage.
  *
- * This macro creates a `mulle_buffer` that is initialized with the provided
- * `data` and `len` parameters. The buffer cannot be modified, but can be read
- * from. The macro ensures that the `mulle_buffer` is properly cleaned up before
+ * This macro creates a `mulle_buffer` that uses `data` of size `len` as its
+ * initial storage. The buffer starts empty and can be written to. If the
+ * content exceeds `len`, the buffer will malloc additional storage.
+ * The macro ensures that the `mulle_buffer` is properly cleaned up before
  * exiting the block.
  *
  * @param name The name of the `mulle_buffer` variable to be used in the block.
- * @param data The data to initialize the `mulle_buffer` with.
- * @param len The length of the data to initialize the `mulle_buffer` with.
+ * @param data The storage to use as the initial backing memory.
+ * @param len The size of the storage in bytes.
  */
 //
 // Create a buffer with some static/auto storage preset. If that is
@@ -2175,9 +2428,9 @@ MULLE_C_DEPRECATED static inline void
 //
 #define mulle_buffer_do_flexible( name, data, len)                            \
    for( struct mulle_buffer                                                   \
-          name ## __storage = MULLE_BUFFER_FLEXIBLE_DATA( data, len, NULL),   \
-          *name = &name ## __storage,                                         \
-          *name ## __i = NULL;                                                \
+          name ## __storage = _mulle_buffer_flexible_data( data, len, NULL),      \
+          *name = &name ## __storage,                                             \
+          *name ## __i = NULL;                                                    \
         ! name ## __i;                                                        \
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1) \
       )                                                                       \
@@ -2189,16 +2442,16 @@ MULLE_C_DEPRECATED static inline void
 
 
 /**
- * Safely creates and uses a `mulle_buffer` that is already filled with a fixed amount of data.
+ * Safely creates and uses a `mulle_buffer` pre-filled with existing data.
  *
  * This macro creates a `mulle_buffer` that is initialized with the provided
- * `data` and `len` parameters. The buffer cannot be modified, but can be read
- * from. The macro ensures that the `mulle_buffer` is properly cleaned up before
- * exiting the block.
+ * `data` and `len` parameters as pre-existing content. The buffer can grow
+ * beyond `len` via malloc. The macro ensures that the `mulle_buffer` is
+ * properly cleaned up before exiting the block.
  *
  * @param name The name of the `mulle_buffer` variable to be used in the block.
- * @param data The data to initialize the `mulle_buffer` with.
- * @param len The length of the data to initialize the `mulle_buffer` with.
+ * @param data The data that pre-fills the `mulle_buffer`.
+ * @param len The length of the pre-filled data.
  */
 //
 // Create a buffer with some static/auto storage preset. This storage already
@@ -2206,9 +2459,9 @@ MULLE_C_DEPRECATED static inline void
 //
 #define mulle_buffer_do_flexible_filled( name, data, len)                          \
    for( struct mulle_buffer                                                        \
-          name ## __storage = MULLE_BUFFER_FLEXIBLE_FILLED_DATA( data, len, NULL), \
-          *name = &name ## __storage,                                              \
-          *name ## __i = NULL;                                                     \
+          name ## __storage = _mulle_buffer_flexible_filled_data( data, len, NULL),      \
+          *name = &name ## __storage,                                                   \
+          *name ## __i = NULL;                                                          \
         ! name ## __i;                                                             \
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)      \
       )                                                                            \
@@ -2220,16 +2473,16 @@ MULLE_C_DEPRECATED static inline void
 
 
 /**
- * Safely creates and uses a `mulle_buffer` that is already filled with a fixed amount of data.
+ * Safely creates and uses a fixed-size `mulle_buffer` that will not malloc.
  *
- * This macro creates a `mulle_buffer` that is initialized with the provided
- * `data` and `len` parameters. The buffer cannot be modified, but can be read
- * from. The macro ensures that the `mulle_buffer` is properly cleaned up before
- * exiting the block.
+ * This macro creates a `mulle_buffer` backed by `data` of size `len`. The
+ * buffer starts empty and can be written to, but will not grow beyond `len`.
+ * If the content would exceed the storage, the buffer enters the "overflown"
+ * state. The macro ensures cleanup before exiting the block.
  *
  * @param name The name of the `mulle_buffer` variable to be used in the block.
- * @param data The data to initialize the `mulle_buffer` with.
- * @param len The length of the data to initialize the `mulle_buffer` with.
+ * @param data The storage to use as backing memory.
+ * @param len The size of the storage in bytes.
  */
 //
 // Like mulle_buffer_do_flexible but when the buffer is full, there won't be
@@ -2237,9 +2490,9 @@ MULLE_C_DEPRECATED static inline void
 //
 #define mulle_buffer_do_inflexible( name, data, len)                          \
    for( struct mulle_buffer                                                   \
-          name ## __storage = MULLE_BUFFER_INFLEXIBLE_DATA( data, len, NULL), \
-          *name = &name ## __storage,                                         \
-          *name ## __i = NULL;                                                \
+          name ## __storage = _mulle_buffer_inflexible_data( data, len, NULL),      \
+          *name = &name ## __storage,                                             \
+          *name ## __i = NULL;                                                    \
         ! name ## __i;                                                        \
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1) \
       )                                                                       \
@@ -2252,24 +2505,25 @@ MULLE_C_DEPRECATED static inline void
 /**
  * Safely creates and uses a `mulle_buffer` that is already filled with data.
  *
- * This macro creates a `mulle_buffer` that is initialized with the provided
- * `data` and `len` parameters. The buffer cannot be modified, but can be read
- * from. The macro ensures that the `mulle_buffer` is properly cleaned up before
- * exiting the block.
+ * This macro creates a fixed-size `mulle_buffer` over `data` of length `len`,
+ * where the storage is already preset with content. The buffer does not set the
+ * read-only flag: it is a writable, fixed-size buffer, so writes overwrite the
+ * pre-filled content and anything beyond `len` puts the buffer into the
+ * "overflown" state. The macro ensures that the `mulle_buffer` is properly
+ * cleaned up before exiting the block.
  *
  * @param name The name of the `mulle_buffer` variable to be used in the block.
  * @param data The data to initialize the `mulle_buffer` with.
  * @param len The length of the data to initialize the `mulle_buffer` with.
  */
 //
-// Like above, but the buffer is already preset with data. So nothing can
-// be added (but it can be read).
+// Like above, but the buffer is already preset with data.
 //
 #define mulle_buffer_do_inflexible_filled( name, data, len)                          \
    for( struct mulle_buffer                                                          \
-          name ## __storage = MULLE_BUFFER_INFLEXIBLE_FILLED_DATA( data, len, NULL), \
-          *name = &name ## __storage,                                                \
-          *name ## __i = NULL;                                                       \
+          name ## __storage = _mulle_buffer_inflexible_filled_data( data, len, NULL),      \
+          *name = &name ## __storage,                                                   \
+          *name ## __i = NULL;                                                          \
         ! name ## __i;                                                               \
         name ## __i = ( mulle_buffer_done( &name ## __storage), (void *) 0x1)        \
       )                                                                              \
@@ -2287,6 +2541,12 @@ MULLE_C_DEPRECATED static inline void
  * `mulle_buffer`. It ensures that the `mulle_buffer` is properly cleaned up
  * before returning the value, preventing memory leaks.
  *
+ * It stores `value` in a temporary of the same type, so the value is computed
+ * before the buffer is done. Any compiler that provides `typeof` is supported:
+ * GCC, Clang, and any C23 compiler. On compilers without `typeof` (MSVC in
+ * C11 mode) the macro is not defined, so using it is a compile-time error;
+ * return `value` manually after calling `mulle_buffer_done` instead.
+ *
  * @param name The name of the `mulle_buffer` variable used in the block.
  * @param value The value to be returned.
  */
@@ -2294,15 +2554,31 @@ MULLE_C_DEPRECATED static inline void
 // Caveats: don't use return in the block, or you will leak, use mulle_buffer_return
 //          don't pre-initialize the buffer
 //
+#ifdef __has_builtin
+# if __has_builtin(__builtin_types_compatible_p)
+#  define MULLE__BUFFER_HAVE_TYPEOF
+# endif
+#endif
+
+#ifndef MULLE__BUFFER_HAVE_TYPEOF
+# if defined( __GNUC__) || defined( __clang__)
+#  define MULLE__BUFFER_HAVE_TYPEOF
+# endif
+#endif
+
+#ifdef MULLE__BUFFER_HAVE_TYPEOF
+
 #define mulle_buffer_return( name, value)           \
    do                                               \
    {                                                \
       __typeof__( value) name ## __tmp = (value);   \
                                                     \
       mulle_buffer_done( &name ## __storage);       \
-      return( value);                               \
+      return( name ## __tmp);                       \
    }                                                \
    while( 0)
+
+#endif
 
 //
 // TODO:

@@ -1,3 +1,10 @@
+## Thread Safety
+
+mulle-buffer is **not thread-safe**. A single buffer must not be accessed from
+multiple threads concurrently. If you need concurrent writes, serialize access
+externally (e.g. with a mutex) or use one buffer per thread.
+
+
 ## Examples
 
 
@@ -25,12 +32,13 @@ As soon as the `mulle_buffer_do` block is exited, the buffer will be invalid.
 
 > #### Note
 >
-> A `break` outside of the block is OK and does not leak, but a return will
+> A `break` inside the block is OK and does not leak, but a `return` will
+> leak. Use `mulle_buffer_return` instead.
 
 
 ### Use explicit stack memory for small strings
 
-`mulle_buffer_do` will create a default sized `alloca` ca. 100 bytes.
+`mulle_buffer_do` will create a default sized stack buffer of at least 128 bytes.
 
 If you want to specify the amount of stack space yourself, you can use
 `mulle_buffer_do_flexible`. If the stack storage is exhausted, the string will be copied
@@ -42,7 +50,7 @@ void  test( void)
 {
    char   tmp[ 256];
 
-   mulle_buffer_do_flexible( buffer, tmp)
+   mulle_buffer_do_flexible( buffer, tmp, sizeof( tmp))
    {
       mulle_buffer_add_string( buffer, "hello");
       mulle_buffer_add_string( buffer, " ");
@@ -53,7 +61,7 @@ void  test( void)
 }
 ```
 
-![alloca](pix/mulle-buffer-alloca.svg]
+![alloca](pix/mulle-buffer-alloca.svg)
 
 
 
@@ -65,7 +73,7 @@ void  test( void)
 {
    char   tmp[ 8];  // space for seven characters and trailing zero
 
-   mulle_buffer_do_inflexible( buffer, tmp)
+   mulle_buffer_do_inflexible( buffer, tmp, sizeof( tmp))
    {
       mulle_buffer_add_string( buffer, "VfL_");
       mulle_buffer_add_string( buffer, "Bochum");
@@ -75,11 +83,11 @@ void  test( void)
 }
 ```
 
-![overflow](pix/mulle-buffer-overflow.svg]
+![overflow](pix/mulle-buffer-overflow.svg)
 
 
-This should print "Vf_", as a trailing zero will be needed for the last
-character.
+This should print "VfL_Boc", as the overflow preserves the pre-overflow content
+and `get_string` zero-terminates the last byte.
 
 
 ### Convenience macro for creating allocated strings

@@ -5,6 +5,11 @@
 Here is an example of `mulle_flushablebuffer` as a flushing string stream writer:
 
 ``` c
+   size_t  fwrite_stdout( void *buf, size_t one, size_t len, void *userinfo)
+   {
+      return( fwrite( buf, one, len, (FILE *) userinfo));
+   }
+
    struct mulle_flushablebuffer   _buf;
    struct mulle_buffer            *buf;
    char                           storage[ 8];
@@ -12,7 +17,7 @@ Here is an example of `mulle_flushablebuffer` as a flushing string stream writer
    mulle_flushablebuffer_init( &_buf,
                                storage,
                                sizeof( storage),
-                               (mulle_flushablebuffer_flusher_t) fwrite,
+                               fwrite_stdout,
                                stdout);
 
    buf = &_buf;
@@ -38,10 +43,15 @@ Initialize `buffer` with `flusher` and `userinfo`. `flusher` is a callback
 function with the following signature:
 
 ``` c
-typedef size_t   mulle__flushablebuffer_flusher( void *userinfo, size_t len, size_t, void *buffer);
+typedef size_t   mulle_flushablebuffer_flusher_t( void *buf, size_t one, size_t len, void *userinfo);
 ```
 
-which is actually the quite the same signature as `fwrite`.
+which is basically the same signature as `fwrite`, except that the input
+pointer is not `const`. For the common `FILE *` case, the `mulle-fprintf`
+component provides a `_mulle_flushablebuffer_fwrite` wrapper and the
+`mulle_flushablebuffer_do_FILE[_status]` convenience macros
+(`mulle-buffer-stdio.h`); do not cast `fwrite` directly, as calling a function
+through an incompatible function-pointer type is undefined behavior.
 
 The `mulle_flushablebuffer` does not manage its own backing buffer, you have to
 pass in your own `storage` of `length` bytes, which should exist as long as

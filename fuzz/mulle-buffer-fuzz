@@ -1,0 +1,269 @@
+#! /usr/bin/env mulle-bash
+#
+#   Copyright (c) 2026 Nat! - Mulle kybernetiK
+#   All rights reserved.
+#
+#   Redistribution and use in source and binary forms, with or without
+#   modification, are permitted provided that the following conditions are met:
+#
+#   Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+#   Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+#   Neither the name of Mulle kybernetiK nor the names of its contributors
+#   may be used to endorse or promote products derived from this software
+#   without specific prior written permission.
+#
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#   POSSIBILITY OF SUCH DAMAGE.
+#
+
+[ "${TRACE}" = 'YES' ] && set -x
+
+if [ -z "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}" ]
+then
+   MULLE_BASHFUNCTIONS_LIBEXEC_DIR="`mulle-bashfunctions libexec-dir 2> /dev/null`"
+fi
+. "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" || exit 1
+
+
+fuzz::usage()
+{
+   [ "$#" -ne 0 ] && log_error "$*"
+
+   cat <<EOF >&2
+Usage:
+   ${NODE_NAME} [options] <command>
+
+   Fuzzing tool for mulle-buffer.
+
+Commands:
+   build [target...]    : Build fuzzer targets
+   run [target...]      : Run fuzzer targets
+   replay <target> <in> : Replay a specific input
+   minimize <target>    : Minimize the corpus for a target
+   clean                : Remove build artifacts
+   list                 : List available targets
+
+Options:
+   -t <seconds>         : Time to run each target (default 60)
+   -v                   : Increase verbosity
+EOF
+   exit 1
+}
+
+
+fuzz::get_include_path()
+{
+   local path
+
+   path="`mulle-sde dependency-dir 2> /dev/null`"
+   if [ -n "${path}" -a -d "${path}/include" ]
+   then
+      echo "${path}/include"
+      return
+   fi
+
+   path="`mulle-sde addiction-dir 2> /dev/null`"
+   if [ -n "${path}" -a -d "${path}/include" ]
+   then
+      echo "${path}/include"
+      return
+   fi
+
+   log_warning "Could not find dependency include path. Fuzzing might fail."
+   echo "dependency/include"
+}
+
+
+fuzz::get_lib_path()
+{
+   local path
+
+   path="`mulle-sde dependency-dir 2> /dev/null`"
+   if [ -n "${path}" -a -d "${path}/lib" ]
+   then
+      echo "${path}/lib"
+      return
+   fi
+
+   path="`mulle-sde addiction-dir 2> /dev/null`"
+   if [ -n "${path}" -a -d "${path}/lib" ]
+   then
+      echo "${path}/lib"
+      return
+   fi
+
+   log_warning "Could not find dependency lib path. Fuzzing might fail."
+   echo "dependency/lib"
+}
+
+
+fuzz::get_targets()
+{
+   local dir="fuzz/src"
+   local target
+
+   if [ ! -d "${dir}" ]
+   then
+      return
+   fi
+
+   (
+      cd "${dir}"
+      for target in fuzz-*.c
+      do
+         [ -e "${target}" ] || continue
+         echo "${target%.c}"
+      done
+   )
+}
+
+
+fuzz::build()
+{
+   local targets="$@"
+   [ -z "${targets}" ] && targets=`fuzz::get_targets`
+
+   local incpath=`fuzz::get_include_path`
+   local libpath=`fuzz::get_lib_path`
+   local builddir="fuzz/build"
+
+   mkdir -p "${builddir}" || exit 1
+
+   local src_files="src/mulle--buffer.c src/mulle-buffer.c src/mulle-flushablebuffer.c"
+   
+   local target
+   for target in ${targets}
+   do
+      log_info "Building ${target}..."
+      clang -g -O1 -std=c99 \
+            -fsanitize=fuzzer,address,undefined \
+            -fno-sanitize-recover=undefined \
+            -I src -I src/generic -I src/reflect -I "${incpath}" \
+            ${src_files} "fuzz/src/${target}.c" \
+            -L "${libpath}" -lmulle-data -lmulle-allocator \
+            -o "${builddir}/${target}" || exit 1
+   done
+}
+
+
+fuzz::run()
+{
+   local time_limit=60
+   
+   while [ $# -ne 0 ]
+   do
+      case "$1" in
+         -t)
+            shift
+            time_limit="$1"
+         ;;
+         -*)
+            fuzz::usage "Unknown option $1"
+         ;;
+         *)
+            break
+         ;;
+      esac
+      shift
+   done
+
+   local targets="$@"
+   [ -z "${targets}" ] && targets=`fuzz::get_targets`
+
+   local builddir="fuzz/build"
+   local target
+   for target in ${targets}
+   do
+      if [ ! -x "${builddir}/${target}" ]
+      then
+         log_warning "${target} not built, skipping."
+         continue
+      fi
+
+      log_info "Running ${target} for ${time_limit}s..."
+      mkdir -p "fuzz/corpus/${target}"
+      mkdir -p "fuzz/crashes/${target}"
+
+      "${builddir}/${target}" \
+         -max_total_time=${time_limit} \
+         -artifact_prefix="fuzz/crashes/${target}/" \
+         "fuzz/corpus/${target}"
+   done
+}
+
+
+fuzz::replay()
+{
+   local target="$1"
+   local input="$2"
+
+   if [ -z "${target}" -o -z "${input}" ]
+   then
+      fuzz::usage "Replay requires target and input file"
+   fi
+
+   local builddir="fuzz/build"
+   if [ ! -x "${builddir}/${target}" ]
+   then
+      log_error "${target} not built."
+      exit 1
+   fi
+
+   "${builddir}/${target}" "${input}"
+}
+
+
+fuzz::minimize()
+{
+   local target="$1"
+   if [ -z "${target}" ]
+   then
+      fuzz::usage "Minimize requires target"
+   fi
+
+   local builddir="fuzz/build"
+   if [ ! -x "${builddir}/${target}" ]
+   then
+      log_error "${target} not built."
+      exit 1
+   fi
+
+   mkdir -p "fuzz/corpus/${target}_min"
+   "${builddir}/${target}" -merge=1 "fuzz/corpus/${target}_min" "fuzz/corpus/${target}"
+   log_info "Minimized corpus in fuzz/corpus/${target}_min"
+}
+
+
+fuzz::main()
+{
+   local cmd="$1"
+   [ -z "${cmd}" ] && fuzz::usage
+
+   shift
+
+   case "${cmd}" in
+      build)   fuzz::build "$@" ;;
+      run)     fuzz::run "$@" ;;
+      replay)  fuzz::replay "$@" ;;
+      minimize) fuzz::minimize "$@" ;;
+      list)    fuzz::get_targets ;;
+      clean)   rm -rf fuzz/build ;;
+      *)       fuzz::usage "Unknown command ${cmd}" ;;
+   esac
+}
+
+fuzz::main "$@"

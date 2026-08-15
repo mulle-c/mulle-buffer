@@ -92,6 +92,11 @@ struct mulle_flushablebuffer   *
    if( ! allocator)
       allocator = &mulle_default_allocator;
 
+   // the initializer only asserts these; make the failure path real here
+   // so a release build returns NULL instead of building a broken buffer
+   if( ! flusher || ! length || length < MULLE_FLUSHABLEBUFFER_MIN_CAPACITY)
+      return( NULL);
+
    buffer  = mulle_allocator_malloc( allocator, sizeof( struct mulle_flushablebuffer));
    storage = mulle_allocator_malloc( allocator, length);
    mulle_flushablebuffer_init_with_allocated_bytes( buffer,
@@ -115,8 +120,16 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
 
    allocator = buffer->_allocator;
    rval      = mulle_flushablebuffer_done( buffer);
-   if( ! rval)
-      mulle_allocator_free( allocator, buffer);
+   if( rval)
+   {
+      // the flush failed: done retained the storage so the undelivered
+      // bytes remain inspectable. destroy discards them unconditionally;
+      // flush manually before calling destroy if the data must be
+      // delivered first.
+      if( ! buffer->_initial_storage)
+         mulle_allocator_free( allocator, buffer->_storage);
+   }
+   mulle_allocator_free( allocator, buffer);
    return( rval);
 }
 
