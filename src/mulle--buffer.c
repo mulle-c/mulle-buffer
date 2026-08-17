@@ -296,13 +296,8 @@ int   _mulle__buffer_make_string( struct mulle__buffer *buffer,
 char   *_mulle__buffer_extract_string( struct mulle__buffer *buffer,
                                        struct mulle_allocator *allocator)
 {
-   // An empty buffer yields NULL, matching `_mulle__buffer_extract_data`.
-   // `extract_data` also consumes the buffer (frees any backing, NULLs the
-   // pointers), which is what we want here as well.
-   if( ! _mulle__buffer_get_length( buffer))
-      return( (char *) _mulle__buffer_extract_data( buffer, allocator).bytes);
-
-   // afterwards the size of the string will include the zero
+   // The result is always a valid C string: an empty buffer yields an
+   // allocated empty string `""` (the size will include the trailing zero).
    _mulle__buffer_make_string( buffer, allocator);
    // this will do nothing for inflexible data
    _mulle__buffer_size_to_fit( buffer, allocator);
