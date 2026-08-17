@@ -84,28 +84,28 @@ void
 }
 
 
-long  _mulle__buffer_get_seek( struct mulle__buffer *buffer)
+long  _mulle__buffer_get_seek( const struct mulle__buffer *buffer)
 {
    long                           len;
-   struct mulle_flushablebuffer   *flushable;
+   const struct mulle_flushablebuffer   *flushable;
 
    len = (long) _mulle__buffer_get_length( buffer);
    if( ! _mulle__buffer_is_flushable( buffer))
       return( len);
 
-   flushable = (struct mulle_flushablebuffer *) buffer;
+   flushable = (const struct mulle_flushablebuffer *) buffer;
    return( (long) (flushable->_flushed + len));
 }
 
 
-off_t  _mulle__buffer_get_lseek( struct mulle__buffer *buffer)
+off_t  _mulle__buffer_get_lseek( const struct mulle__buffer *buffer)
 {
-   struct mulle_flushablebuffer   *flushable;
+   const struct mulle_flushablebuffer   *flushable;
 
    if( ! _mulle__buffer_is_flushable( buffer))
       return( (off_t) _mulle__buffer_get_length( buffer));
 
-   flushable = (struct mulle_flushablebuffer *) buffer;
+   flushable = (const struct mulle_flushablebuffer *) buffer;
    return( (off_t) (flushable->_flushed + _mulle__buffer_get_length( buffer)));
 }
 
@@ -531,13 +531,13 @@ int   _mulle__buffer_set_length( struct mulle__buffer *buffer,
 
 
 void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
-                                 void *bytes,
+                                 const void *bytes,
                                  size_t length,
                                  struct mulle_allocator *allocator)
 {
    void   *space;
-   char   *s;
-   char   *sentinel;
+   const char   *s;
+   const char   *sentinel;
 
    assert( bytes || ! length);
    // self-append (bytes pointing into the buffer's own storage) is not
@@ -565,7 +565,7 @@ void   _mulle__buffer_add_bytes( struct mulle__buffer *buffer,
 
 
 void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
-                                  char *bytes,
+                                  const char *bytes,
                                   struct mulle_allocator *allocator)
 {
    char           c;
@@ -603,13 +603,13 @@ void   _mulle__buffer_add_string( struct mulle__buffer *buffer,
 
 
 size_t   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
-                                                   char *bytes,
+                                                   const char *bytes,
                                                    size_t maxlength,
                                                    struct mulle_allocator *allocator)
 {
    char             c;
    unsigned char    *s;
-   char             *sentinel;
+   const char             *sentinel;
    size_t           remain;
    size_t           prev_length;
 
@@ -667,11 +667,11 @@ size_t   _mulle__buffer_add_string_with_maxlength( struct mulle__buffer *buffer,
 // produces C escape codes but does not wrap in ""
 //
 void   _mulle__buffer_add_c_chars( struct mulle__buffer *buffer,
-                                   char *s,
+                                   const char *s,
                                    size_t length,
                                    struct mulle_allocator *allocator)
 {
-   char   *sentinel;
+   const char   *sentinel;
 
    if( _mulle__buffer_self_referencing( buffer, s))
       return;
@@ -746,7 +746,7 @@ void   _mulle__buffer_remove_in_range( struct mulle__buffer *buffer,
 
 
 void   _mulle__buffer_add_string_if_empty( struct mulle__buffer *buffer,
-                                           char *bytes,
+                                           const char *bytes,
                                            struct mulle_allocator *allocator)
 {
    if( ! _mulle__buffer_get_length( buffer))
@@ -755,7 +755,7 @@ void   _mulle__buffer_add_string_if_empty( struct mulle__buffer *buffer,
 
 
 void   _mulle__buffer_add_string_if_not_empty( struct mulle__buffer *buffer,
-                                               char *bytes,
+                                               const char *bytes,
                                                struct mulle_allocator *allocator)
 {
    if( _mulle__buffer_get_length( buffer))
@@ -824,7 +824,7 @@ void   _mulle__buffer_add_c_char( struct mulle__buffer *buffer,
 
 
 void   _mulle__buffer_add_c_string( struct mulle__buffer *buffer,
-                                    char *bytes,
+                                    const char *bytes,
                                    struct mulle_allocator *allocator)
 {
    char   c;
