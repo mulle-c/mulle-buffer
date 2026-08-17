@@ -1,3 +1,8 @@
+`mulle-buffer` is a capable, deliberately low-level C byte builder. Its strongest
+use case is producing binary or textual output with minimal ceremony: start on
+stack storage, grow to heap storage when necessary, or stream bounded output to
+a callback.
+
 mulle-buffer can construct arbitrary long binary data dynamically or in static
 storage. You don't have to worry about calculating the necessary buffer size.
 It's easy, fast and safe. It can also be used as a stream and it is used to

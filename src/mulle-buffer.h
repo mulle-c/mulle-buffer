@@ -866,14 +866,16 @@ static inline struct mulle_data   mulle_buffer_extract_data( struct mulle_buffer
 /**
  * Extracts the string from the buffer and returns it.
  *
- * The buffer content is made a zero-terminated C string first, then handed to
- * the caller. The caller owns the returned string and must free it with the
- * same allocator the buffer used (`mulle_buffer_get_allocator`). The buffer
- * is consumed: it is left empty with no backing storage and must be
- * re-initialized before reuse.
+ * This is the string-valued extractor: the result is always a valid C string.
+ * Made zero-terminated first, then handed to the caller. Unlike
+ * `mulle_buffer_extract_data` / `mulle_buffer_extract_bytes`, an empty buffer
+ * yields an allocated empty string `""` (which the caller still owns and must
+ * free), not `NULL`; only a `NULL` buffer argument returns `NULL`.
  *
- * If the buffer is empty, `NULL` is returned and the buffer is still left
- * empty with no backing storage.
+ * The caller owns the returned string and must free it with the same allocator
+ * the buffer used (`mulle_buffer_get_allocator`). The buffer is consumed: it
+ * is left empty with no backing storage and must be re-initialized before
+ * reuse.
  *
  * @param buffer The buffer to extract the string from.
  * @return The string from the buffer, or NULL if the buffer is NULL.
@@ -1336,7 +1338,7 @@ static inline int   mulle_buffer_is_void( struct mulle_buffer *buffer)
  * - a string add function (`mulle_buffer_add_string`, `add_string_with_maxlength`,
  *   `add_c_chars`, `add_c_string`) is given a source that points into the
  *   buffer's own storage (self-reference);
- * - `mulle_buffer_flush` is called on a non-flushable buffer.
+ * - `mulle_flushablebuffer_flush` is called on a non-flushable buffer.
  *
  * In debug builds, violations of the read-only/write-only mode contract and
  * self-aliasing in `mulle_buffer_add_bytes` additionally trip assertions, so
@@ -1768,17 +1770,17 @@ static inline void   mulle_buffer_strcpy( struct mulle_buffer *buffer,
 
 
 /**
- * Appends the given C-style string to the buffer, if the buffer is not empty.
+ * Appends the given C-style string to the buffer, if the buffer is empty.
  *
  * This function appends the given C-style string `bytes` to the end of the buffer,
- * but only if the buffer is not empty. If the buffer is `NULL`, this function
+ * but only if the buffer is empty. If the buffer is `NULL`, this function
  * does nothing.
  *
  * @param buffer The buffer to append the string to.
  * @param bytes The C-style string to append to the buffer.
  */
 static inline void   mulle_buffer_add_string_if_empty( struct mulle_buffer *buffer,
-                                                       char *bytes)
+                                                        char *bytes)
 {
    if( ! buffer)
       return;

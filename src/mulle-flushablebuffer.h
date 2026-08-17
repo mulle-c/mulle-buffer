@@ -158,6 +158,52 @@ struct mulle_flushablebuffer
 
 
 /**
+ * Single-evaluation variant of `MULLE_FLUSHABLEBUFFER_STATIC_DATA` for use in
+ * code (for example by the `mulle_flushablebuffer_do_FILE_*` macros), where a
+ * struct-returning expression, not a function call on a pre-declared struct, is
+ * convenient. `storage`, `length`, `flusher` and `userinfo` are evaluated
+ * exactly once, so expressions with side effects are safe.
+ *
+ * @param storage   The static storage buffer to initialize with.
+ * @param length    The length of the static storage buffer.
+ * @param flusher   The flusher function to use.
+ * @param userinfo  The user information to pass to the flusher function.
+ * @return A `mulle_flushablebuffer` struct initialized with the parameters.
+ */
+static inline struct mulle_flushablebuffer
+   _mulle_flushablebuffer_static_data( void *storage,
+                                       size_t length,
+                                       mulle_flushablebuffer_flusher_t *flusher,
+                                       void *userinfo)
+{
+   return( MULLE_FLUSHABLEBUFFER_STATIC_DATA( storage, length, flusher, userinfo));
+}
+
+
+/**
+ * Single-evaluation variant of `MULLE_FLUSHABLEBUFFER_ALLOCATED_DATA` for use
+ * in code. `storage`, `length`, `flusher`, `userinfo` and `allocator` are
+ * evaluated exactly once, so expressions with side effects are safe.
+ *
+ * @param storage   The allocated storage buffer to initialize with.
+ * @param length    The length of the allocated storage buffer.
+ * @param flusher   The flusher function to use.
+ * @param userinfo  The user information to pass to the flusher function.
+ * @param allocator The allocator to use for the storage.
+ * @return A `mulle_flushablebuffer` struct initialized with the parameters.
+ */
+static inline struct mulle_flushablebuffer
+   _mulle_flushablebuffer_allocated_data( void *storage,
+                                          size_t length,
+                                          mulle_flushablebuffer_flusher_t *flusher,
+                                          void *userinfo,
+                                          struct mulle_allocator *allocator)
+{
+   return( MULLE_FLUSHABLEBUFFER_ALLOCATED_DATA( storage, length, flusher, userinfo, allocator));
+}
+
+
+/**
  * Returns the `mulle_buffer` representation of a `mulle_flushablebuffer`.
  *
  * @param buffer The `mulle_flushablebuffer` to convert.

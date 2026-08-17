@@ -13,6 +13,44 @@ not a general-purpose file-like read/write abstraction. Full read/write
 support (independent written-length and read-position) is intentionally not
 part of the design.
 
+## The buffer is the in-memory `FILE *` analog
+
+`mulle_buffer` keeps **one shared cursor** (`_curr`) that is the read
+position, the write position, and `get_length()`. That is exactly the
+`FILE *` model: a single offset, seek anywhere, then read or write there,
+patch in the middle on update streams, `SEEK_END` relative to capacity.
+
+The read/seek surface (`mulle_buffer_next_byte`, `mulle_buffer_peek_byte`,
+`mulle_buffer_set_seek`/`get_seek`, `mulle_buffer_lseek`, ...) is **public,
+first-class, and load-bearing**, not a legacy afterthought:
+
+- `mulle-buffer-stdio.c` (in `mulle-fprintf`) layers the whole C stdio
+  surface on top of it — `fread`, `fwrite`, `fseek`, `ftell`, `lseek`,
+  `fmemopen`, and a `struct mulle_buffer_stdio_functions` vtable — because
+  the buffer *is* `FILE *`, and libc `fmemopen` is flaky across platforms.
+- `MulleObjCUnarchiver`/`NSKeyedUnarchiver` parse binary archives against it
+  (`set_seek` + `next_byte`/`next_bytes`).
+- `MulleObjCArchiver`/`MulleBinaryPlist` use it as a write-position tracker
+  (`get_seek`).
+
+### Relationship to `mulle-stream`
+
+`mulle-stream` (a sibling, standalone repository, not part of `mulle-core`)
+is the directional, **dual-cursor** byte stream: an append-only write end
+(`_length`) and an independent read cursor (`_read_position`). It is the
+other half of what `typedef FILE` crams into a single struct. The two models
+do **not** compose, so they are intentionally separate libraries:
+
+- `FILE *` compatibility — one position, seek anywhere, patch-in-the-middle,
+  `SEEK_END` relative to capacity — lives **here**, in `mulle_buffer`.
+- Independent read/write cursors, append-only output, and bounded-memory
+  flushing to a sink live in **`mulle-stream`**.
+
+Reviewers: do not request dual-cursor or independent-write-vs-read behavior
+from `mulle_buffer`; that is `mulle-stream`'s contract. Conversely, do not
+expect `mulle-stream` to emulate `fseek` + `fwrite` patch semantics, which
+is `mulle_buffer`'s contract (see `mulle-stream/dox/DESIGN.md`).
+
 ## Default capacity
 
 `MULLE_BUFFER_DEFAULT_CAPACITY` is `128` (see `src/mulle-buffer.h`).
@@ -259,6 +297,30 @@ promise that the buffer remains reusable afterwards.
   non-empty case, but the buffer must still be considered consumed.
 - Empty buffer: the returned `mulle_data` has `bytes == NULL`, `length == 0`,
   and the buffer is left with no storage.
+
+### `mulle_buffer_extract_string`
+
+`mulle_buffer_extract_string` is the string-valued extractor. It differs from
+`mulle_buffer_extract_data` / `mulle_buffer_extract_bytes` in the empty case:
+because it promises a valid C string, an empty buffer yields an **allocated
+empty string `""`** (which the caller owns and must free), not `NULL`. Only a
+`NULL` buffer argument returns `NULL`. The buffer-consumption rules are the
+same as for `mulle_buffer_extract_data`.
+
+### `mulle_buffer_extract_bytes`
+
+`mulle_buffer_extract_bytes` behaves like `mulle_buffer_extract_data` but
+returns only the bytes pointer. Empty buffer: `NULL`.
+
+### Empty-extraction rule, summary
+
+Each extractor returns the natural empty value of its return type:
+
+| Extractor        | Return type         | Empty buffer   | `NULL` buffer |
+|------------------|---------------------|----------------|---------------|
+| `extract_data`   | `struct mulle_data` | `{NULL, 0}`    | invalid `mulle_data` |
+| `extract_bytes`  | `void *`            | `NULL`         | `NULL`        |
+| `extract_string` | `char *` (C string) | allocated `""` | `NULL`        |
 
 ### Self-aliasing
 

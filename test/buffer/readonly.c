@@ -1,31 +1,31 @@
 #include <stdio.h>
 
-#define mulle_buffer_assert_readable( buffer) \
-    do { \
-        if (((buffer)->_type & MULLE_BUFFER_IS_WRITEONLY)) { \
-            printf("      assert failed: %s (type: %x)\n", \
-                   __FUNCTION__, \
-                   (buffer)->_type); \
-        } else { \
-            printf("      assert succeeded: %s (type: %x)\n", \
-                   __FUNCTION__, \
-                   (buffer)->_type); \
-        }   \
-    }       \
+#define mulle_buffer_assert_readable( buffer)                   \
+    do {                                                        \
+        if (((buffer)->_type & MULLE_BUFFER_IS_WRITEONLY)) {    \
+            printf("      assert failed: %s (type: %x)\n",      \
+                   __FUNCTION__,                                \
+                   (buffer)->_type);                            \
+        } else {                                                \
+            printf("      assert succeeded: %s (type: %x)\n",   \
+                   __FUNCTION__,                                \
+                   (buffer)->_type);                            \
+        }                                                       \
+    }                                                           \
     while(0)
 
-#define mulle_buffer_assert_writeable( buffer) \
-    do { \
-        if (((buffer)->_type & MULLE_BUFFER_IS_READONLY)) { \
-            printf("      assert failed: %s (type: %x)\n", \
-                   __FUNCTION__, \
-                   (buffer)->_type); \
-        } else { \
-            printf("      assert succeeded: %s (type: %x)\n", \
-                   __FUNCTION__, \
-                   (buffer)->_type); \
-        }   \
-    }       \
+#define mulle_buffer_assert_writeable( buffer)                  \
+    do {                                                        \
+        if (((buffer)->_type & MULLE_BUFFER_IS_READONLY)) {     \
+            printf("      assert failed: %s (type: %x)\n",      \
+                   __FUNCTION__,                                \
+                   (buffer)->_type);                            \
+        } else {                                                \
+            printf("      assert succeeded: %s (type: %x)\n",   \
+                   __FUNCTION__,                                \
+                   (buffer)->_type);                            \
+        }                                                       \
+    }                                                           \
     while(0)
 
 
