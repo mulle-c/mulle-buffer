@@ -397,12 +397,12 @@ static inline struct mulle__buffer   *
  *         the buffer was created over static storage and owns no allocator.
  */
 static inline struct mulle_allocator  *
-   mulle_buffer_get_allocator( struct mulle_buffer *buffer)
+   mulle_buffer_get_allocator( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( &mulle_default_allocator);
 
-   assert( _mulle__buffer_is_inflexible( (struct mulle__buffer *) buffer) ||
+   assert( _mulle__buffer_is_inflexible( (const struct mulle__buffer *) buffer) ||
            buffer->_allocator);
    return( buffer->_allocator);
 }
@@ -959,11 +959,11 @@ static inline void   mulle_buffer_remove_in_range( struct mulle_buffer *buffer,
  * @param buffer The buffer to get the data from.
  * @return The buffer contents as a mulle_data struct, or an invalid mulle_data struct if the buffer is invalid.
  */
-static inline struct mulle_data   mulle__buffer_get_data( struct mulle_buffer *buffer)
+static inline struct mulle_data   mulle__buffer_get_data( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( mulle_data_make_invalid());
-   return( _mulle__buffer_get_data( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_data( (const struct mulle__buffer *) buffer));
 }
 
 /**
@@ -972,12 +972,12 @@ static inline struct mulle_data   mulle__buffer_get_data( struct mulle_buffer *b
  * @param buffer The buffer to get the bytes from.
  * @return The buffer contents as a byte array, or NULL if the buffer is invalid.
  */
-static inline void   *mulle_buffer_get_bytes( struct mulle_buffer *buffer)
+static inline void   *mulle_buffer_get_bytes( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( NULL);
 
-   return( _mulle__buffer_get_bytes( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_bytes( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1009,12 +1009,12 @@ static inline char   *mulle_buffer_get_string( struct mulle_buffer *buffer)
  * @param buffer The buffer to get the length from.
  * @return The length of the buffer, or 0 if the buffer is invalid.
  */
-static inline size_t   mulle_buffer_get_length( struct mulle_buffer *buffer)
+static inline size_t   mulle_buffer_get_length( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_get_length( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_length( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1024,12 +1024,12 @@ static inline size_t   mulle_buffer_get_length( struct mulle_buffer *buffer)
  * @param buffer The buffer to get the capacity from.
  * @return The capacity of the buffer, or 0 if the buffer is invalid.
  */
-static inline size_t   mulle_buffer_get_capacity( struct mulle_buffer *buffer)
+static inline size_t   mulle_buffer_get_capacity( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_get_capacity( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_capacity( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1040,12 +1040,12 @@ static inline size_t   mulle_buffer_get_capacity( struct mulle_buffer *buffer)
  * @return The static length of the buffer, or 0 if the buffer is invalid.
  */
 static inline size_t
-   mulle_buffer_get_staticlength( struct mulle_buffer *buffer)
+   mulle_buffer_get_staticlength( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_get_staticlength( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_staticlength( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1086,12 +1086,12 @@ static inline int    mulle_buffer_set_seek( struct mulle_buffer *buffer, long se
  * @param buffer The buffer to get the seek position from.
  * @return The current seek position of the buffer, or 0 if the buffer is invalid.
  */
-static inline long   mulle_buffer_get_seek( struct mulle_buffer *buffer)
+static inline long   mulle_buffer_get_seek( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_get_seek( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_seek( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1104,12 +1104,12 @@ static inline long   mulle_buffer_get_seek( struct mulle_buffer *buffer)
  * @param buffer The buffer to get the seek position from.
  * @return The current seek position of the buffer, or -1 if the buffer is invalid.
  */
-static inline off_t   mulle_buffer_get_lseek( struct mulle_buffer *buffer)
+static inline off_t   mulle_buffer_get_lseek( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( (off_t) -1);
 
-   return( _mulle__buffer_get_lseek( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_lseek( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1166,13 +1166,13 @@ static inline void   *mulle_buffer_advance( struct mulle_buffer *buffer,
 #pragma mark - read only / write only asserting
 
 
-static inline int   mulle_buffer_is_readonly( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_readonly( const struct mulle_buffer *buffer)
 {
    return( buffer ? buffer->_type & MULLE_BUFFER_IS_READONLY : 0);
 }
 
 
-static inline int   mulle_buffer_is_writeonly( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_writeonly( const struct mulle_buffer *buffer)
 {
    return( buffer ? buffer->_type & MULLE_BUFFER_IS_WRITEONLY : 0);
 }
@@ -1225,12 +1225,12 @@ static inline void   mulle_buffer_copy_range( struct mulle_buffer *buffer,
  * @param buffer The buffer to check.
  * @return 1 if the buffer is inflexible, 0 otherwise.
  */
-static inline int   mulle_buffer_is_inflexible( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_inflexible( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 1);
 
-   return( _mulle__buffer_is_inflexible( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_is_inflexible( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1240,12 +1240,12 @@ static inline int   mulle_buffer_is_inflexible( struct mulle_buffer *buffer)
  * @param buffer The buffer to check.
  * @return 1 if the buffer is flushable, 0 otherwise.
  */
-static inline int   mulle_buffer_is_flushable( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_flushable( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_is_flushable( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_is_flushable( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1255,23 +1255,23 @@ static inline int   mulle_buffer_is_flushable( struct mulle_buffer *buffer)
  * @param buffer The buffer to check.
  * @return 1 if the buffer is full, 0 otherwise.
  */
-static inline int   mulle_buffer_is_full( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_full( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 1);
 
    mulle_buffer_assert_writeable( buffer);
 
-   return( _mulle__buffer_is_full( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_is_full( (const struct mulle__buffer *) buffer));
 }
 
 
-static inline size_t   mulle_buffer_remaining_length( struct mulle_buffer *buffer)
+static inline size_t   mulle_buffer_remaining_length( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 0);
 
-   return( _mulle__buffer_get_remaining_length( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_remaining_length( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1282,13 +1282,13 @@ static inline size_t   mulle_buffer_remaining_length( struct mulle_buffer *buffe
  * @param len The length to check against the buffer's capacity.
  * @return 1 if the buffer has enough capacity, 0 otherwise.
  */
-static inline int   mulle_buffer_is_big_enough( struct mulle_buffer *buffer,
+static inline int   mulle_buffer_is_big_enough( const struct mulle_buffer *buffer,
                                                 size_t len)
 {
    if( ! buffer)
       return( len == 0);
 
-   return( _mulle__buffer_is_big_enough( (struct mulle__buffer *) buffer, len));
+   return( _mulle__buffer_is_big_enough( (const struct mulle__buffer *) buffer, len));
 }
 
 
@@ -1299,12 +1299,12 @@ static inline int   mulle_buffer_is_big_enough( struct mulle_buffer *buffer,
  * @return 1 if the buffer is empty, 0 otherwise.
  */
 // same as mulle_buffer_get_length( buffer) == 0
-static inline int   mulle_buffer_is_empty( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_empty( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 1);
 
-   return( _mulle__buffer_is_empty( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_is_empty( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1315,12 +1315,12 @@ static inline int   mulle_buffer_is_empty( struct mulle_buffer *buffer)
  * @return 1 if the buffer is a void buffer, 0 otherwise.
  */
 // a void buffer's backing storage can't hold any content
-static inline int   mulle_buffer_is_void( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_is_void( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 1);
 
-   return( _mulle__buffer_is_void( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_is_void( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1354,12 +1354,12 @@ static inline int   mulle_buffer_is_void( struct mulle_buffer *buffer)
  * @return 1 if the buffer has overflown, 0 otherwise. A NULL buffer is
  *         considered to have overflown and returns 1.
  */
-static inline int   mulle_buffer_has_overflown( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_has_overflown( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( 1);
 
-   return( _mulle__buffer_has_overflown( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_has_overflown( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -1388,14 +1388,14 @@ static inline int   mulle_buffer_has_overflown( struct mulle_buffer *buffer)
 //
 // check if bytes of length, are actually buffer contents
 //
-static inline int   mulle_buffer_intersects_bytes( struct mulle_buffer *buffer,
-                                                   void *bytes,
+static inline int   mulle_buffer_intersects_bytes( const struct mulle_buffer *buffer,
+                                                   const void *bytes,
                                                    size_t length)
 {
    if( ! buffer)
       return( length == 0);
 
-   return( _mulle__buffer_intersects_bytes( (struct mulle__buffer *) buffer,
+   return( _mulle__buffer_intersects_bytes( (const struct mulle__buffer *) buffer,
                                              bytes,
                                              length));
 }
@@ -1562,7 +1562,7 @@ static inline void   mulle_buffer_add_char( struct mulle_buffer *buffer,
  * @param length The length of the byte array to add.
  */
 static inline void   mulle_buffer_add_bytes( struct mulle_buffer *buffer,
-                                             void *bytes,
+                                             const void *bytes,
                                              size_t length)
 {
    if( ! buffer)
@@ -1580,7 +1580,7 @@ static inline void   mulle_buffer_add_bytes( struct mulle_buffer *buffer,
 // just as above just type differently
 static inline
 void   mulle_buffer_add_chars( struct mulle_buffer *buffer,
-                               char *s,
+                               const char *s,
                                size_t length)
 {
    mulle_buffer_add_bytes( buffer, s, length);
@@ -1619,7 +1619,7 @@ void   mulle_buffer_add_bytes_callback( void *buffer,
  * @param s The C string to add to the buffer.
  */
 static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
-                                              char *s)
+                                              const char *s)
 {
    if( ! buffer)
       return;
@@ -1634,7 +1634,7 @@ static inline void   mulle_buffer_add_string( struct mulle_buffer *buffer,
 
 // just an alias the LLVMs prefer, so why not
 static inline void   mulle_buffer_append_string( struct mulle_buffer *buffer,
-                                                 char *s)
+                                                 const char *s)
 {
    mulle_buffer_add_string( buffer, s);
 }
@@ -1673,7 +1673,7 @@ static inline void   mulle_buffer_add_c_char( struct mulle_buffer *buffer,
  * @param length The number of characters to add from `s`.
  */
 static inline void   mulle_buffer_add_c_chars( struct mulle_buffer *buffer,
-                                               char *s,
+                                               const char *s,
                                                size_t length)
 {
    if( ! buffer)
@@ -1719,7 +1719,7 @@ void   mulle_buffer_add_c_chars_callback( void *buffer,
 // produces C escape codes and wraps everything in ""
 //
 static inline void   mulle_buffer_add_c_string( struct mulle_buffer *buffer,
-                                                char *s)
+                                                const char *s)
 {
    if( ! buffer)
       return;
@@ -1744,7 +1744,7 @@ static inline void   mulle_buffer_add_c_string( struct mulle_buffer *buffer,
  */
 // just a synonym for add_string
 static inline void   mulle_buffer_strcat( struct mulle_buffer *buffer,
-                                          char *bytes)
+                                          const char *bytes)
 {
    mulle_buffer_add_string( buffer, bytes);
 }
@@ -1762,7 +1762,7 @@ static inline void   mulle_buffer_strcat( struct mulle_buffer *buffer,
  */
 // clears the buffer and adds the string
 static inline void   mulle_buffer_strcpy( struct mulle_buffer *buffer,
-                                          char *bytes)
+                                          const char *bytes)
 {
    mulle_buffer_set_length( buffer, 0, MULLE_BUFFER_NO_SHRINK_OR_ZEROFILL);
    mulle_buffer_add_string( buffer, bytes);
@@ -1780,7 +1780,7 @@ static inline void   mulle_buffer_strcpy( struct mulle_buffer *buffer,
  * @param bytes The C-style string to append to the buffer.
  */
 static inline void   mulle_buffer_add_string_if_empty( struct mulle_buffer *buffer,
-                                                        char *bytes)
+                                                        const char *bytes)
 {
    if( ! buffer)
       return;
@@ -1804,7 +1804,7 @@ static inline void   mulle_buffer_add_string_if_empty( struct mulle_buffer *buff
  * @param bytes The C-style string to append to the buffer.
  */
 static inline void   mulle_buffer_add_string_if_not_empty( struct mulle_buffer *buffer,
-                                                           char *bytes)
+                                                           const char *bytes)
 {
    if( ! buffer)
       return;
@@ -1831,7 +1831,7 @@ static inline void   mulle_buffer_add_string_if_not_empty( struct mulle_buffer *
  */
 static inline size_t
    mulle_buffer_add_string_with_maxlength( struct mulle_buffer *buffer,
-                                           char *bytes,
+                                           const char *bytes,
                                            size_t length)
 {
    if( ! buffer)
@@ -2000,7 +2000,7 @@ void   mulle_buffer_reset( struct mulle_buffer *buffer);
  * @param buffer The buffer to get the byte from.
  * @return The byte or -1, if the buffer or index is invalid.
  */
-static inline int   mulle_buffer_get_byte( struct mulle_buffer *buffer,
+static inline int   mulle_buffer_get_byte( const struct mulle_buffer *buffer,
                                            size_t index)
 {
    if( ! buffer)
@@ -2008,7 +2008,7 @@ static inline int   mulle_buffer_get_byte( struct mulle_buffer *buffer,
 
    mulle_buffer_assert_readable( buffer);
 
-   return( _mulle__buffer_get_byte( (struct mulle__buffer *) buffer, index));
+   return( _mulle__buffer_get_byte( (const struct mulle__buffer *) buffer, index));
 }
 
 
@@ -2058,14 +2058,14 @@ static inline void   *
  * @param buffer The buffer to get the last byte from.
  * @return The last byte of the buffer, or -1 if the buffer is invalid.
  */
-static inline int    mulle_buffer_get_last_byte( struct mulle_buffer *buffer)
+static inline int    mulle_buffer_get_last_byte( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( -1);
 
    mulle_buffer_assert_readable( buffer);
 
-   return( _mulle__buffer_get_last_byte( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_get_last_byte( (const struct mulle__buffer *) buffer));
 }
 
 
@@ -2100,14 +2100,14 @@ static inline int   mulle_buffer_next_byte( struct mulle_buffer *buffer)
  * @return The next byte in the buffer, or -1 if the buffer is NULL or there are
  *         no more bytes to read.
  */
-static inline int   mulle_buffer_peek_byte( struct mulle_buffer *buffer)
+static inline int   mulle_buffer_peek_byte( const struct mulle_buffer *buffer)
 {
    if( ! buffer)
       return( -1);
 
    mulle_buffer_assert_readable( buffer);
 
-   return( _mulle__buffer_peek_byte( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_peek_byte( (const struct mulle__buffer *) buffer));
 }
 
 /**
@@ -2169,8 +2169,8 @@ static inline long   mulle_buffer_seek_byte( struct mulle_buffer *buffer,
  * @return A negative value if the buffer is less than the byte array, 0 if they are
  *         equal, and a positive value if the buffer is greater than the byte array.
  */
-static inline int   mulle_buffer_memcmp( struct mulle_buffer *buffer,
-                                         void  *bytes,
+static inline int   mulle_buffer_memcmp( const struct mulle_buffer *buffer,
+                                         const void  *bytes,
                                          size_t length)
 {
    if( ! buffer)
@@ -2178,7 +2178,7 @@ static inline int   mulle_buffer_memcmp( struct mulle_buffer *buffer,
 
    mulle_buffer_assert_readable( buffer);
 
-   return( _mulle__buffer_memcmp( (struct mulle__buffer *) buffer,
+   return( _mulle__buffer_memcmp( (const struct mulle__buffer *) buffer,
                                   bytes,
                                   length));
 }
@@ -2226,7 +2226,7 @@ enum mulle_buffer_hexdump_options
 // dumps only for n >= 1 && n <= 16
 MULLE__BUFFER_GLOBAL
 void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
-                                 void *bytes,
+                                 const void *bytes,
                                  unsigned int n,
                                  size_t counter,
                                  unsigned int options);
@@ -2248,7 +2248,7 @@ void  mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 // dumps all, does not append a \0
 MULLE__BUFFER_GLOBAL
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
-                            void *bytes,
+                            const void *bytes,
                             size_t length,
                             size_t counter,
                             unsigned int options);

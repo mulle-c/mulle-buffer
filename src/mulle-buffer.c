@@ -127,19 +127,19 @@ static inline unsigned int   hex( unsigned int c)
 
 
 void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
-                                  void *bytes,
+                                  const void *bytes,
                                   unsigned int n,
                                   size_t counter,
                                   unsigned int options)
 {
-   uint8_t        *memo;
+   const uint8_t        *memo;
    uint8_t        *s;
 #ifndef NDEBUG
    uint8_t        *sentinel;
 #endif
    unsigned int   i;
    unsigned int   value;
-   uint8_t        *p;
+   const uint8_t        *p;
    size_t         adr;
 
    memo = bytes;
@@ -265,7 +265,7 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
 
 
 void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
-                            void *bytes,
+                            const void *bytes,
                             size_t length,
                             size_t counter,
                             unsigned int options)
@@ -274,7 +274,7 @@ void  mulle_buffer_hexdump( struct mulle_buffer *buffer,
    size_t   full_lines;
    size_t   remainder;
    size_t   i;
-   uint8_t  *p;
+   const uint8_t  *p;
 
    lines      = (length + 15) / 16;
    full_lines = length / 16;
