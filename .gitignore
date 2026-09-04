@@ -87,3 +87,6 @@ dox.unreleased/
 /fuzz/build/
 /fuzz/crashes/
 /fuzz/corpus/
+.kiro/
+TODO.md
+REVIEW.md
