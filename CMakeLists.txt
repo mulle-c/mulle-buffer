@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.13...99.99)
 
-project( mulle-buffer VERSION 5.1.1 LANGUAGES C)
+project( mulle-buffer VERSION 5.2.0 LANGUAGES C)
 
 
 ### mulle-sde environment

@@ -5,7 +5,7 @@
       domain="github";
       language="c";
       dialect="c";
-      version="5.1.1";
+      version="5.2.0";
       name="mulle-buffer";
       user="mulle-c";
       repo="mulle-buffer";
