@@ -1,46 +1,21 @@
 # mulle-buffer
 
-#### ↗️  A growable C char array - on stack and heap
+#### ↗️  A growable C char array and also a stream - on stack and heap
+
+`mulle-buffer` is a capable, deliberately low-level C byte builder. Its strongest
+use case is producing binary or textual output with minimal ceremony: start on
+stack storage, grow to heap storage when necessary, or stream bounded output to
+a callback.
 
 mulle-buffer can construct arbitrary long binary data dynamically or in static
 storage. You don't have to worry about calculating the necessary buffer size.
-It's easy, fast and safe and it is used to implement NSMutableData.
-mulle-buffer has functions to create hexdumps and quoted C string output.
-
-The `mulle_flushablebuffer` variant is a stream-like output buffer: it flushes
-long output to a sink (like `stdout`) to keep memory bounded. A plain
-`mulle_buffer` is an append-first byte builder, not a general file-like
-stream (see the contract below).
+It's easy, fast and safe. It can also be used as a stream and it is used to
+implement NSMutableData. mulle-buffer has functions to create hexdumps and
+quoted C string output.
 
 With [mulle-fprintf](//github.com/mulle-core/mulle_fprintf), you can use
 `printf` style formatting and create string concatenations without
 having to worry about memory management.
-
-
-## Contract (read this first)
-
-`mulle_buffer` is an append-first byte builder, not a general file-like
-stream. Everything below follows from that:
-
-- Writing is the primary operation; reading is a secondary convenience.
-- The buffer has a single cursor used for writing, reading, and seeking.
-- Seeking changes the logical length (`mulle_buffer_get_length` follows the
-  cursor).
-- `MULLE_BUFFER_SEEK_END` is relative to the allocation capacity, not the
-  written length.
-- Reads consume the same cursor used for writing.
-- Allocation uses a mulle allocator under the no-fail allocator contract:
-  it never returns `NULL`.
-- Write functions are intentionally `void`; failure is reported through
-  `mulle_buffer_has_overflown`.
-- Callers must check `mulle_buffer_has_overflown` after writing to a
-  fixed-size or flushable buffer.
-- const/read-only buffers must not be written and write-only buffers must
-  not be read; both are enforced by assertions in debug builds.
-- Self-aliasing (appending a slice of the buffer's own storage) is not
-  supported.
-
-See [dox/DESIGN.md](dox/DESIGN.md) for the detailed design decisions.
 
 
 
@@ -53,7 +28,7 @@ See [dox/DESIGN.md](dox/DESIGN.md) for the detailed design decisions.
 
 | Data Structure                                        | Description
 | ------------------------------------------------------| ----------------------------------------
-| [`mulle-buffer`](dox/API_BUFFER.md)                   | A resizable buffer that grows to the heap if needed
+| [`mulle-buffer`](dox/API_BUFFER.md)                   | A resizable alloca buffer that grows to the heaep if needed
 | [`mulle-flushablebuffer`](dox/API_FLUSHABLEBUFFER.md) | Useful for dumps and other longer output
 
 
@@ -62,6 +37,13 @@ See [dox/DESIGN.md](dox/DESIGN.md) for the detailed design decisions.
 
 * [API Summary](asset/dox/api/toc)
 
+
+
+## Thread Safety
+
+mulle-buffer is **not thread-safe**. A single buffer must not be accessed from
+multiple threads concurrently. If you need concurrent writes, serialize access
+externally (e.g. with a mutex) or use one buffer per thread.
 
 
 ## Examples
@@ -147,35 +129,6 @@ void  test( void)
 
 This should print "VfL_Boc", as the overflow preserves the pre-overflow content
 and `get_string` zero-terminates the last byte.
-
-### Error model
-
-Write operations return `void`, so failures are reported silently through two
-channels:
-
-- `mulle_buffer_has_overflown( buffer)` is the official write contract and the
-  primary error channel. The flag is set exactly when a fixed-size buffer runs
-  out of capacity, a flushable buffer's flusher fails, a string add is given a
-  self-referencing source, or a flush is attempted on a non-flushable buffer.
-  Once set it stays set: the buffer keeps its pre-overflow content and further
-  write operations become no-ops until the buffer is re-initialized.
-- A `mulle_flushablebuffer` reports failures through the return value of its
-  flusher (and `mulle_flushablebuffer_flush`): `0` bytes written means the
-  flusher failed, and the buffered data is retained.
-
-Because writes are silent, check `mulle_buffer_has_overflown` whenever you write
-to a fixed-size or flushable buffer whose capacity you did not size explicitly:
-
-``` c
-mulle_buffer_add_bytes( buffer, data, length);
-mulle_buffer_add_string( buffer, suffix);
-
-if( mulle_buffer_has_overflown( buffer))
-   return( FAILURE);
-```
-
-The convenience macro `mulle_buffer_return_if_overflown( buffer, rval)` applies
-this exact pattern in one line.
 
 
 ### Convenience macro for creating allocated strings
