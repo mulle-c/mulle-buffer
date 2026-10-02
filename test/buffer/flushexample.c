@@ -1,6 +1,5 @@
 
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-testallocator/mulle-testallocator.h>
 
 #include <stdio.h>
 
@@ -24,7 +23,7 @@ static void   example()
                                stdout);
 
 
-   buf = (struct mulle_buffer  *) &_buf;
+   buf = &_buf.base;
    mulle_buffer_add_string( buf, "VfL");
    mulle_buffer_add_char( buf, ' ');
    mulle_buffer_add_string( buf, "Bochum");
@@ -49,7 +48,7 @@ static void   example2()
                                              stdout,
                                              NULL);
 
-   buf = (struct mulle_buffer *) flush_buf;
+   buf = &flush_buf->base;
    mulle_buffer_add_string( buf, "VfL Bochum 1848\n");
 
    // the seek for a flushable buffer, remembers the bytes flushed
@@ -77,11 +76,11 @@ static void   coverage1()
    // for coverage
    mulle_flushablebuffer_flush( fbuf);
 
-   buf = (struct mulle_buffer  *) fbuf;
+   buf = &fbuf->base;
    mulle_buffer_add_string( buf, "VfL");
    mulle_buffer_add_char( buf, ' ');
 
-   _mulle__buffer_set_overflown( (struct mulle__buffer *) buf);
+   _mulle__buffer_set_overflown( &buf->base);
 
    mulle_buffer_add_string( buf, "Bochum");
    mulle_buffer_add_char( buf, ' ');
@@ -117,12 +116,12 @@ static void   coverage2()
    // for coverage
    mulle_flushablebuffer_flush( &_buf);
 
-   buf = (struct mulle_buffer  *) &_buf;
+   buf = &_buf.base;
    mulle_buffer_add_string( buf, "VfL Bochum 1848");
 
    // as we have overflown this will not be happy
    if( mulle_flushablebuffer_done( &_buf))
-      mulle_buffer_done( (struct mulle_buffer *) &_buf);
+      mulle_buffer_done( &_buf.base);
 }
 
 

@@ -61,15 +61,15 @@ void   mulle_buffer_reset( struct mulle_buffer *buffer)
 
 int   _mulle_buffer_zero_last_byte( struct mulle_buffer *buffer)
 {
-   return( _mulle__buffer_zero_last_byte( (struct mulle__buffer *) buffer));
+   return( _mulle__buffer_zero_last_byte( &buffer->base));
 }
 
 
 void    _mulle_buffer_add_buffer( struct mulle_buffer *buffer,
                                   struct mulle_buffer *other)
 {
-   _mulle__buffer_add_buffer( (struct mulle__buffer *) buffer,
-                              (struct mulle__buffer *) other,
+   _mulle__buffer_add_buffer( &buffer->base,
+                              &other->base,
                               mulle_buffer_get_allocator( buffer));
 }
 
@@ -82,19 +82,19 @@ void
 {
    assert( length != (size_t) -1);
 
-   buffer->_initial_storage  =
-   buffer->_storage          =
-   buffer->_curr             = (void *) storage;
-   buffer->_sentinel         = storage ? &buffer->_storage[ length] : NULL;
+   buffer->base._initial_storage  =
+   buffer->base._storage          =
+   buffer->base._curr             = (void *) storage;
+   buffer->base._sentinel         = storage ? &buffer->base._storage[ length] : NULL;
 
    // no special case for mulle_sprintf
    assert( length != INT_MAX);
 
-   buffer->_size             = length;
-   buffer->_type             = (unsigned int) MULLE_BUFFER_IS_INFLEXIBLE | (unsigned int) MULLE_BUFFER_IS_READONLY; // windows cast...
+   buffer->base._size             = length;
+   buffer->base._type             = (unsigned int) MULLE_BUFFER_IS_INFLEXIBLE | (unsigned int) MULLE_BUFFER_IS_READONLY; // windows cast...
    buffer->_allocator        = NULL;
 
-   assert( buffer->_sentinel >= buffer->_storage);
+   assert( buffer->base._sentinel >= buffer->base._storage);
 }
 
 
@@ -192,7 +192,7 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
             {
                if( options & mulle_buffer_hexdump_no_ascii)
                {
-                  buffer->_curr = s;
+                  buffer->base._curr = s;
                   return;
                }
                *s++ = ' ';
@@ -225,7 +225,7 @@ void   mulle_buffer_hexdump_line( struct mulle_buffer *buffer,
             {
                if( options & mulle_buffer_hexdump_no_ascii)
                {
-                  buffer->_curr = s;
+                  buffer->base._curr = s;
                   return;
                }
 

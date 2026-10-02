@@ -63,11 +63,13 @@ typedef size_t   mulle_flushablebuffer_flusher_t( void *buf,
                                                   size_t len,
                                                   void *userinfo);
 
-// since we want to cast this to mulle_buffer eventually, the allocator
-// must be in here (argh). It's not used by mulle--buffer code though
-// and it's initialized to the default allocator
+// A flushablebuffer *is* a mulle_buffer with a flusher attached, so it
+// embeds a real `struct mulle_buffer base` member (which itself embeds a
+// `struct mulle__buffer base`). `mulle_flushablebuffer_as_buffer` hands out
+// `&buffer->base` instead of casting, avoiding the strict-aliasing undefined
+// behavior a layout-compatible prefix cast would incur (see mulle-buffer.h).
 #define MULLE_FLUSHABLEBUFFER_BASE                 \
-   MULLE_BUFFER_BASE;                              \
+   struct mulle_buffer  base;                      \
    mulle_flushablebuffer_flusher_t   *_flusher;    \
    void                              *_userinfo;   \
    size_t                            _flushed
@@ -118,12 +120,18 @@ struct mulle_flushablebuffer
                                            xflusher, xuserinfo)            \
    ((struct mulle_flushablebuffer)                                         \
    {                                                                       \
-      ._initial_storage = (unsigned char *) (xstorage),                    \
-      ._curr            = (unsigned char *) (xstorage),                    \
-      ._storage         = (unsigned char *) (xstorage),                    \
-      ._sentinel        = (xstorage) ? &((unsigned char *)(xstorage))[ (xlength)] : NULL, \
-      ._size            = (xlength),                                       \
-      ._type            = MULLE_FLUSHABLEBUFFER_TYPE,                      \
+      .base =                                                              \
+      {                                                                    \
+         .base =                                                           \
+         {                                                                 \
+            ._initial_storage = (unsigned char *) (xstorage),              \
+            ._curr            = (unsigned char *) (xstorage),              \
+            ._storage         = (unsigned char *) (xstorage),              \
+            ._sentinel        = (xstorage) ? &((unsigned char *)(xstorage))[ (xlength)] : NULL, \
+            ._size            = (xlength),                                 \
+            ._type            = MULLE_FLUSHABLEBUFFER_TYPE                 \
+         }                                                                 \
+      },                                                                   \
       ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),  \
       ._userinfo        = (xuserinfo)                                      \
    })                                                                      \
@@ -146,14 +154,20 @@ struct mulle_flushablebuffer
                                               xuserinfo, xallocator)       \
    ((struct mulle_flushablebuffer)                                         \
    {                                                                       \
-      ._curr            = (unsigned char *) (xstorage),                    \
-      ._storage         = (unsigned char *) (xstorage),                    \
-      ._sentinel        = (xstorage) ? &((unsigned char *)(xstorage))[ (xlength)] : NULL, \
-      ._size            = (xlength),                                       \
-      ._type            = MULLE_FLUSHABLEBUFFER_TYPE,                      \
+      .base =                                                              \
+      {                                                                    \
+         .base =                                                           \
+         {                                                                 \
+            ._curr     = (unsigned char *) (xstorage),                     \
+            ._storage  = (unsigned char *) (xstorage),                     \
+            ._sentinel = (xstorage) ? &((unsigned char *)(xstorage))[ (xlength)] : NULL, \
+            ._size     = (xlength),                                        \
+            ._type     = MULLE_FLUSHABLEBUFFER_TYPE                        \
+         },                                                                \
+         ._allocator = (xallocator)                                        \
+      },                                                                   \
       ._flusher         = (mulle_flushablebuffer_flusher_t *) (xflusher),  \
-      ._userinfo        = (xuserinfo),                                     \
-      ._allocator       = (xallocator)                                     \
+      ._userinfo        = (xuserinfo)                                      \
    })
 
 
@@ -212,7 +226,7 @@ static inline struct mulle_flushablebuffer
 static inline struct mulle_buffer   *
    mulle_flushablebuffer_as_buffer( struct mulle_flushablebuffer *buffer)
 {
-  return( (struct mulle_buffer *) buffer);
+  return( &buffer->base);
 }
 
 
@@ -241,16 +255,16 @@ static inline void
 
    memset( buffer, 0, sizeof( *buffer));
 
-   buffer->_initial_storage =
-   buffer->_curr            =
-   buffer->_storage         = storage;
-   buffer->_sentinel        = &buffer->_storage[ length];
-   buffer->_size            = length;
-   buffer->_type            = MULLE_FLUSHABLEBUFFER_TYPE;
+   buffer->base.base._initial_storage =
+   buffer->base.base._curr            =
+   buffer->base.base._storage         = storage;
+   buffer->base.base._sentinel        = &buffer->base.base._storage[ length];
+   buffer->base.base._size            = length;
+   buffer->base.base._type            = MULLE_FLUSHABLEBUFFER_TYPE;
 
    buffer->_flusher         = flusher;
    buffer->_userinfo        = userinfo;
-   buffer->_allocator       = allocator;
+   buffer->base._allocator  = allocator;
 }
 
 
@@ -277,15 +291,15 @@ static inline void
 
    memset( buffer, 0, sizeof( *buffer));
 
-   buffer->_curr            =
-   buffer->_storage         = storage;
-   buffer->_sentinel        = &buffer->_storage[ length];
-   buffer->_size            = length;
-   buffer->_type            = MULLE_FLUSHABLEBUFFER_TYPE;
+   buffer->base.base._curr            =
+   buffer->base.base._storage         = storage;
+   buffer->base.base._sentinel        = &buffer->base.base._storage[ length];
+   buffer->base.base._size            = length;
+   buffer->base.base._type            = MULLE_FLUSHABLEBUFFER_TYPE;
 
    buffer->_flusher         = flusher;
    buffer->_userinfo        = userinfo;
-   buffer->_allocator       = allocator;
+   buffer->base._allocator  = allocator;
 }
 
 

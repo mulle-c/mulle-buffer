@@ -41,22 +41,22 @@ int  _mulle_flushablebuffer_flush( struct mulle_flushablebuffer *ibuffer)
 {
    size_t   len;
 
-   if( _mulle__buffer_has_overflown( (struct mulle__buffer *) ibuffer))
+   if( _mulle__buffer_has_overflown( &ibuffer->base.base))
       return( -2);
 
-   len = ibuffer->_curr - ibuffer->_storage;
+   len = ibuffer->base.base._curr - ibuffer->base.base._storage;
    if( ! len)
       return( 0);
 
    // if flush fails, we are failed (forever)
-   if( len != (*ibuffer->_flusher)( ibuffer->_storage, 1, len, ibuffer->_userinfo))
+   if( len != (*ibuffer->_flusher)( ibuffer->base.base._storage, 1, len, ibuffer->_userinfo))
    {
-      _mulle__buffer_set_overflown( (struct mulle__buffer *) ibuffer);
+      _mulle__buffer_set_overflown( &ibuffer->base.base);
       return( -2);
    }
 
    ibuffer->_flushed += len;
-   ibuffer->_curr     = ibuffer->_storage;
+   ibuffer->base.base._curr     = ibuffer->base.base._storage;
 
    return( 0);
 }
@@ -70,8 +70,8 @@ int   _mulle_flushablebuffer_done( struct mulle_flushablebuffer *buffer)
    if( rval)
       return( rval);
 
-   if( ! buffer->_initial_storage)
-      mulle_allocator_free( buffer->_allocator, buffer->_storage);
+   if( ! buffer->base.base._initial_storage)
+      mulle_allocator_free( buffer->base._allocator, buffer->base.base._storage);
 #ifdef DEBUG
    mulle_memset_uint32( buffer, 0xDEADDEAD,sizeof( *buffer));
 #endif
@@ -118,7 +118,7 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
    if( ! buffer)
       return( 0);
 
-   allocator = buffer->_allocator;
+   allocator = buffer->base._allocator;
    rval      = mulle_flushablebuffer_done( buffer);
    if( rval)
    {
@@ -126,8 +126,8 @@ int   mulle_flushablebuffer_destroy( struct mulle_flushablebuffer *buffer)
       // bytes remain inspectable. destroy discards them unconditionally;
       // flush manually before calling destroy if the data must be
       // delivered first.
-      if( ! buffer->_initial_storage)
-         mulle_allocator_free( allocator, buffer->_storage);
+      if( ! buffer->base.base._initial_storage)
+         mulle_allocator_free( allocator, buffer->base.base._storage);
    }
    mulle_allocator_free( allocator, buffer);
    return( rval);

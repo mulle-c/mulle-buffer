@@ -1,13 +1,10 @@
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-testallocator/mulle-testallocator.h>
 #include <stdio.h>
 
 
 static void   test_normal()
 {
    struct mulle_buffer    *buffer;
-   unsigned int           i;
-   size_t                 len;
 
    buffer = mulle_buffer_create( NULL);
 

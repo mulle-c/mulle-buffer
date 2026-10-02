@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.13...99.99)
 
-project( mulle-buffer VERSION 5.2.0 LANGUAGES C)
+project( mulle-buffer VERSION 5.2.1 LANGUAGES C)
 
 
 ### mulle-sde environment
@@ -19,7 +19,7 @@ include( Files)
 if( HEADERS_PHASE)
    install( FILES ${INSTALL_PUBLIC_HEADERS}  DESTINATION "include/mulle-buffer")
    install( FILES ${INSTALL_PRIVATE_HEADERS} DESTINATION "include/mulle-buffer")
-   install( FILES ${INSTALL_CMAKE_INCLUDES}          DESTINATION "include/mulle-buffer/cmake")
+   install( FILES ${INSTALL_CMAKE_INCLUDES}  DESTINATION "include/mulle-buffer/cmake")
 
    # short cut out
    if( NOT COMPILE_PHASE AND NOT LINK_PHASE)

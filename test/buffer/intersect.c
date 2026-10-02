@@ -6,8 +6,8 @@ int  main()
 {
    struct mulle_buffer   buffer = { 0 };
 
-   buffer._storage  = (void *) 0x10;
-   buffer._sentinel = (void *) 0x20;
+   buffer.base._storage  = (void *) 0x10;
+   buffer.base._sentinel = (void *) 0x20;
 
    printf( "%d\n", mulle_buffer_intersects_bytes( &buffer, (void *) 0x0, 0x10));
 

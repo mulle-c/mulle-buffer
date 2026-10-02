@@ -1,6 +1,5 @@
 
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-testallocator/mulle-testallocator.h>
 
 #include <stdio.h>
 

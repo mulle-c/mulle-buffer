@@ -293,7 +293,7 @@ cmake -S "mulle-buffer" -B "${BUILD_DIR}"    \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}"            \
   -DCMAKE_PREFIX_PATH="${PREFIX}"               \
   -DCMAKE_C_FLAGS="-I"${PREFIX}"/include"       \
-&& cmake --build "${BUILD_DIR}" &&              \
+&& cmake --build "${BUILD_DIR}"  --parallel     \
 && cmake --install "${BUILD_DIR}"
 ```
 

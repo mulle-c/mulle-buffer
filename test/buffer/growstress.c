@@ -1,5 +1,4 @@
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-testallocator/mulle-testallocator.h>
 #include <stdio.h>
 
 
@@ -9,7 +8,7 @@ static void   test_grow( struct mulle_buffer *buffer, size_t len, char *name)
 
    mulle_buffer_grow( buffer, len);
    mulle_buffer_memset( buffer, '*',
-      _mulle__buffer_get_allocation_length( (struct mulle__buffer *) buffer));
+      _mulle__buffer_get_allocation_length( &buffer->base));
 
    s = mulle_buffer_get_string( buffer);
    printf( "%19s %3td%s: %s\n", name + 5, mulle_buffer_get_length( buffer),
@@ -21,7 +20,6 @@ static void   test_grow( struct mulle_buffer *buffer, size_t len, char *name)
 static void   test_default( size_t len)
 {
    struct mulle_buffer   *buffer;
-   char                  *s;
 
    buffer = mulle_buffer_create_default();
    {

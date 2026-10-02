@@ -1,6 +1,5 @@
 
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-testallocator/mulle-testallocator.h>
 
 #include <stdio.h>
 
@@ -9,7 +8,6 @@ static char   text[] = "VfL Bochum 1848";
 static void   example()
 {
    struct mulle_buffer   *buf;
-   char                  *s;
 
    buf = mulle_buffer_create( NULL);
    mulle_buffer_init_with_const_bytes( buf, text, sizeof( text));

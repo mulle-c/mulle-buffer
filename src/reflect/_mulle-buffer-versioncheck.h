@@ -25,7 +25,7 @@
 #endif
 #if defined( MULLE__DATA_VERSION)
 # ifndef MULLE__DATA_VERSION_MIN
-#  define MULLE__DATA_VERSION_MIN  ((0UL << 20) | (6 << 8) | 0)
+#  define MULLE__DATA_VERSION_MIN  ((0UL << 20) | (6 << 8) | 1)
 # endif
 # ifndef MULLE__DATA_VERSION_MAX
 #  define MULLE__DATA_VERSION_MAX  ((0UL << 20) | (7 << 8) | 0)

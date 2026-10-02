@@ -1,5 +1,4 @@
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-testallocator/mulle-testallocator.h>
 
 
 #include <stdio.h>
@@ -83,7 +82,6 @@ static void   if_empty_test( void)
 int  main()
 {
    simple_fill_test();
-   mulle_testallocator_reset();
    simple_static_test();
    if_empty_test();
 

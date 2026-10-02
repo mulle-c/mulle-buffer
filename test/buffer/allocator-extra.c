@@ -1,5 +1,4 @@
 #include <mulle-buffer/mulle-buffer.h>
-#include <mulle-testallocator/mulle-testallocator.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,9 +20,12 @@ static void   *test_calloc( size_t n, size_t size, struct mulle_allocator *alloc
 }
 
 
-static void   *test_realloc( void *block, size_t size, struct mulle_allocator *allocator)
+static void   *test_reallocarray( void *block,
+                                  size_t n,
+                                  size_t size,
+                                  struct mulle_allocator *allocator)
 {
-   return( realloc( block, size));
+   return( realloc( block, n * size));
 }
 
 
@@ -36,10 +38,10 @@ static void   test_free( void *block, struct mulle_allocator *allocator)
 static struct mulle_allocator *
    make_test_allocator( struct mulle_allocator *allocator)
 {
-   allocator->calloc  = test_calloc;
-   allocator->realloc = test_realloc;
-   allocator->free    = test_free;
-   allocator->fail    = mulle_allocation_fail;
+   allocator->calloc       = test_calloc;
+   allocator->reallocarray = test_reallocarray;
+   allocator->free         = test_free;
+   allocator->fail         = mulle_allocation_fail;
    return( allocator);
 }
 
