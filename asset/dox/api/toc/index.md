@@ -15,7 +15,7 @@ Key capabilities:
 - **Macro-based lifecycle management**: `mulle_buffer_do` and friends ensure automatic initialization/cleanup.
 - **`mulle_flushablebuffer`**: A stream-like output variant that flushes long output to a sink (fwrite-like callback) to keep memory bounded.
 
-This library is a foundational component of `mulle-core` and is a dependency of many other mulle data-structure libraries (`mulle-data`, object/container libraries). Its public API is version `5.2.0` (`MULLE__BUFFER_VERSION`).
+This library is a foundational component of `mulle-core` and is a dependency of many other mulle data-structure libraries (`mulle-data`, object/container libraries). Its public API is version `5.2.1` (`MULLE__BUFFER_VERSION`).
 
 ## 2. Key Concepts & Design Philosophy
 
@@ -45,9 +45,9 @@ This library is a foundational component of `mulle-core` and is a dependency of 
 ### Design layers
 
 - `struct mulle__buffer` (in `mulle--buffer.h`) is the internal base: storage pointers + `_size` + `_type`, **no allocator**, and none of its functions check for `NULL`.
-- `struct mulle_buffer` (in `mulle-buffer.h`) is the user-facing type: base fields plus a `struct mulle_allocator *_allocator`. It is a possibly-growing memory block (the C analog of `NSData`/`NSMutableData`).
+- `struct mulle_buffer` (in `mulle-buffer.h`) is the user-facing type: it embeds a `struct mulle__buffer base` member (not a layout-compatible prefix) plus a `struct mulle_allocator *_allocator`. It is a possibly-growing memory block (the C analog of `NSData`/`NSMutableData`). The nested member avoids the strict-aliasing undefined behavior (C11 6.5p7) of casting between the two types.
 - Since version 5.2.0 the read-only accessors take `const struct mulle_buffer *` and delegate to a const-qualified inline layer (`_mulle__buffer_*`) in `mulle--buffer.h`.
-- `struct mulle_flushablebuffer` extends `struct mulle_buffer` with a flusher callback, userinfo, and a `_flushed` byte counter. It is initialized as write-only.
+- `struct mulle_flushablebuffer` embeds a `struct mulle_buffer base` member and adds a flusher callback, userinfo, and a `_flushed` byte counter. It is initialized as write-only.
 
 Sizes on 64-bit: `sizeof(struct mulle__buffer) = 48`, `sizeof(struct mulle_buffer) = 56`, `sizeof(struct mulle_flushablebuffer) = 80` (24/28/40 on 32-bit).
 
@@ -93,7 +93,7 @@ The umbrella header `<mulle-buffer/mulle-buffer.h>` includes everything, includi
 #### `struct mulle_buffer`
 
 - **Purpose**: The public, user-facing growable byte buffer.
-- **Key Fields** (`MULLE_BUFFER_BASE`): all `mulle__buffer` fields plus `struct mulle_allocator *_allocator`.
+- **Key Fields** (`MULLE_BUFFER_BASE`): a nested `struct mulle__buffer base` member plus `struct mulle_allocator *_allocator` (fields are reached as `buffer->base._storage`, `buffer->base._type`, etc.).
 - **Related**: `MULLE_BUFFER_DEFAULT_CAPACITY` is `128` (default capacity for heap-init and the guaranteed minimum stack backing for `mulle_buffer_do`). `MULLE_BUFFER_DATA`, `MULLE_BUFFER_FLEXIBLE_DATA`, `MULLE_BUFFER_FLEXIBLE_FILLED_DATA`, `MULLE_BUFFER_INFLEXIBLE_DATA`, `MULLE_BUFFER_INFLEXIBLE_FILLED_DATA` are compound-literal initializers for static/global data-section use (side-effect-free expressions only); in code use the single-evaluation inline wrappers `_mulle_buffer_data`, `_mulle_buffer_flexible_data`, `_mulle_buffer_flexible_filled_data`, `_mulle_buffer_inflexible_data`, `_mulle_buffer_inflexible_filled_data`.
 
 #### Allocation / initialization / destruction
@@ -261,7 +261,7 @@ Mode assertion macros: `mulle_buffer_assert_readable(buffer)`, `mulle_buffer_ass
 #### `struct mulle_flushablebuffer`
 
 - **Purpose**: A write-only, inflexible, stream-like output buffer that flushes contents to a sink when full, keeping memory bounded. It is the public API for "dump and other longer output".
-- **Key Fields** (`MULLE_FLUSHABLEBUFFER_BASE`): all `mulle_buffer` fields plus:
+- **Key Fields** (`MULLE_FLUSHABLEBUFFER_BASE`): a nested `struct mulle_buffer base` member plus:
   - `mulle_flushablebuffer_flusher_t *_flusher`: the flush callback.
   - `void *_userinfo`: opaque data passed to the flusher.
   - `size_t _flushed`: counts bytes delivered to the flusher (informational; seek follows it).

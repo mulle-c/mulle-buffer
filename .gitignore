@@ -90,3 +90,7 @@ dox.unreleased/
 .kiro/
 TODO.md
 REVIEW.md
+.touch
+*.orig
+*.workspace
+*.*-workspace

@@ -7,8 +7,7 @@ static void   test_grow( struct mulle_buffer *buffer, size_t len, char *name)
    char   *s;
 
    mulle_buffer_grow( buffer, len);
-   mulle_buffer_memset( buffer, '*',
-      _mulle__buffer_get_allocation_length( &buffer->base));
+   mulle_buffer_memset( buffer, '*', len);
 
    s = mulle_buffer_get_string( buffer);
    printf( "%19s %3td%s: %s\n", name + 5, mulle_buffer_get_length( buffer),
