@@ -38,7 +38,7 @@ jobs:
         ${SUDO} apt-get update
         ${SUDO} apt-get install libc6:i386 gcc-multilib
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - uses: mulle-sde/github-ci@v1
 

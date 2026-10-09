@@ -1,6 +1,12 @@
 ### 5.2.1
 
 
+* growstress test now validates the length and byte contents of grown buffers instead of only printing them
+* failures are reported to stderr with a nonzero exit status
+* removed the obsolete growstress.stdout golden file
+
+
+
 
 **BREAKING** ``mulle_buffer`` and ``mulle_flushablebuffer`` now embed their base buffer as a real nested `base` member instead of a layout-compatible prefix. Inherited fields move accordingly `(`buffer->_curr`` becomes ``buffer->base._curr`,` and for flushable buffers ``buffer->base.base._curr`),` and the public ``MULLE_BUFFER_BASE`` / ``MULLE_FLUSHABLEBUFFER_BASE`` macros no longer expand to a field list. Code that accessed inherited fields directly or extended these structs via those macros must be updated.
 
