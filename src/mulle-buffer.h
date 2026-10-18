@@ -2557,50 +2557,13 @@ MULLE_C_DEPRECATED static inline void
            name ## __j++)
 
 
-/**
- * Safely returns a value from a block of code that uses a `mulle_buffer`.
- *
- * This macro is used to return a value from a block of code that uses a
- * `mulle_buffer`. It ensures that the `mulle_buffer` is properly cleaned up
- * before returning the value, preventing memory leaks.
- *
- * It stores `value` in a temporary of the same type, so the value is computed
- * before the buffer is done. Any compiler that provides `typeof` is supported:
- * GCC, Clang, and any C23 compiler. On compilers without `typeof` (MSVC in
- * C11 mode) the macro is not defined, so using it is a compile-time error;
- * return `value` manually after calling `mulle_buffer_done` instead.
- *
- * @param name The name of the `mulle_buffer` variable used in the block.
- * @param value The value to be returned.
- */
 //
-// Caveats: don't use return in the block, or you will leak, use mulle_buffer_return
-//          don't pre-initialize the buffer
+// `mulle_buffer_return` needs __typeof__ and lives in mulle-buffer-c23.h, so
+// that this header stays C11 clean. That header is included automatically when
+// MULLE_C_HAS_TYPEOF (gcc, clang, tcc) is set.
 //
-#ifdef __has_builtin
-# if __has_builtin(__builtin_types_compatible_p)
-#  define MULLE__BUFFER_HAVE_TYPEOF
-# endif
-#endif
-
-#ifndef MULLE__BUFFER_HAVE_TYPEOF
-# if defined( __GNUC__) || defined( __clang__)
-#  define MULLE__BUFFER_HAVE_TYPEOF
-# endif
-#endif
-
-#ifdef MULLE__BUFFER_HAVE_TYPEOF
-
-#define mulle_buffer_return( name, value)           \
-   do                                               \
-   {                                                \
-      __typeof__( value) name ## __tmp = (value);   \
-                                                    \
-      mulle_buffer_done( &name ## __storage);       \
-      return( name ## __tmp);                       \
-   }                                                \
-   while( 0)
-
+#if MULLE_C_HAS_TYPEOF
+# include "mulle-buffer-c23.h"
 #endif
 
 //

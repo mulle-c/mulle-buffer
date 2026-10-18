@@ -11,6 +11,7 @@
       "src/generic/include.h",
       "src/mulle--buffer.c",
       "src/mulle--buffer.h",
+      "src/mulle-buffer-c23.h",
       "src/mulle-buffer.c",
       "src/mulle-buffer.h",
       "src/mulle-flushablebuffer.c",

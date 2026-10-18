@@ -243,7 +243,7 @@ All `static inline` in `mulle-buffer.h`:
 
 #### Convenience `do` macros
 
-All create a stack-allocated buffer whose storage self-destructs when the block exits. `break` inside the block is safe; a `return` leaks — use `mulle_buffer_return(name, value)` instead (requires `typeof`-capable compiler). `mulle_buffer_do_string` additionally assigns the extracted allocated string to `s`.
+All create a stack-allocated buffer whose storage self-destructs when the block exits. `break` inside the block is safe; a `return` leaks — use `mulle_buffer_return(name, value)` instead (needs `typeof`; it lives in `mulle-buffer-c23.h`, which is included automatically when `MULLE_C_HAS_TYPEOF` is set). `mulle_buffer_do_string` additionally assigns the extracted allocated string to `s`.
 
 - `mulle_buffer_do(name)` — default allocator, guaranteed ≥ `MULLE_BUFFER_DEFAULT_CAPACITY` (128) bytes of stack backing.
 - `mulle_buffer_do_allocator(name, allocator)` — same with a custom allocator.
@@ -252,7 +252,7 @@ All create a stack-allocated buffer whose storage self-destructs when the block 
 - `mulle_buffer_do_inflexible(name, data, len)` — fixed-size; overflow → overflown state, no malloc.
 - `mulle_buffer_do_inflexible_filled(name, data, len)` — fixed-size, pre-filled, writable.
 - `mulle_buffer_do_string(name, allocator, s)` — block-scoped buffer; on exit assigns allocated C string to `s` (free with the same allocator).
-- `mulle_buffer_return(name, value)` — compute value, `done` the buffer, return (no leak).
+- `mulle_buffer_return(name, value)` — compute value, `done` the buffer, return (no leak). Defined in `mulle-buffer-c23.h` (`typeof`), so not available on a C11-only compiler.
 
 Mode assertion macros: `mulle_buffer_assert_readable(buffer)`, `mulle_buffer_assert_writeable(buffer)` (assert on the opposing `_type` flag).
 
@@ -332,7 +332,7 @@ Like `fwrite`. The flusher is responsible for retrying partial writes internally
 ### Common Pitfalls
 
 - **`_`-prefixed fields and functions are internal.** Do not manipulate `_storage`, `_curr`, `_sentinel`, `_type` directly.
-- **`return` inside a `mulle_buffer_do` block leaks.** Use `mulle_buffer_return(name, value)` (or manually call `mulle_buffer_done` first). `break` is safe.
+- **`return` inside a `mulle_buffer_do` block leaks.** Use `mulle_buffer_return(name, value)` from `mulle-buffer-c23.h` (or manually call `mulle_buffer_done` first). `break` is safe.
 - **Overflow is sticky.** `mulle_buffer_remove_all` will not clear it; `mulle_buffer_reset` (or `done` + init) is required to reuse.
 - **`MULLE_BUFFER_SEEK_END` is relative to capacity, not written length** — and a flushable buffer's seek counts flushed bytes. Positions ≥ 2 GB need the `off_t` `lseek`/`get_lseek` family on LLP64.
 - **A NULL buffer is reported as overflown** by `mulle_buffer_has_overflown` (returns 1), and `mulle_buffer_is_inflexible(NULL)` returns 1.

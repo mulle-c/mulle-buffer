@@ -20,6 +20,11 @@
 
 #include <mulle-buffer/mulle-buffer.h>
 
+//
+// mulle_buffer_return needs __typeof__ and lives in mulle-buffer-c23.h.
+// Guarded, so this test also compiles and passes without it.
+//
+#if MULLE_C_HAS_TYPEOF
 
 static int   example_return( void)
 {
@@ -31,6 +36,8 @@ static int   example_return( void)
 
    return( -1);
 }
+
+#endif
 
 
 static int   example_return_if_overflown( void)
@@ -184,7 +191,9 @@ int   main( void)
    test_do_string();
    test_default_creators();
 
+#if MULLE_C_HAS_TYPEOF
    assert( example_return() == 15);
+#endif
    assert( example_return_if_overflown() == -2);
 
    return( 0);
