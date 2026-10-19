@@ -1,10 +1,21 @@
 ### 5.2.1
 
 
+
+
+* ``mulle_buffer_return`` now lives in the new `mulle-buffer-c23.h`, which is included automatically when ``MULLE_C_HAS_TYPEOF`` is available (gcc, clang, tcc)
+* `mulle-buffer.h` is now strictly C11: it no longer carries any ``__typeof__`-dependent` code
+* the library now compiles as strict C11 with extensions off by default; override with ``-DCMAKE_C_STANDARD=23`` or `-std=...`
+
+
+
+
+
+
+
 * growstress test now validates the length and byte contents of grown buffers instead of only printing them
 * failures are reported to stderr with a nonzero exit status
 * removed the obsolete growstress.stdout golden file
-
 
 
 
