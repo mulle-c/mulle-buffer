@@ -21,7 +21,7 @@ having to worry about memory management.
 
 | Release Version                                       | Release Notes  | AI Documentation
 |-------------------------------------------------------|----------------|---------------
-| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg) ![standard: C11/C23](pix/c11-c23.svg) ![apis: ansi](pix/apis-ansi.svg) ![memory: allocator](pix/memory-allocator.svg) ![threads: singlethreaded](pix/thread-singlethreaded.svg) [![Build Status](https://github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg)](//github.com/mulle-c/mulle-buffer/actions) ![Coverage](https://img.shields.io/badge/coverage-95%25%C2%A0-seagreen) | [RELEASENOTES](RELEASENOTES.md) | [DeepWiki for mulle-buffer](https://deepwiki.com/mulle-c/mulle-buffer)
+| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-c/mulle-buffer.svg) ![standard: C11/C23](pix/c11-c23.svg) ![apis: ansi](pix/apis-ansi.svg) ![memory: allocator](pix/memory-allocator.svg) ![threads: singlethreaded](pix/thread-singlethreaded.svg) [![Build Status](https://github.com/mulle-c/mulle-buffer/workflows/CI/badge.svg)](//github.com/mulle-c/mulle-buffer/actions) | [RELEASENOTES](RELEASENOTES.md) | [DeepWiki for mulle-buffer](https://deepwiki.com/mulle-c/mulle-buffer)
 
 
 ## API
@@ -253,13 +253,6 @@ Add mulle-buffer and its dependencies to your `CMakeLists.txt` with
 include( FetchContent)
 
 include_directories( SYSTEM "${CMAKE_BINARY_DIR}/include")
-
-set( MULLE__C11_TAG "master" CACHE STRING "branch or tag to fetch mulle-c11 from")
-
-FetchContent_Declare( MULLE__C11
-   GIT_REPOSITORY https://github.com/mulle-c/mulle-c11.git
-   GIT_TAG        "${MULLE__C11_TAG}")
-FetchContent_MakeAvailable( MULLE__C11)
 
 set( MULLE__ALLOCATOR_TAG "master" CACHE STRING "branch or tag to fetch mulle-allocator from")
 
